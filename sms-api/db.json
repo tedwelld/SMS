@@ -1,0 +1,340 @@
+{
+  "settings": {
+    "roles": [
+      "Store Manager",
+      "Cashier",
+      "Stock Clerk"
+    ],
+    "activeRole": "Store Manager",
+    "offlineMode": false
+  },
+  "products": [
+    {
+      "id": "p1",
+      "name": "Whole Wheat Bread",
+      "sku": "GRC-1001",
+      "department": "Grocery",
+      "price": 2.99,
+      "stock": 48,
+      "minStock": 25,
+      "taxRate": 0.03,
+      "staple": true,
+      "expiryDate": "2026-02-24",
+      "promo": {
+        "type": "bogo",
+        "value": 0
+      },
+      "physicalCount": 47
+    },
+    {
+      "id": "p2",
+      "name": "Organic Milk 1L",
+      "sku": "DRY-2001",
+      "department": "Dairy",
+      "price": 3.75,
+      "stock": 19,
+      "minStock": 22,
+      "taxRate": 0.03,
+      "staple": true,
+      "expiryDate": "2026-02-22",
+      "promo": {
+        "type": "discount",
+        "value": 10
+      },
+      "physicalCount": 18
+    },
+    {
+      "id": "p3",
+      "name": "Eggs (12 pack)",
+      "sku": "DRY-2009",
+      "department": "Dairy",
+      "price": 4.5,
+      "stock": 32,
+      "minStock": 18,
+      "taxRate": 0.03,
+      "staple": true,
+      "expiryDate": "2026-03-02",
+      "promo": {
+        "type": "none",
+        "value": 0
+      },
+      "physicalCount": 31
+    },
+    {
+      "id": "p4",
+      "name": "USB-C Charger",
+      "sku": "ELC-4003",
+      "department": "Electronics",
+      "price": 24.99,
+      "stock": 9,
+      "minStock": 10,
+      "taxRate": 0.08,
+      "staple": false,
+      "promo": {
+        "type": "discount",
+        "value": 12
+      },
+      "physicalCount": 8
+    },
+    {
+      "id": "p5",
+      "name": "Dish Soap 500ml",
+      "sku": "HSD-5007",
+      "department": "Household",
+      "price": 6.2,
+      "stock": 15,
+      "minStock": 20,
+      "taxRate": 0.07,
+      "staple": true,
+      "promo": {
+        "type": "none",
+        "value": 0
+      },
+      "physicalCount": 13
+    },
+    {
+      "id": "p6",
+      "name": "Bananas (1kg)",
+      "sku": "PRD-7001",
+      "department": "Produce",
+      "price": 1.99,
+      "stock": 61,
+      "minStock": 35,
+      "taxRate": 0,
+      "staple": true,
+      "expiryDate": "2026-02-21",
+      "promo": {
+        "type": "none",
+        "value": 0
+      },
+      "physicalCount": 59
+    },
+    {
+      "id": "p7",
+      "name": "Rice 5kg",
+      "sku": "GRC-1018",
+      "department": "Grocery",
+      "price": 12.95,
+      "stock": 14,
+      "minStock": 16,
+      "taxRate": 0.03,
+      "staple": true,
+      "promo": {
+        "type": "discount",
+        "value": 5
+      },
+      "physicalCount": 14
+    },
+    {
+      "id": "p8",
+      "name": "Bluetooth Earbuds",
+      "sku": "ELC-4022",
+      "department": "Electronics",
+      "price": 59,
+      "stock": 6,
+      "minStock": 8,
+      "taxRate": 0.08,
+      "staple": false,
+      "promo": {
+        "type": "none",
+        "value": 0
+      },
+      "physicalCount": 6
+    },
+    {
+      "id": "p9",
+      "name": "Paper Towels (6 roll)",
+      "sku": "HSD-5012",
+      "department": "Household",
+      "price": 9.4,
+      "stock": 25,
+      "minStock": 18,
+      "taxRate": 0.07,
+      "staple": true,
+      "promo": {
+        "type": "bogo",
+        "value": 0
+      },
+      "physicalCount": 23
+    }
+  ],
+  "customers": [
+    {
+      "id": "c1",
+      "name": "Jordan Carter",
+      "phone": "5550132001",
+      "points": 140,
+      "purchaseHistory": [
+        {
+          "id": "tx-1001",
+          "date": "2026-02-17T16:30:00.000Z",
+          "total": 58.49,
+          "pointsEarned": 4
+        },
+        {
+          "id": "tx-1007",
+          "date": "2026-02-18T18:10:00.000Z",
+          "total": 22.15,
+          "pointsEarned": 1
+        }
+      ]
+    },
+    {
+      "id": "c2",
+      "name": "Avery Nguyen",
+      "phone": "5550132017",
+      "points": 62,
+      "purchaseHistory": [
+        {
+          "id": "tx-1011",
+          "date": "2026-02-18T12:05:00.000Z",
+          "total": 78.2,
+          "pointsEarned": 6
+        }
+      ]
+    },
+    {
+      "id": "c3",
+      "name": "Morgan Diaz",
+      "phone": "5550132098",
+      "points": 21,
+      "purchaseHistory": []
+    }
+  ],
+  "vendors": [
+    {
+      "id": "v1",
+      "name": "FreshFlow Foods",
+      "departments": [
+        "Grocery",
+        "Produce",
+        "Dairy"
+      ],
+      "leadTimeDays": 2,
+      "contact": "Mia Warren",
+      "email": "mia@freshflow.example"
+    },
+    {
+      "id": "v2",
+      "name": "HomeNex Supplies",
+      "departments": [
+        "Household"
+      ],
+      "leadTimeDays": 3,
+      "contact": "Noah Mills",
+      "email": "noah@homenex.example"
+    },
+    {
+      "id": "v3",
+      "name": "CircuitHub Distribution",
+      "departments": [
+        "Electronics"
+      ],
+      "leadTimeDays": 5,
+      "contact": "Lena Price",
+      "email": "lena@circuithub.example"
+    }
+  ],
+  "payments": [
+    {
+      "id": "pay-1",
+      "method": "Cash",
+      "amount": 184.2,
+      "timestamp": "2026-02-19T09:30:00.000Z"
+    },
+    {
+      "id": "pay-2",
+      "method": "Card",
+      "amount": 421.88,
+      "timestamp": "2026-02-19T10:50:00.000Z"
+    },
+    {
+      "id": "pay-3",
+      "method": "Digital",
+      "amount": 233.45,
+      "timestamp": "2026-02-19T11:16:00.000Z"
+    }
+  ],
+  "auditLogs": [
+    {
+      "id": "log-qfl89o-mltft7fd",
+      "timestamp": "2026-02-19T12:28:35.161Z",
+      "userRole": "Store Manager",
+      "action": "Offline mode disabled."
+    },
+    {
+      "id": "log-ekt196-mltft4pa",
+      "timestamp": "2026-02-19T12:28:31.630Z",
+      "userRole": "Store Manager",
+      "action": "Offline mode enabled."
+    },
+    {
+      "id": "log-1",
+      "timestamp": "2026-02-19T08:55:00.000Z",
+      "userRole": "Store Manager",
+      "action": "Opened store and validated shift assignments."
+    },
+    {
+      "id": "log-2",
+      "timestamp": "2026-02-19T09:15:00.000Z",
+      "userRole": "Stock Clerk",
+      "action": "Logged shipment receiving for dairy aisle."
+    },
+    {
+      "id": "log-3",
+      "timestamp": "2026-02-19T10:02:00.000Z",
+      "userRole": "Cashier",
+      "action": "Completed drawer reconciliation for lane 2."
+    }
+  ],
+  "salesTrend": [
+    {
+      "hour": "08:00",
+      "sales": 120
+    },
+    {
+      "hour": "09:00",
+      "sales": 210
+    },
+    {
+      "hour": "10:00",
+      "sales": 332
+    },
+    {
+      "hour": "11:00",
+      "sales": 291
+    },
+    {
+      "hour": "12:00",
+      "sales": 418
+    },
+    {
+      "hour": "13:00",
+      "sales": 386
+    },
+    {
+      "hour": "14:00",
+      "sales": 274
+    },
+    {
+      "hour": "15:00",
+      "sales": 245
+    },
+    {
+      "hour": "16:00",
+      "sales": 319
+    },
+    {
+      "hour": "17:00",
+      "sales": 440
+    },
+    {
+      "hour": "18:00",
+      "sales": 398
+    },
+    {
+      "hour": "19:00",
+      "sales": 265
+    }
+  ]
+}

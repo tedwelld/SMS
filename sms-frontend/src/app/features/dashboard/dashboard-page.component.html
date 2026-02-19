@@ -1,0 +1,98 @@
+<section class="page-head">
+  <h1>Store Command Center</h1>
+  <p>
+    Live view of checkout flow, stock risk, loyalty traffic, and compliance signals for {{ now | date: 'MMM d, y' }}.
+  </p>
+</section>
+
+<mat-tab-group class="dash-tabs" animationDuration="200ms">
+  <mat-tab label="Overview">
+    <section class="stats-grid">
+      <mat-card class="stat-card">
+        <p>End-of-day Revenue</p>
+        <h2>{{ totalRevenue() | currency }}</h2>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <p>Low Stock SKUs</p>
+        <h2>{{ store.lowStockItems().length }}</h2>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <p>Expiry Alerts</p>
+        <h2>{{ store.expiringSoonItems().length }}</h2>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <p>Suspended Transactions</p>
+        <h2>{{ openSuspended() }}</h2>
+      </mat-card>
+    </section>
+
+    <section class="workflow-grid">
+      <mat-card class="feature-card">
+        <h3>Point of Sale</h3>
+        <p>Quick SKU search, hold/resume carts, loyalty redemption, and tax-aware totals.</p>
+        <a mat-stroked-button routerLink="/pos">Open POS Desk</a>
+      </mat-card>
+
+      <mat-card class="feature-card">
+        <h3>Inventory Risk</h3>
+        <p>Monitor near-expiry batches and stock variance before shrinkage impacts margin.</p>
+        <a mat-stroked-button routerLink="/inventory">Open Inventory</a>
+      </mat-card>
+
+      <mat-card class="feature-card">
+        <h3>Procurement</h3>
+        <p>Auto-generate draft purchase orders when staple goods hit minimum stock levels.</p>
+        <a mat-stroked-button routerLink="/procurement">Open Procurement</a>
+      </mat-card>
+    </section>
+  </mat-tab>
+
+  <mat-tab label="Roles">
+    <section class="roles-grid">
+      @for (card of roleCards; track card.role) {
+        <mat-card class="role-card">
+          <h3>{{ card.role }}</h3>
+          <p>{{ card.summary }}</p>
+        </mat-card>
+      }
+    </section>
+  </mat-tab>
+
+  <mat-tab label="Operations">
+    <section class="ops-grid">
+      <mat-card class="ops-card">
+        <h3>Reliability</h3>
+        <p>Offline mode keeps checkout active during network interruptions.</p>
+      </mat-card>
+
+      <mat-card class="ops-card">
+        <h3>Data Integrity</h3>
+        <p>Every transaction and override is timestamped with role-level audit visibility.</p>
+      </mat-card>
+
+      <mat-card class="ops-card">
+        <h3>Efficiency</h3>
+        <p>POS shortcuts support keyboard-only execution for faster cashier throughput.</p>
+      </mat-card>
+    </section>
+
+    <mat-card class="audit-block">
+      <div class="audit-head">
+        <h3>Recent Audit Trail</h3>
+        <span>{{ store.getRecentAuditEntries().length }} entries</span>
+      </div>
+
+      <div class="audit-list">
+        @for (entry of store.getRecentAuditEntries(); track entry.id) {
+          <article class="audit-entry">
+            <p>{{ entry.action }}</p>
+            <small>{{ entry.userRole }} • {{ entry.timestamp | date: 'MMM d, h:mm a' }}</small>
+          </article>
+        }
+      </div>
+    </mat-card>
+  </mat-tab>
+</mat-tab-group>

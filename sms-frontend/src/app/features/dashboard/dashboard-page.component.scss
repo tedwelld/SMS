@@ -1,0 +1,113 @@
+:host {
+  display: block;
+}
+
+.page-head {
+  margin-bottom: 0.9rem;
+
+  h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    color: var(--ink-900);
+  }
+
+  p {
+    margin: 0.45rem 0 0;
+    color: var(--ink-600);
+  }
+}
+
+.dash-tabs {
+  --mat-tab-header-active-label-text-color: var(--accent-600);
+  --mat-tab-header-active-ripple-color: var(--accent-600);
+}
+
+.stats-grid,
+.workflow-grid,
+.roles-grid,
+.ops-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.9rem;
+  margin-top: 1rem;
+}
+
+.stat-card,
+.feature-card,
+.role-card,
+.ops-card,
+.audit-block {
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 255, 0.95));
+}
+
+.stat-card {
+  p {
+    margin: 0;
+    color: var(--ink-500);
+    font-weight: 600;
+  }
+
+  h2 {
+    margin: 0.35rem 0 0;
+    color: var(--ink-900);
+  }
+}
+
+.feature-card,
+.role-card,
+.ops-card {
+  h3 {
+    margin: 0;
+    color: var(--ink-800);
+  }
+
+  p {
+    margin: 0.6rem 0;
+    color: var(--ink-600);
+  }
+}
+
+.audit-block {
+  margin-top: 1rem;
+}
+
+.audit-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.8rem;
+
+  h3 {
+    margin: 0;
+  }
+
+  span {
+    color: var(--ink-500);
+    font-size: 0.9rem;
+  }
+}
+
+.audit-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.audit-entry {
+  border: 1px solid var(--line-soft);
+  background: rgba(247, 249, 255, 0.8);
+  border-radius: 10px;
+  padding: 0.65rem;
+
+  p {
+    margin: 0;
+    color: var(--ink-700);
+    font-size: 0.95rem;
+  }
+
+  small {
+    color: var(--ink-500);
+    font-size: 0.8rem;
+  }
+}

@@ -1,0 +1,148 @@
+<section class="page-head">
+  <h1>Point of Sale</h1>
+  <p>
+    Keyboard shortcuts: <kbd>Ctrl+K</kbd> search • <kbd>F2</kbd> hold transaction • <kbd>F3</kbd> resume transaction.
+  </p>
+</section>
+
+<section class="pos-grid">
+  <mat-card class="panel search-panel">
+    <header>
+      <h2>Item Search</h2>
+      <span>Name or SKU lookup</span>
+    </header>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Search product</mat-label>
+      <input
+        #searchBox
+        matInput
+        type="text"
+        [value]="searchTerm()"
+        (input)="updateSearch($event)"
+        placeholder="Scan barcode or type SKU"
+        aria-label="Search inventory"
+      />
+    </mat-form-field>
+
+    <div class="product-list">
+      @for (item of matchedProducts(); track item.id) {
+        <div class="product-card">
+          <div>
+            <h3>{{ item.name }}</h3>
+            <p>{{ item.sku }} • {{ item.department }}</p>
+            <small>Stock: {{ item.stock }}</small>
+          </div>
+          <div class="product-actions">
+            <strong>{{ item.price | currency }}</strong>
+            <button mat-stroked-button type="button" (click)="store.addToCart(item.id)">Add</button>
+          </div>
+        </div>
+      }
+
+      @if (matchedProducts().length === 0) {
+        <p class="empty">No matching products found.</p>
+      }
+    </div>
+  </mat-card>
+
+  <mat-card class="panel cart-panel">
+    <header>
+      <h2>Active Transaction</h2>
+      <span>{{ store.cart().length }} line items</span>
+    </header>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Qty</th>
+            <th>Price</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (line of store.cart(); track line.productId) {
+            <tr>
+              <td>
+                <strong>{{ line.name }}</strong>
+                <small>{{ line.sku }}</small>
+              </td>
+              <td>
+                <div class="qty">
+                  <button mat-stroked-button type="button" (click)="store.decreaseCartQuantity(line.productId)">-</button>
+                  <span>{{ line.quantity }}</span>
+                  <button mat-stroked-button type="button" (click)="store.increaseCartQuantity(line.productId)">+</button>
+                </div>
+              </td>
+              <td>{{ line.price | currency }}</td>
+              <td>
+                <button mat-stroked-button type="button" (click)="store.removeFromCart(line.productId)">Remove</button>
+              </td>
+            </tr>
+          }
+
+          @if (store.cart().length === 0) {
+            <tr>
+              <td colspan="4" class="empty">Cart is empty.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="checkout-grid">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Member Phone</mat-label>
+        <input
+          matInput
+          type="text"
+          [value]="customerPhone()"
+          (input)="updateCustomerPhone($event)"
+          placeholder="5550132001"
+        />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Redeem Points</mat-label>
+        <input matInput type="number" min="0" [value]="pointsToRedeem()" (input)="updateRedeemPoints($event)" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Payment Method</mat-label>
+        <mat-select [value]="paymentMethod()" (selectionChange)="setPaymentMethod($event.value)">
+          @for (method of paymentOptions; track method) {
+            <mat-option [value]="method">{{ method }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    @if (selectedCustomer()) {
+      <p class="customer-pill">
+        Member: <strong>{{ selectedCustomer()?.name }}</strong> • Available points: {{ selectedCustomer()?.points }}
+      </p>
+    } @else {
+      <p class="customer-pill muted">No loyalty member selected. Checkout still allowed.</p>
+    }
+
+    <div class="totals-grid">
+      <p>Subtotal <strong>{{ totals().subtotal | currency }}</strong></p>
+      <p>Tax <strong>{{ totals().tax | currency }}</strong></p>
+      <p>Promo Discount <strong>-{{ totals().discount | currency }}</strong></p>
+      <p>Points Redeemed <strong>{{ totals().pointsRedeemed }}</strong></p>
+      <p class="grand">Total <strong>{{ totals().total | currency }}</strong></p>
+      <p>Points Earned <strong>{{ totals().pointsEarned }}</strong></p>
+    </div>
+
+    <div class="actions">
+      <button mat-stroked-button type="button" (click)="holdTransaction()">Hold Transaction</button>
+      <button mat-stroked-button type="button" (click)="resumeTransaction()">Resume Held</button>
+      <button mat-stroked-button type="button" (click)="store.clearCart()">Clear Cart</button>
+      <button mat-flat-button color="primary" type="button" class="checkout" (click)="checkout()">Complete Checkout</button>
+    </div>
+
+    <p class="status">{{ message() }}</p>
+  </mat-card>
+</section>

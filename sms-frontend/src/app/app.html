@@ -1,0 +1,92 @@
+<div class="bg-scene" aria-hidden="true">
+  <span class="orb orb-a"></span>
+  <span class="orb orb-b"></span>
+  <span class="orb orb-c"></span>
+  <span class="grid"></span>
+</div>
+
+<mat-sidenav-container class="layout">
+  <mat-sidenav
+    class="sidebar"
+    [mode]="isMobile() ? 'over' : 'side'"
+    [opened]="isMobile() ? sidebarOpen() : true"
+    [disableClose]="!isMobile()"
+    (closedStart)="closeSidebar()"
+  >
+    <div class="brand-block">
+      <h1>Supermarket SMS</h1>
+      <p>Retail Operations Console</p>
+    </div>
+
+    <mat-nav-list class="nav-links" aria-label="Main navigation">
+      @for (item of navItems; track item.path) {
+        <a
+          mat-list-item
+          [routerLink]="item.path"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: item.path === '/dashboard' }"
+          (click)="closeSidebar()"
+        >
+          <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+          <span matListItemTitle>{{ item.label }}</span>
+        </a>
+      }
+    </mat-nav-list>
+
+    <div class="side-note">
+      <p>Audit logging and offline checkout controls remain active across all modules.</p>
+    </div>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="main-shell">
+    <mat-toolbar class="topbar">
+      <button mat-icon-button class="menu-btn" type="button" (click)="toggleSidebar()" aria-label="Open menu">
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <div class="topbar-title">
+        <h2>{{ now() | date: 'EEEE, MMM d' }}</h2>
+        <small>{{ now() | date: 'h:mm a' }}</small>
+      </div>
+
+      <div class="topbar-controls">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="role-select">
+          <mat-label>Role</mat-label>
+          <mat-select [value]="store.activeRole()" (selectionChange)="setRole($event.value)">
+            @for (role of store.roles; track role) {
+              <mat-option [value]="role">{{ role }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-slide-toggle
+          class="offline-toggle"
+          [checked]="store.offlineMode()"
+          (change)="store.toggleOfflineMode()"
+        >
+          Offline Mode
+        </mat-slide-toggle>
+      </div>
+    </mat-toolbar>
+
+    @if (store.loading()) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
+
+    @if (store.lastError()) {
+      <div class="offline-banner error">
+        {{ store.lastError() }}
+      </div>
+    }
+
+    @if (store.offlineMode()) {
+      <div class="offline-banner">
+        Offline mode is active. Checkout continues locally and transactions remain queued.
+      </div>
+    }
+
+    <main class="content-shell">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

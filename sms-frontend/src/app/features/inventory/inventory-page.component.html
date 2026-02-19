@@ -1,0 +1,140 @@
+<section class="page-head">
+  <h1>Inventory and Stock Control</h1>
+  <p>Manage departments, expiry exposure, promotions, and physical stock variance.</p>
+</section>
+
+<section class="highlights">
+  <mat-card>
+    <p>Tracked SKUs</p>
+    <h2>{{ store.inventory().length }}</h2>
+  </mat-card>
+  <mat-card>
+    <p>Low Stock Alerts</p>
+    <h2>{{ store.lowStockItems().length }}</h2>
+  </mat-card>
+  <mat-card>
+    <p>Total Variance Units</p>
+    <h2>{{ totalVariance() }}</h2>
+  </mat-card>
+</section>
+
+<mat-tab-group animationDuration="200ms">
+  <mat-tab label="Stock Levels">
+    <section class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Department</th>
+            <th>System Stock</th>
+            <th>Min Level</th>
+            <th>Physical Count</th>
+            <th>Variance</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of store.inventory(); track item.id) {
+            <tr>
+              <td>
+                <strong>{{ item.name }}</strong>
+                <small>{{ item.sku }}</small>
+              </td>
+              <td>{{ item.department }}</td>
+              <td>{{ item.stock }}</td>
+              <td>{{ item.minStock }}</td>
+              <td>
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                  <input
+                    matInput
+                    type="number"
+                    min="0"
+                    [value]="item.physicalCount"
+                    (change)="onPhysicalCountChange(item.id, $event)"
+                  />
+                </mat-form-field>
+              </td>
+              <td [class.alert]="variance(item) < 0">
+                {{ variance(item) > 0 ? '+' : '' }}{{ variance(item) }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </section>
+  </mat-tab>
+
+  <mat-tab label="Price and Deals">
+    <section class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Base Price</th>
+            <th>Promotion</th>
+            <th>Value</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of store.inventory(); track item.id) {
+            <tr>
+              <td>
+                <strong>{{ item.name }}</strong>
+                <small>{{ item.sku }}</small>
+              </td>
+              <td>{{ item.price | currency }}</td>
+              <td>
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                  <mat-select #promoType [value]="item.promo.type">
+                    <mat-option value="none">No Promotion</mat-option>
+                    <mat-option value="discount">Discount %</mat-option>
+                    <mat-option value="bogo">Buy One Get One</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </td>
+              <td>
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                  <input
+                    #promoValue
+                    matInput
+                    type="number"
+                    min="0"
+                    max="90"
+                    [disabled]="promoType.value !== 'discount'"
+                    [value]="item.promo.value"
+                  />
+                </mat-form-field>
+              </td>
+              <td>
+                <button mat-stroked-button type="button" (click)="applyPromotion(item.id, promoType.value, promoValue.value)">
+                  Save
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </section>
+  </mat-tab>
+
+  <mat-tab label="Expiry Watch">
+    <section class="expiry-grid">
+      @for (item of store.expiringSoonItems(); track item.id) {
+        <mat-card class="expiry-card">
+          <h3>{{ item.name }}</h3>
+          <p>{{ item.department }} • {{ item.sku }}</p>
+          <p>Stock: {{ item.stock }}</p>
+          <p>Expiry: {{ item.expiryDate | date: 'MMM d, y' }}</p>
+          <strong>{{ daysToExpiry(item) }} days left</strong>
+        </mat-card>
+      }
+
+      @if (store.expiringSoonItems().length === 0) {
+        <mat-card class="expiry-card empty">
+          <h3>No immediate expiry alerts</h3>
+          <p>All tracked batches are outside the 14-day warning window.</p>
+        </mat-card>
+      }
+    </section>
+  </mat-tab>
+</mat-tab-group>

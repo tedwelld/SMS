@@ -1,0 +1,13 @@
+{
+  "name": "sms-workspace",
+  "private": true,
+  "scripts": {
+    "start": "concurrently \"npm run dev --prefix sms-api\" \"npm run start --prefix sms-frontend\"",
+    "start:api": "npm run dev --prefix sms-api",
+    "start:web": "npm run start --prefix sms-frontend",
+    "build:web": "npm run build --prefix sms-frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

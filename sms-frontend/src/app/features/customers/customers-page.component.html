@@ -1,0 +1,61 @@
+<section class="page-head">
+  <h1>Customer Loyalty Program</h1>
+  <p>Store member profiles, track purchase history, and monitor available points.</p>
+</section>
+
+<section class="toolbar">
+  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+    <mat-label>Search</mat-label>
+    <input matInput type="text" [value]="searchTerm()" (input)="updateSearch($event)" placeholder="Search by name or phone" />
+  </mat-form-field>
+
+  <div class="add-form">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Member name</mat-label>
+      <input matInput type="text" [value]="newName()" (input)="updateName($event)" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Phone number</mat-label>
+      <input matInput type="text" [value]="newPhone()" (input)="updatePhone($event)" />
+    </mat-form-field>
+
+    <button mat-flat-button color="primary" type="button" (click)="createMember()">Create Member</button>
+  </div>
+</section>
+
+<p class="feedback">{{ feedback() }}</p>
+
+<section class="customer-grid">
+  @for (customer of filteredCustomers(); track customer.id) {
+    <mat-card class="customer-card">
+      <header>
+        <h2>{{ customer.name }}</h2>
+        <span>{{ customer.phone }}</span>
+      </header>
+
+      <p class="points">{{ customer.points }} points available</p>
+
+      <h3>Recent Purchases</h3>
+      @if (customer.purchaseHistory.length > 0) {
+        <div class="history-list">
+          @for (purchase of customer.purchaseHistory.slice(0, 4); track purchase.id) {
+            <div class="history-item">
+              <span>{{ purchase.id }}</span>
+              <small>{{ purchase.date | date: 'MMM d, h:mm a' }}</small>
+              <strong>{{ purchase.total | currency }}</strong>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="empty">No purchases yet.</p>
+      }
+    </mat-card>
+  }
+
+  @if (filteredCustomers().length === 0) {
+    <mat-card class="customer-card empty-card">
+      <h2>No member profiles matched your search.</h2>
+    </mat-card>
+  }
+</section>

@@ -1,0 +1,69 @@
+<section class="page-head">
+  <h1>Reporting and BI</h1>
+  <p>End-of-day payment summaries, shrinkage visibility, and hourly sales trend analytics.</p>
+</section>
+
+<mat-tab-group animationDuration="200ms">
+  <mat-tab label="EOD Summary">
+    <section class="cards">
+      <mat-card>
+        <p>Cash</p>
+        <h2>{{ eod().cash | currency }}</h2>
+      </mat-card>
+      <mat-card>
+        <p>Card</p>
+        <h2>{{ eod().card | currency }}</h2>
+      </mat-card>
+      <mat-card>
+        <p>Digital</p>
+        <h2>{{ eod().digital | currency }}</h2>
+      </mat-card>
+      <mat-card>
+        <p>Total Collections</p>
+        <h2>{{ eod().total | currency }}</h2>
+        <small>{{ eod().transactions }} transactions</small>
+      </mat-card>
+    </section>
+  </mat-tab>
+
+  <mat-tab label="Shrinkage">
+    <section class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>SKU</th>
+            <th>System</th>
+            <th>Physical</th>
+            <th>Variance</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of shrinkageRows(); track row.sku) {
+            <tr>
+              <td>{{ row.product }}</td>
+              <td>{{ row.sku }}</td>
+              <td>{{ row.systemStock }}</td>
+              <td>{{ row.physicalCount }}</td>
+              <td [class.risk]="row.variance < 0">{{ row.variance > 0 ? '+' : '' }}{{ row.variance }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </section>
+  </mat-tab>
+
+  <mat-tab label="Sales Trends">
+    <section class="trend-grid">
+      @for (slot of store.salesTrend(); track slot.hour) {
+        <article class="bar-row">
+          <span>{{ slot.hour }}</span>
+          <div class="bar-wrap">
+            <div class="bar" [style.width]="widthFor(slot.sales)"></div>
+          </div>
+          <strong>{{ slot.sales | currency }}</strong>
+        </article>
+      }
+    </section>
+  </mat-tab>
+</mat-tab-group>

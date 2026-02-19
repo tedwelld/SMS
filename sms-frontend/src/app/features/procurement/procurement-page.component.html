@@ -1,0 +1,74 @@
+<section class="page-head">
+  <h1>Procurement and Vendors</h1>
+  <p>Supplier directory, lead times, and auto-generated draft purchase orders for staple stockouts.</p>
+</section>
+
+<section class="stats-row">
+  <mat-card>
+    <p>Vendors</p>
+    <h2>{{ store.vendors().length }}</h2>
+  </mat-card>
+  <mat-card>
+    <p>Draft Orders</p>
+    <h2>{{ orderCount() }}</h2>
+  </mat-card>
+  <mat-card>
+    <p>Generated</p>
+    <h2>{{ generatedAt() | date: 'h:mm a' }}</h2>
+  </mat-card>
+  <button mat-stroked-button type="button" (click)="refreshOrders()">Regenerate Draft Orders</button>
+</section>
+
+<section class="vendor-grid">
+  @for (vendor of store.vendors(); track vendor.id) {
+    <mat-card class="vendor-card">
+      <h2>{{ vendor.name }}</h2>
+      <p>Contact: {{ vendor.contact }}</p>
+      <p>Email: {{ vendor.email }}</p>
+      <p>Lead time: {{ vendor.leadTimeDays }} days</p>
+      <p>Departments: {{ vendor.departments.join(', ') }}</p>
+    </mat-card>
+  }
+</section>
+
+<section class="po-list">
+  <header>
+    <h2>Draft Purchase Orders</h2>
+  </header>
+
+  @for (order of store.draftPurchaseOrders(); track order.id) {
+    <mat-card class="po-card">
+      <div class="po-head">
+        <h3>{{ order.vendorName }}</h3>
+        <span>{{ order.createdAt | date: 'MMM d, h:mm a' }}</span>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>SKU</th>
+            <th>Current Stock</th>
+            <th>Suggested Qty</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (line of order.lines; track line.productId) {
+            <tr>
+              <td>{{ line.name }}</td>
+              <td>{{ line.sku }}</td>
+              <td>{{ line.currentStock }}</td>
+              <td>{{ line.suggestedOrderQty }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </mat-card>
+  }
+
+  @if (store.draftPurchaseOrders().length === 0) {
+    <mat-card class="po-card empty">
+      <p>No draft orders currently required. Stock levels are above minimum thresholds.</p>
+    </mat-card>
+  }
+</section>
