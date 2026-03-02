@@ -1,0 +1,45 @@
+<section class="admin-page">
+  <header>
+    <h2>Wallet Admin</h2>
+    <button type="button" (click)="load()">Refresh</button>
+  </header>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (loading()) {
+    <p class="loading">Loading wallets...</p>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Wallet</th>
+            <th>Owner</th>
+            <th>Balance</th>
+            <th>Status</th>
+            <th>Card</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (wallet of wallets(); track wallet.id) {
+            <tr>
+              <td>#{{ wallet.id }}</td>
+              <td>{{ wallet.ownerName }}</td>
+              <td>${{ wallet.balance | number: '1.2-2' }}</td>
+              <td><span class="badge {{ wallet.status }}">{{ wallet.status }}</span></td>
+              <td>{{ wallet.cardId || '-' }}</td>
+              <td class="actions">
+                <button type="button" (click)="setStatus(wallet, 'active')">Activate</button>
+                <button type="button" (click)="setStatus(wallet, 'suspended')">Suspend</button>
+                <button type="button" (click)="setStatus(wallet, 'closed')">Close</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

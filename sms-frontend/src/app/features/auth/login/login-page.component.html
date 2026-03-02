@@ -1,0 +1,39 @@
+<div class="auth-shell">
+  <div class="auth-brand">
+    <h1>Supermarket Management System</h1>
+    <p>Admin and staff access portal.</p>
+  </div>
+
+  <form class="auth-card" [formGroup]="form" (ngSubmit)="submit()">
+    <h2>Login</h2>
+
+    <label>
+      Username or email
+      <input type="text" formControlName="usernameOrEmail" placeholder="admin" />
+    </label>
+
+    <label>
+      Password
+      <input type="password" formControlName="password" placeholder="��������" />
+    </label>
+
+    <label>
+      Access type
+      <select formControlName="role">
+        <option value="admin">Admin</option>
+        <option value="staff">Staff</option>
+      </select>
+    </label>
+
+    @if (error()) {
+      <p class="error">{{ error() }}</p>
+    }
+
+    <button type="submit" [disabled]="submitting()">{{ submitting() ? 'Signing in...' : 'Sign in' }}</button>
+
+    <div class="links">
+      <a routerLink="/auth/create-account">Create account</a>
+      <a routerLink="/auth/forgot-password">Forgot password</a>
+    </div>
+  </form>
+</div>

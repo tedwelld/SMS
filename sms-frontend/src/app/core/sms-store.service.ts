@@ -26,7 +26,7 @@ const EXPIRY_WARNING_DAYS = 14;
 @Injectable({ providedIn: 'root' })
 export class SmsStoreService {
   private readonly http = inject(HttpClient);
-  private readonly apiBaseUrl = 'http://localhost:3000/api';
+  private readonly apiBaseUrl = 'http://localhost:5032/api';
 
   roles: UserRole[] = ['Store Manager', 'Cashier', 'Stock Clerk'];
 
@@ -396,6 +396,6 @@ export class SmsStoreService {
       }
     }
 
-    return 'Request failed. Verify the API server is running at http://localhost:3000.';
+    return 'Request failed. Verify the API server is running at http://localhost:5032.';
   }
 }

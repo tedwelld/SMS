@@ -1,32 +1,40 @@
-# Supermarket Management System
+# Supermarket Management System (SMS)
 
-This workspace now includes:
+Current stack:
 
-- `sms-frontend`: Angular 21 frontend using Angular Material and a custom theme.
-- `sms-api`: Express API with persistent JSON data storage (`sms-api/db.json`).
+- `SMS.Api` - ASP.NET Core API (.NET 10)
+- `SMS.Core` - DTOs, interfaces, services
+- `SMS.Data` - entities, enums, DbContext, EF migrations
+- `sms-frontend` - Angular frontend
 
-## Run the full system
-
-From this folder:
-
-```bash
-npm start
-```
-
-This runs:
-
-- API: `http://localhost:3000`
-- Frontend: `http://localhost:4200`
-
-## Individual services
+## Backend
 
 ```bash
-npm run start:api
-npm run start:web
+dotnet build SMS.slnx
+dotnet run --project SMS.Api
 ```
 
-## Build frontend
+API default URL:
+
+- `http://localhost:5032`
+
+## Frontend
 
 ```bash
-npm run build:web
+npm install --prefix sms-frontend
+npm run start --prefix sms-frontend
 ```
+
+Frontend URL:
+
+- `http://localhost:4200`
+
+## Database
+
+SQL Server LocalDB connection is configured in:
+
+- `SMS.Api/appsettings.json`
+
+Default DB:
+
+- `SMSDb`

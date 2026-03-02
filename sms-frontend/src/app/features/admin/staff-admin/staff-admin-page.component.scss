@@ -1,0 +1,29 @@
+@use '../wallets-admin/wallets-admin-page.component.scss';
+
+.create-form {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-bottom: 0.8rem;
+
+  input,
+  select,
+  button {
+    border-radius: 10px;
+    border: 1px solid rgba(22, 72, 139, 0.2);
+    padding: 0.45rem 0.6rem;
+    font: inherit;
+  }
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+small {
+  color: var(--ink-600);
+}

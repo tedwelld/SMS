@@ -1,0 +1,50 @@
+<section class="admin-page">
+  <header>
+    <h2>Staff Admin</h2>
+    <button type="button" (click)="load()">Refresh</button>
+  </header>
+
+  <form [formGroup]="form" (ngSubmit)="create()" class="create-form">
+    <input type="text" placeholder="Username" formControlName="username" />
+    <input type="text" placeholder="Full name" formControlName="name" />
+    <input type="email" placeholder="Email" formControlName="email" />
+    <input type="password" placeholder="Password" formControlName="password" />
+    <select formControlName="role">
+      <option value="staff">Staff</option>
+      <option value="admin">Admin</option>
+      <option value="manager">Manager</option>
+    </select>
+    <button type="submit" [disabled]="submitting()">{{ submitting() ? 'Saving...' : 'Create user' }}</button>
+  </form>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (loading()) {
+    <p class="loading">Loading staff...</p>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of staffUsers(); track user.id) {
+            <tr>
+              <td>{{ user.name }} <small>({{ user.username }})</small></td>
+              <td>{{ user.role }}</td>
+              <td>{{ user.isActive ? 'Active' : 'Inactive' }}</td>
+              <td><button type="button" (click)="toggleStatus(user)">{{ user.isActive ? 'Deactivate' : 'Activate' }}</button></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

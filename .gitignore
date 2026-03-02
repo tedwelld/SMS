@@ -1,0 +1,12 @@
+# Node
+node_modules/
+sms-frontend/node_modules/
+sms-frontend/dist/
+
+# .NET
+**/bin/
+**/obj/
+
+# IDE
+.vs/
+.idea/

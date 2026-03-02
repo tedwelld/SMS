@@ -1,0 +1,82 @@
+.admin-page {
+  border: 1px solid var(--line-soft);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 1rem;
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+  }
+
+  h2 {
+    margin: 0;
+    color: var(--ink-900);
+  }
+
+  button {
+    border: 1px solid rgba(22, 72, 139, 0.2);
+    border-radius: 10px;
+    background: #f9fcff;
+    padding: 0.4rem 0.65rem;
+    cursor: pointer;
+  }
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th,
+  td {
+    text-align: left;
+    padding: 0.55rem;
+    border-bottom: 1px solid rgba(18, 40, 80, 0.08);
+  }
+
+  th {
+    color: var(--ink-600);
+    font-weight: 600;
+  }
+}
+
+.actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.badge {
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.76rem;
+  text-transform: capitalize;
+
+  &.active {
+    background: rgba(42, 181, 116, 0.15);
+    color: #11633e;
+  }
+
+  &.suspended {
+    background: rgba(231, 159, 23, 0.2);
+    color: #7b5300;
+  }
+
+  &.closed {
+    background: rgba(187, 44, 44, 0.15);
+    color: #812424;
+  }
+}
+
+.error {
+  color: #9f1f24;
+}
+
+.loading {
+  color: var(--ink-600);
+}
