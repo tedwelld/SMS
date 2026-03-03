@@ -24,10 +24,27 @@
 
   mat-card,
   button {
-    background: #fff;
+    background: var(--sms-card-bg);
     border: 1px solid var(--line-soft);
-    border-radius: 12px;
+    border-radius: var(--sms-card-radius);
     padding: 0.7rem;
+  }
+
+  .metric-card {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+
+  .metric-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 999px;
+    background: rgba(27, 124, 255, 0.12);
+    color: #1b76ff;
   }
 
   p {
@@ -42,6 +59,53 @@
 
 }
 
+.feedback {
+  margin: 0 0 0.75rem;
+  color: var(--ink-600);
+}
+
+.crud-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.crud-card {
+  background: var(--sms-card-bg);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--sms-card-radius);
+  padding: 0.85rem;
+
+  h2 {
+    margin: 0 0 0.6rem;
+    color: var(--ink-800);
+    font-size: 1.03rem;
+  }
+}
+
+.toolbar-row {
+  margin-bottom: 0.55rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.5rem;
+
+  &.compact {
+    grid-template-columns: 1fr;
+  }
+}
+
+.action-set,
+.card-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
 .vendor-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -50,9 +114,9 @@
 }
 
 .vendor-card {
-  background: #fff;
+  background: var(--sms-card-bg);
   border: 1px solid var(--line-soft);
-  border-radius: 14px;
+  border-radius: var(--sms-card-radius);
   padding: 0.85rem;
 
   h2 {
@@ -70,6 +134,11 @@
 
 .po-list > header {
   margin-bottom: 0.6rem;
+  display: flex;
+  gap: 0.6rem;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
 
   h2 {
     margin: 0;
@@ -78,10 +147,17 @@
   }
 }
 
+.report-toolbar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  gap: 0.45rem;
+  width: min(760px, 100%);
+}
+
 .po-card {
-  background: #fff;
+  background: var(--sms-card-bg);
   border: 1px solid var(--line-soft);
-  border-radius: 14px;
+  border-radius: var(--sms-card-radius);
   padding: 0.8rem;
   margin-bottom: 0.7rem;
 }
@@ -124,6 +200,20 @@ table {
   }
 }
 
+input,
+select {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--line-soft);
+  background: var(--sms-card-bg);
+  color: var(--ink-700);
+  font: inherit;
+  padding: 0.5rem 0.6rem;
+  min-width: 0;
+}
+
 .empty {
   color: var(--ink-500);
 }
+
+

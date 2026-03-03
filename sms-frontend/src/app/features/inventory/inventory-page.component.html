@@ -4,19 +4,32 @@
 </section>
 
 <section class="highlights">
-  <mat-card>
-    <p>Tracked SKUs</p>
-    <h2>{{ store.inventory().length }}</h2>
+  <mat-card class="metric-card">
+    <span class="metric-icon"><i class="pi pi-tags"></i></span>
+    <div>
+      <p>Tracked SKUs</p>
+      <h2>{{ store.inventory().length }}</h2>
+    </div>
   </mat-card>
-  <mat-card>
-    <p>Low Stock Alerts</p>
-    <h2>{{ store.lowStockItems().length }}</h2>
+  <mat-card class="metric-card">
+    <span class="metric-icon"><i class="pi pi-exclamation-circle"></i></span>
+    <div>
+      <p>Low Stock Alerts</p>
+      <h2>{{ store.lowStockItems().length }}</h2>
+    </div>
   </mat-card>
-  <mat-card>
-    <p>Total Variance Units</p>
-    <h2>{{ totalVariance() }}</h2>
+  <mat-card class="metric-card">
+    <span class="metric-icon"><i class="pi pi-chart-line"></i></span>
+    <div>
+      <p>Total Variance Units</p>
+      <h2>{{ totalVariance() }}</h2>
+    </div>
   </mat-card>
 </section>
+
+@if (stockEntryMessage()) {
+  <p class="stock-message">{{ stockEntryMessage() }}</p>
+}
 
 <mat-tab-group animationDuration="200ms">
   <mat-tab label="Stock Levels">
@@ -30,6 +43,7 @@
             <th>Min Level</th>
             <th>Physical Count</th>
             <th>Variance</th>
+            <th>Manual Entry</th>
           </tr>
         </thead>
         <tbody>
@@ -55,6 +69,26 @@
               </td>
               <td [class.alert]="variance(item) < 0">
                 {{ variance(item) > 0 ? '+' : '' }}{{ variance(item) }}
+              </td>
+              <td>
+                @if (canManuallyAdjustStock()) {
+                  <div class="manual-entry">
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                      <input #stockQty matInput type="number" min="0" placeholder="Qty" />
+                    </mat-form-field>
+
+                  <div class="stock-actions">
+                    <button mat-stroked-button class="btn-primary-action" type="button" (click)="onManualStockEntry(item, stockQty, 'set')">
+                      Set Stock
+                    </button>
+                    <button mat-stroked-button class="btn-success-action" type="button" (click)="onManualStockEntry(item, stockQty, 'add')">
+                      Add Units
+                    </button>
+                  </div>
+                  </div>
+                } @else {
+                  <span class="admin-only">Admin only</span>
+                }
               </td>
             </tr>
           }
@@ -106,7 +140,7 @@
                 </mat-form-field>
               </td>
               <td>
-                <button mat-stroked-button type="button" (click)="applyPromotion(item.id, promoType.value, promoValue.value)">
+                <button mat-stroked-button class="btn-primary-action" type="button" (click)="applyPromotion(item.id, promoType.value, promoValue.value)">
                   Save
                 </button>
               </td>
@@ -122,7 +156,7 @@
       @for (item of store.expiringSoonItems(); track item.id) {
         <mat-card class="expiry-card">
           <h3>{{ item.name }}</h3>
-          <p>{{ item.department }} • {{ item.sku }}</p>
+          <p>{{ item.department }} &middot; {{ item.sku }}</p>
           <p>Stock: {{ item.stock }}</p>
           <p>Expiry: {{ item.expiryDate | date: 'MMM d, y' }}</p>
           <strong>{{ daysToExpiry(item) }} days left</strong>
@@ -138,3 +172,4 @@
     </section>
   </mat-tab>
 </mat-tab-group>
+

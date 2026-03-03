@@ -1,7 +1,15 @@
 <section class="admin-page">
   <header>
     <h2>Staff Admin</h2>
-    <button type="button" (click)="load()">Refresh</button>
+    <div class="header-actions">
+      <input
+        type="search"
+        [ngModel]="query()"
+        (ngModelChange)="query.set($event)"
+        placeholder="Search user, email, role or status"
+      />
+      <button type="button" class="btn-info-action" (click)="load()">Refresh</button>
+    </div>
   </header>
 
   <form [formGroup]="form" (ngSubmit)="create()" class="create-form">
@@ -14,8 +22,12 @@
       <option value="admin">Admin</option>
       <option value="manager">Manager</option>
     </select>
-    <button type="submit" [disabled]="submitting()">{{ submitting() ? 'Saving...' : 'Create user' }}</button>
+    <button type="submit" class="btn-success-action" [disabled]="submitting()">{{ submitting() ? 'Saving...' : 'Create user' }}</button>
   </form>
+
+  @if (success()) {
+    <p class="success">{{ success() }}</p>
+  }
 
   @if (error()) {
     <p class="error">{{ error() }}</p>
@@ -29,18 +41,36 @@
         <thead>
           <tr>
             <th>User</th>
+            <th>Email</th>
             <th>Role</th>
             <th>Status</th>
-            <th>Action</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          @for (user of staffUsers(); track user.id) {
+          @for (user of filteredStaffUsers(); track user.id) {
             <tr>
               <td>{{ user.name }} <small>({{ user.username }})</small></td>
-              <td>{{ user.role }}</td>
-              <td>{{ user.isActive ? 'Active' : 'Inactive' }}</td>
-              <td><button type="button" (click)="toggleStatus(user)">{{ user.isActive ? 'Deactivate' : 'Activate' }}</button></td>
+              <td>{{ user.email }}</td>
+              <td>
+                <select [ngModel]="user.role.toLowerCase()" (ngModelChange)="updateRole(user, $event)" [name]="'role-'+user.id">
+                  <option value="staff">Staff</option>
+                  <option value="manager">Manager</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </td>
+              <td><span class="badge {{ getStatus(user) }}">{{ getStatus(user) }}</span></td>
+              <td class="actions">
+                <button type="button" class="btn-success-action" (click)="setStatus(user, 'active')">Activate</button>
+                <button type="button" class="btn-warning-action" (click)="setStatus(user, 'suspended')">Suspend</button>
+                <button type="button" class="btn-neutral-action" (click)="setStatus(user, 'inactive')">Deactivate</button>
+                <button type="button" class="btn-danger-action" (click)="deleteUser(user)">Delete</button>
+              </td>
+            </tr>
+          }
+          @if (filteredStaffUsers().length === 0) {
+            <tr>
+              <td colspan="5" class="empty">No staff users match the active filter.</td>
             </tr>
           }
         </tbody>

@@ -1,0 +1,85 @@
+:host {
+  display: block;
+}
+
+.page-head {
+  margin-bottom: 1rem;
+
+  h1 {
+    margin: 0;
+    color: var(--ink-900);
+  }
+
+  p {
+    margin: 0.4rem 0 0;
+    color: var(--ink-600);
+  }
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0.8rem;
+}
+
+.settings-card {
+  border: 1px solid var(--line-soft);
+  border-radius: var(--sms-card-radius);
+  background: var(--sms-card-bg);
+  padding: 0.9rem;
+  display: grid;
+  gap: 0.6rem;
+
+  h2 {
+    margin: 0;
+    color: var(--ink-800);
+    font-size: 1.05rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+}
+
+label {
+  display: grid;
+  gap: 0.3rem;
+  color: var(--ink-600);
+  font-size: 0.9rem;
+}
+
+input[type='range'],
+select {
+  width: 100%;
+}
+
+select {
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  padding: 0.5rem 0.6rem;
+  background: var(--sms-card-bg);
+  color: var(--ink-700);
+  font: inherit;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+small {
+  color: var(--ink-500);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 0.9rem;
+}
+
+.save-message {
+  margin-top: 0.6rem;
+  color: #16855c;
+}
+

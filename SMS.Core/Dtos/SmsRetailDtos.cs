@@ -122,6 +122,7 @@ public sealed class BootstrapPayloadDto
     public List<SalesTrendPointDto> SalesTrend { get; set; } = [];
     public ReportsPayloadDto Reports { get; set; } = new();
     public List<RetailAuditLogDto> AuditLogs { get; set; } = [];
+    public List<PaymentTrackingRecordDto> RecentPayments { get; set; } = [];
 }
 
 public sealed class CheckoutLineItemDto
@@ -155,7 +156,48 @@ public sealed class CheckoutResponseDto
     public string TransactionId { get; set; } = string.Empty;
     public string Message { get; set; } = string.Empty;
     public CartTotalsDto Totals { get; set; } = new();
+    public ReceiptPayloadDto Receipt { get; set; } = new();
     public BootstrapPayloadDto Bootstrap { get; set; } = new();
+}
+
+public sealed class ReceiptLineItemDto
+{
+    public string ProductId { get; set; } = string.Empty;
+    public string ProductName { get; set; } = string.Empty;
+    public string Sku { get; set; } = string.Empty;
+    public int Quantity { get; set; }
+    public decimal UnitPrice { get; set; }
+    public decimal Discount { get; set; }
+    public decimal Tax { get; set; }
+    public decimal LineTotal { get; set; }
+}
+
+public sealed class ReceiptPayloadDto
+{
+    public string TransactionId { get; set; } = string.Empty;
+    public string Timestamp { get; set; } = string.Empty;
+    public string PaymentMethod { get; set; } = string.Empty;
+    public string CustomerName { get; set; } = string.Empty;
+    public string CustomerPhone { get; set; } = string.Empty;
+    public CartTotalsDto Totals { get; set; } = new();
+    public List<ReceiptLineItemDto> LineItems { get; set; } = [];
+}
+
+public sealed class PaymentTrackingRecordDto
+{
+    public string TransactionId { get; set; } = string.Empty;
+    public string Timestamp { get; set; } = string.Empty;
+    public string PaymentMethod { get; set; } = string.Empty;
+    public string CustomerName { get; set; } = string.Empty;
+    public string CustomerPhone { get; set; } = string.Empty;
+    public decimal Subtotal { get; set; }
+    public decimal Tax { get; set; }
+    public decimal Discount { get; set; }
+    public int PointsRedeemed { get; set; }
+    public int PointsEarned { get; set; }
+    public decimal Total { get; set; }
+    public int ItemCount { get; set; }
+    public List<ReceiptLineItemDto> LineItems { get; set; } = [];
 }
 
 public sealed class PatchSettingsRequestDto
@@ -167,6 +209,12 @@ public sealed class PatchSettingsRequestDto
 public sealed class UpdatePhysicalCountRequestDto
 {
     public int PhysicalCount { get; set; }
+}
+
+public sealed class UpdateStockRequestDto
+{
+    public int Quantity { get; set; }
+    public string Mode { get; set; } = "set";
 }
 
 public sealed class UpdatePromotionRequestDto

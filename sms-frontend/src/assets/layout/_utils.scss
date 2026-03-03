@@ -1,0 +1,103 @@
+/* Utils */
+.clearfix:after {
+    content: ' ';
+    display: block;
+    clear: both;
+}
+
+.card {
+    background: var(--surface-card);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border-radius: var(--content-border-radius);
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+
+:root {
+    --sms-card-radius: 22px;
+}
+
+.card,
+.mat-mdc-card {
+    border-radius: var(--sms-card-radius) !important;
+}
+
+.clickable-card {
+    cursor: pointer;
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        border-color: color-mix(in srgb, var(--primary-color), transparent 55%) !important;
+        box-shadow: 0 14px 24px rgba(15, 26, 49, 0.12);
+    }
+
+    &:focus-visible {
+        outline: 2px solid color-mix(in srgb, var(--primary-color), transparent 30%);
+        outline-offset: 2px;
+    }
+}
+
+.btn-primary-action,
+.btn-success-action,
+.btn-warning-action,
+.btn-danger-action,
+.btn-info-action,
+.btn-neutral-action {
+    border-radius: 12px !important;
+    border: 1px solid transparent !important;
+    font-weight: 600 !important;
+    transition: filter 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+
+    &:hover {
+        filter: brightness(0.97);
+        transform: translateY(-1px);
+    }
+}
+
+.btn-primary-action {
+    background: #1b76ff !important;
+    color: #ffffff !important;
+    border-color: #1b76ff !important;
+}
+
+.btn-success-action {
+    background: #1f8c5f !important;
+    color: #ffffff !important;
+    border-color: #1f8c5f !important;
+}
+
+.btn-warning-action {
+    background: #c9851f !important;
+    color: #ffffff !important;
+    border-color: #c9851f !important;
+}
+
+.btn-danger-action {
+    background: #c43b3b !important;
+    color: #ffffff !important;
+    border-color: #c43b3b !important;
+}
+
+.btn-info-action {
+    background: #4e63d9 !important;
+    color: #ffffff !important;
+    border-color: #4e63d9 !important;
+}
+
+.btn-neutral-action {
+    background: #eef3ff !important;
+    color: #2c466f !important;
+    border-color: #c7d3ee !important;
+}
+
+.p-toast {
+    &.p-toast-top-right,
+    &.p-toast-top-left,
+    &.p-toast-top-center {
+        top: 100px;
+    }
+}

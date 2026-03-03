@@ -1,0 +1,59 @@
+Using launch settings from SMS.Api\Properties\launchSettings.json...
+dbug: Microsoft.EntityFrameworkCore.Infrastructure[10401]
+      An 'IServiceProvider' was created for internal use by Entity Framework.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'CommunicationMessage' to 'Customer' has been configured by convention because there are multiple properties on one entity type - {'RecipientCustomer', 'SenderCustomer'} that could be matched with the properties on the other entity type - {'ReceivedCommunicationMessages', 'SentCommunicationMessages'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'CommunicationMessage' to 'StaffUser' has been configured by convention because there are multiple properties on one entity type - {'RecipientStaffUser', 'SenderStaffUser'} that could be matched with the properties on the other entity type - {'ReceivedCommunicationMessages', 'SentCommunicationMessages'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'Customer' to 'CommunicationMessage' has been configured by convention because there are multiple properties on one entity type - {'ReceivedCommunicationMessages', 'SentCommunicationMessages'} that could be matched with the properties on the other entity type - {'RecipientCustomer', 'SenderCustomer'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'StaffUser' to 'CommunicationMessage' has been configured by convention because there are multiple properties on one entity type - {'ReceivedCommunicationMessages', 'SentCommunicationMessages'} that could be matched with the properties on the other entity type - {'RecipientStaffUser', 'SenderStaffUser'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'StaffUser' to 'TransactionReversal' has been configured by convention because there are multiple properties on one entity type - {'RequestedReversals', 'ReviewedReversals'} that could be matched with the properties on the other entity type - {'RequestedByStaffUser', 'ReviewedByStaffUser'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'TransactionReversal' to 'StaffUser' has been configured by convention because there are multiple properties on one entity type - {'RequestedByStaffUser', 'ReviewedByStaffUser'} that could be matched with the properties on the other entity type - {'RequestedReversals', 'ReviewedReversals'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'CommunicationMessage' to 'Customer' has been configured by convention because there are multiple properties on one entity type - {'RecipientCustomer', 'SenderCustomer'} that could be matched with the properties on the other entity type - {'ReceivedCommunicationMessages', 'SentCommunicationMessages'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'CommunicationMessage' to 'StaffUser' has been configured by convention because there are multiple properties on one entity type - {'RecipientStaffUser', 'SenderStaffUser'} that could be matched with the properties on the other entity type - {'ReceivedCommunicationMessages', 'SentCommunicationMessages'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'Customer' to 'CommunicationMessage' has been configured by convention because there are multiple properties on one entity type - {'ReceivedCommunicationMessages', 'SentCommunicationMessages'} that could be matched with the properties on the other entity type - {'RecipientCustomer', 'SenderCustomer'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'CommunicationMessage' to 'StaffUser' has been configured by convention because there are multiple properties on one entity type - {'RecipientStaffUser', 'SenderStaffUser'} that could be matched with the properties on the other entity type - {'ReceivedCommunicationMessages', 'SentCommunicationMessages'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'CommunicationMessage' to 'StaffUser' has been configured by convention because there are multiple properties on one entity type - {'RecipientStaffUser', 'SenderStaffUser'} that could be matched with the properties on the other entity type - {'ReceivedCommunicationMessages', 'SentCommunicationMessages'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'StaffUser' to 'CommunicationMessage' has been configured by convention because there are multiple properties on one entity type - {'ReceivedCommunicationMessages', 'SentCommunicationMessages'} that could be matched with the properties on the other entity type - {'RecipientStaffUser', 'SenderStaffUser'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'StaffUser' to 'TransactionReversal' has been configured by convention because there are multiple properties on one entity type - {'RequestedReversals', 'ReviewedReversals'} that could be matched with the properties on the other entity type - {'RequestedByStaffUser', 'ReviewedByStaffUser'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'StaffUser' to 'TransactionReversal' has been configured by convention because there are multiple properties on one entity type - {'RequestedReversals', 'ReviewedReversals'} that could be matched with the properties on the other entity type - {'RequestedByStaffUser', 'ReviewedByStaffUser'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'TransactionReversal' to 'StaffUser' has been configured by convention because there are multiple properties on one entity type - {'RequestedByStaffUser', 'ReviewedByStaffUser'} that could be matched with the properties on the other entity type - {'RequestedReversals', 'ReviewedReversals'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'StaffUser' to 'TransactionReversal' has been configured by convention because there are multiple properties on one entity type - {'RequestedReversals', 'ReviewedReversals'} that could be matched with the properties on the other entity type - {'RequestedByStaffUser', 'ReviewedByStaffUser'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10601]
+      The index {'CustomerId'} was not created on entity type 'AccountNotification' as the properties are already covered by the index {'CustomerId', 'CreatedAt'}.
+dbug: Microsoft.EntityFrameworkCore.Model[10601]
+      The index {'CustomerAccountId'} was not created on entity type 'AgentFloatTransaction' as the properties are already covered by the index {'CustomerAccountId', 'CreatedAt'}.
+dbug: Microsoft.EntityFrameworkCore.Model[10601]
+      The index {'CustomerAccountId'} was not created on entity type 'AirtimePurchase' as the properties are already covered by the index {'CustomerAccountId', 'CreatedAt'}.
+dbug: Microsoft.EntityFrameworkCore.Model[10601]
+      The index {'CustomerAccountId'} was not created on entity type 'BillPayment' as the properties are already covered by the index {'CustomerAccountId', 'CreatedAt'}.
+dbug: Microsoft.EntityFrameworkCore.Model[10601]
+      The index {'RecipientCustomerId'} was not created on entity type 'CommunicationMessage' as the properties are already covered by the index {'RecipientCustomerId', 'RecipientStaffUserId', 'CreatedAt'}.
+dbug: Microsoft.EntityFrameworkCore.Model[10601]
+      The index {'SenderCustomerId'} was not created on entity type 'CommunicationMessage' as the properties are already covered by the index {'SenderCustomerId', 'SenderStaffUserId', 'CreatedAt'}.
+dbug: Microsoft.EntityFrameworkCore.Model[10601]
+      The index {'CustomerId'} was not created on entity type 'CustomerPurchaseRecord' as the properties are already covered by the index {'CustomerId', 'Date'}.
+dbug: Microsoft.EntityFrameworkCore.Model[10601]
+      The index {'CustomerAccountId'} was not created on entity type 'MerchantTillPayment' as the properties are already covered by the index {'CustomerAccountId', 'CreatedAt'}.
+dbug: Microsoft.EntityFrameworkCore.Model[10601]
+      The index {'VendorId'} was not created on entity type 'VendorDepartment' as the properties are already covered by the index {'VendorId', 'Department'}.
+dbug: Microsoft.EntityFrameworkCore.Model[10601]
+      The index {'CustomerAccountId'} was not created on entity type 'WalletTransaction' as the properties are already covered by the index {'CustomerAccountId', 'CreatedAt'}.
+warn: Microsoft.EntityFrameworkCore.Model.Validation[10400]
+      Sensitive data logging is enabled. Log entries and exception messages may include sensitive application data; this mode should only be enabled during development.
+dbug: Microsoft.EntityFrameworkCore.Infrastructure[10403]
+      Entity Framework Core 10.0.3 initialized 'SmsDbContext' using provider 'Microsoft.EntityFrameworkCore.SqlServer:10.0.3' with options: SensitiveDataLoggingEnabled DetailedErrorsEnabled CommandTimeout=30 MigrationsAssembly=SMS.Data EngineType=SqlServer 

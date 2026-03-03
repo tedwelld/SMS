@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -7,6 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
 
+import { AuthService } from '../../core/auth.service';
 import { Product, PromotionType } from '../../core/models';
 import { SmsStoreService } from '../../core/sms-store.service';
 
@@ -26,6 +27,10 @@ import { SmsStoreService } from '../../core/sms-store.service';
 })
 export class InventoryPageComponent {
   readonly store = inject(SmsStoreService);
+  readonly auth = inject(AuthService);
+
+  readonly stockEntryMessage = signal('');
+  readonly canManuallyAdjustStock = computed(() => this.auth.role === 'admin');
 
   readonly totalVariance = computed(() =>
     this.store
@@ -37,6 +42,30 @@ export class InventoryPageComponent {
     const value = Number((event.target as HTMLInputElement).value);
     if (Number.isFinite(value) && value >= 0) {
       this.store.updatePhysicalCount(productId, Math.floor(value));
+    }
+  }
+
+  async onManualStockEntry(
+    product: Product,
+    input: HTMLInputElement,
+    mode: 'set' | 'add'
+  ): Promise<void> {
+    if (!this.canManuallyAdjustStock()) {
+      this.stockEntryMessage.set('Only admins can manually enter stock.');
+      return;
+    }
+
+    const amount = Number(input.value);
+    if (!Number.isFinite(amount) || amount < 0) {
+      this.stockEntryMessage.set('Enter a valid stock quantity.');
+      return;
+    }
+
+    const result = await this.store.updateProductStock(product.id, amount, mode);
+    this.stockEntryMessage.set(result.message);
+
+    if (result.success) {
+      input.value = '';
     }
   }
 

@@ -146,6 +146,45 @@ public class WalletsController(IWalletService service, SmsDbContext db) : Contro
         return Ok(new { success = true });
     }
 
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult<WalletDto>> UpdateWallet(
+        int id,
+        [FromBody] UpdateWalletRequest request,
+        CancellationToken cancellationToken)
+    {
+        var wallet = await db.Wallets
+            .Include(x => x.CustomerAccount)
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        if (wallet?.CustomerAccount is null)
+        {
+            return NotFound();
+        }
+
+        if (request.Balance.HasValue && request.Balance.Value < 0m)
+        {
+            return BadRequest(new { message = "Balance cannot be negative." });
+        }
+
+        if (request.IsActive.HasValue)
+        {
+            wallet.IsActive = request.IsActive.Value;
+        }
+
+        if (request.IsFrozen.HasValue)
+        {
+            wallet.CustomerAccount.IsFrozen = request.IsFrozen.Value;
+        }
+
+        if (request.Balance.HasValue)
+        {
+            wallet.CustomerAccount.Balance = request.Balance.Value;
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+
+        return Ok(new WalletDto(wallet.Id, wallet.CustomerAccountId, wallet.IsActive, wallet.DateCreated));
+    }
+
     public sealed class UpdateWalletStatusRequest
     {
         public string Status { get; set; } = string.Empty;
@@ -155,6 +194,13 @@ public class WalletsController(IWalletService service, SmsDbContext db) : Contro
     {
         public int CustomerId { get; set; }
         public decimal OpeningBalance { get; set; }
+    }
+
+    public sealed class UpdateWalletRequest
+    {
+        public decimal? Balance { get; set; }
+        public bool? IsFrozen { get; set; }
+        public bool? IsActive { get; set; }
     }
 
     private async Task<string> GenerateAccountNumberAsync(int customerId, CancellationToken cancellationToken)

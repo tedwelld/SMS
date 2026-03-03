@@ -23,7 +23,7 @@
       <p class="error">{{ error() }}</p>
     }
 
-    <button type="submit" [disabled]="submitting()">{{ submitting() ? 'Creating...' : 'Create account' }}</button>
+    <button class="btn-success-action" type="submit" [disabled]="submitting()">{{ submitting() ? 'Creating...' : 'Create account' }}</button>
     <a routerLink="/auth/login">Back to login</a>
   </form>
 </div>

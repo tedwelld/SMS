@@ -53,7 +53,8 @@ public class SmsRetailService(SmsDbContext db) : ISmsRetailService
                     Timestamp = x.Timestamp.ToString("O"),
                     UserRole = x.UserRole,
                     Action = x.Action
-                }).ToListAsync(cancellationToken)
+                }).ToListAsync(cancellationToken),
+            RecentPayments = (await GetPaymentsAsync(null, null, null, null, 20, cancellationToken)).ToList()
         };
     }
 
@@ -112,6 +113,57 @@ public class SmsRetailService(SmsDbContext db) : ISmsRetailService
 
         product.PhysicalCount = physicalCount;
         await AddRetailAuditAsync($"Updated physical count for {product.Sku}.", userRole, cancellationToken);
+        await db.SaveChangesAsync(cancellationToken);
+
+        var vendors = await db.Vendors.AsNoTracking().Include(x => x.Departments).ToListAsync(cancellationToken);
+        var products = await db.Products.AsNoTracking().ToListAsync(cancellationToken);
+
+        return (MapProduct(product), BuildDraftPurchaseOrders(products, vendors));
+    }
+
+    public async Task<(ProductDto Product, IReadOnlyList<DraftPurchaseOrderDto> DraftPurchaseOrders)> UpdateStockAsync(
+        string productId,
+        int quantity,
+        string mode,
+        string userRole,
+        CancellationToken cancellationToken = default)
+    {
+        var product = await db.Products.FirstOrDefaultAsync(x => x.Id == productId, cancellationToken)
+            ?? throw new KeyNotFoundException("Product not found.");
+
+        if (quantity < 0)
+        {
+            throw new InvalidOperationException("Quantity cannot be negative.");
+        }
+
+        var normalizedMode = string.IsNullOrWhiteSpace(mode) ? "set" : mode.Trim().ToLowerInvariant();
+        if (normalizedMode is not ("set" or "add"))
+        {
+            throw new InvalidOperationException("Mode must be 'set' or 'add'.");
+        }
+
+        var oldStock = product.Stock;
+        if (normalizedMode == "set")
+        {
+            product.Stock = quantity;
+        }
+        else
+        {
+            if (product.Stock > int.MaxValue - quantity)
+            {
+                throw new InvalidOperationException("Stock quantity is too large.");
+            }
+
+            product.Stock += quantity;
+        }
+
+        // Manual stock entry represents physically verified stock being entered by admin.
+        product.PhysicalCount = product.Stock;
+
+        await AddRetailAuditAsync(
+            $"Updated stock for {product.Sku}: {oldStock} -> {product.Stock} ({normalizedMode}).",
+            userRole,
+            cancellationToken);
         await db.SaveChangesAsync(cancellationToken);
 
         var vendors = await db.Vendors.AsNoTracking().Include(x => x.Departments).ToListAsync(cancellationToken);
@@ -256,6 +308,54 @@ public class SmsRetailService(SmsDbContext db) : ISmsRetailService
         };
     }
 
+    public async Task<IReadOnlyList<PaymentTrackingRecordDto>> GetPaymentsAsync(
+        DateTime? from,
+        DateTime? to,
+        string? method,
+        string? query,
+        int limit,
+        CancellationToken cancellationToken = default)
+    {
+        var take = Math.Clamp(limit, 1, 500);
+        var paymentsQuery = db.PosPayments
+            .AsNoTracking()
+            .Include(x => x.Lines)
+            .AsQueryable();
+
+        if (from.HasValue)
+        {
+            paymentsQuery = paymentsQuery.Where(x => x.Timestamp >= from.Value);
+        }
+
+        if (to.HasValue)
+        {
+            paymentsQuery = paymentsQuery.Where(x => x.Timestamp <= to.Value);
+        }
+
+        if (TryParsePaymentMethod(method, out var paymentMethod))
+        {
+            paymentsQuery = paymentsQuery.Where(x => x.Method == paymentMethod);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            var rawQuery = query.Trim();
+            var normalizedPhone = NormalizePhone(rawQuery);
+
+            paymentsQuery = paymentsQuery.Where(x =>
+                x.ExternalTransactionId.Contains(rawQuery)
+                || ((x.CustomerName ?? string.Empty).Contains(rawQuery))
+                || (!string.IsNullOrWhiteSpace(normalizedPhone) && (x.CustomerPhone ?? string.Empty).Contains(normalizedPhone)));
+        }
+
+        var payments = await paymentsQuery
+            .OrderByDescending(x => x.Timestamp)
+            .Take(take)
+            .ToListAsync(cancellationToken);
+
+        return payments.Select(MapPaymentTracking).ToList();
+    }
+
     public async Task<IReadOnlyList<ShrinkageReportRowDto>> GetShrinkageReportAsync(CancellationToken cancellationToken = default)
     {
         return await db.Products.AsNoTracking().Select(x => new ShrinkageReportRowDto
@@ -288,7 +388,14 @@ public class SmsRetailService(SmsDbContext db) : ISmsRetailService
         var productIds = request.Cart.Select(x => x.ProductId).Distinct().ToList();
         var products = await db.Products.Where(x => productIds.Contains(x.Id)).ToListAsync(cancellationToken);
 
-        var lineCalculations = new List<(Product Product, int Quantity, decimal Discount, decimal TaxableSubtotal, decimal Tax)>();
+        var lineCalculations = new List<(
+            Product Product,
+            int Quantity,
+            decimal UnitPrice,
+            decimal Discount,
+            decimal TaxableSubtotal,
+            decimal Tax,
+            decimal LineTotal)>();
         foreach (var line in request.Cart)
         {
             var product = products.FirstOrDefault(x => x.Id == line.ProductId);
@@ -304,7 +411,14 @@ public class SmsRetailService(SmsDbContext db) : ISmsRetailService
             }
 
             var totals = ComputeLineTotals(product, qty);
-            lineCalculations.Add((product, qty, totals.Discount, totals.TaxableSubtotal, totals.Tax));
+            lineCalculations.Add((
+                product,
+                qty,
+                RoundMoney(product.Price),
+                RoundMoney(totals.Discount),
+                RoundMoney(totals.TaxableSubtotal),
+                RoundMoney(totals.Tax),
+                RoundMoney(totals.TaxableSubtotal + totals.Tax)));
         }
 
         if (lineCalculations.Count == 0)
@@ -339,13 +453,35 @@ public class SmsRetailService(SmsDbContext db) : ISmsRetailService
 
         var transactionId = BuildTransactionId("tx");
         var now = DateTime.UtcNow;
+        var roundedTotal = RoundMoney(total);
 
-        db.PosPayments.Add(new PosPayment
+        var payment = new PosPayment
         {
+            ExternalTransactionId = transactionId,
             Method = method,
-            Amount = RoundMoney(total),
-            Timestamp = now
-        });
+            CustomerPhone = customer?.PhoneNumber ?? customerPhone,
+            CustomerName = customer?.Name,
+            Subtotal = RoundMoney(subtotal),
+            Tax = RoundMoney(tax),
+            Discount = RoundMoney(discount),
+            PointsRedeemed = pointsRedeemed,
+            PointsEarned = pointsEarned,
+            Amount = roundedTotal,
+            Timestamp = now,
+            Lines = lineCalculations.Select(line => new PosPaymentLine
+            {
+                ProductId = line.Product.Id,
+                ProductName = line.Product.Name,
+                Sku = line.Product.Sku,
+                Quantity = line.Quantity,
+                UnitPrice = line.UnitPrice,
+                Discount = line.Discount,
+                Tax = line.Tax,
+                LineTotal = line.LineTotal
+            }).ToList()
+        };
+
+        db.PosPayments.Add(payment);
 
         if (customer is not null)
         {
@@ -354,7 +490,7 @@ public class SmsRetailService(SmsDbContext db) : ISmsRetailService
             {
                 ExternalTransactionId = transactionId,
                 Date = now,
-                Total = RoundMoney(total),
+                Total = roundedTotal,
                 PointsEarned = pointsEarned
             });
         }
@@ -366,7 +502,7 @@ public class SmsRetailService(SmsDbContext db) : ISmsRetailService
             db.SalesTrendPoints.Add(new SalesTrendPoint
             {
                 Hour = currentHour,
-                Sales = RoundMoney(total)
+                Sales = roundedTotal
             });
         }
         else
@@ -382,19 +518,41 @@ public class SmsRetailService(SmsDbContext db) : ISmsRetailService
 
         await db.SaveChangesAsync(cancellationToken);
 
+        var roundedTotals = new CartTotalsDto
+        {
+            Subtotal = RoundMoney(subtotal),
+            Tax = RoundMoney(tax),
+            Discount = RoundMoney(discount),
+            PointsRedeemed = pointsRedeemed,
+            Total = roundedTotal,
+            PointsEarned = pointsEarned
+        };
+
         return new CheckoutResponseDto
         {
             Success = true,
             TransactionId = transactionId,
             Message = $"Checkout complete. Transaction ID: {transactionId}.",
-            Totals = new CartTotalsDto
+            Totals = roundedTotals,
+            Receipt = new ReceiptPayloadDto
             {
-                Subtotal = RoundMoney(subtotal),
-                Tax = RoundMoney(tax),
-                Discount = RoundMoney(discount),
-                PointsRedeemed = pointsRedeemed,
-                Total = RoundMoney(total),
-                PointsEarned = pointsEarned
+                TransactionId = transactionId,
+                Timestamp = now.ToString("O"),
+                PaymentMethod = method.ToString(),
+                CustomerName = customer?.Name ?? "Walk-in Customer",
+                CustomerPhone = customer?.PhoneNumber ?? customerPhone,
+                Totals = roundedTotals,
+                LineItems = lineCalculations.Select(line => new ReceiptLineItemDto
+                {
+                    ProductId = line.Product.Id,
+                    ProductName = line.Product.Name,
+                    Sku = line.Product.Sku,
+                    Quantity = line.Quantity,
+                    UnitPrice = line.UnitPrice,
+                    Discount = line.Discount,
+                    Tax = line.Tax,
+                    LineTotal = line.LineTotal
+                }).ToList()
             },
             Bootstrap = await GetBootstrapAsync(cancellationToken)
         };
@@ -442,13 +600,37 @@ public class SmsRetailService(SmsDbContext db) : ISmsRetailService
 
     private static PosPaymentMethod ParsePaymentMethod(string paymentMethod)
     {
-        return paymentMethod.Trim().ToLowerInvariant() switch
+        if (TryParsePaymentMethod(paymentMethod, out var method))
         {
-            "cash" => PosPaymentMethod.Cash,
-            "card" => PosPaymentMethod.Card,
-            "digital" => PosPaymentMethod.Digital,
-            _ => throw new InvalidOperationException("Invalid payment method.")
-        };
+            return method;
+        }
+
+        throw new InvalidOperationException("Invalid payment method.");
+    }
+
+    private static bool TryParsePaymentMethod(string? paymentMethod, out PosPaymentMethod method)
+    {
+        if (string.IsNullOrWhiteSpace(paymentMethod))
+        {
+            method = PosPaymentMethod.Card;
+            return false;
+        }
+
+        switch (paymentMethod.Trim().ToLowerInvariant())
+        {
+            case "cash":
+                method = PosPaymentMethod.Cash;
+                return true;
+            case "card":
+                method = PosPaymentMethod.Card;
+                return true;
+            case "digital":
+                method = PosPaymentMethod.Digital;
+                return true;
+            default:
+                method = PosPaymentMethod.Card;
+                return false;
+        }
     }
 
     private async Task AddRetailAuditAsync(string action, string userRole, CancellationToken cancellationToken)
@@ -468,6 +650,38 @@ public class SmsRetailService(SmsDbContext db) : ISmsRetailService
     private static decimal RoundMoney(decimal value) => Math.Round(value, 2, MidpointRounding.AwayFromZero);
 
     private static string BuildTransactionId(string prefix) => $"{prefix}-{Guid.NewGuid():N}"[..22];
+
+    private static PaymentTrackingRecordDto MapPaymentTracking(PosPayment payment) => new()
+    {
+        TransactionId = payment.ExternalTransactionId,
+        Timestamp = payment.Timestamp.ToString("O"),
+        PaymentMethod = payment.Method.ToString(),
+        CustomerName = payment.CustomerName ?? string.Empty,
+        CustomerPhone = payment.CustomerPhone ?? string.Empty,
+        Subtotal = RoundMoney(payment.Subtotal),
+        Tax = RoundMoney(payment.Tax),
+        Discount = RoundMoney(payment.Discount),
+        PointsRedeemed = payment.PointsRedeemed,
+        PointsEarned = payment.PointsEarned,
+        Total = RoundMoney(payment.Amount),
+        ItemCount = payment.Lines.Sum(x => x.Quantity),
+        LineItems = payment.Lines
+            .OrderBy(x => x.Id)
+            .Select(MapReceiptLine)
+            .ToList()
+    };
+
+    private static ReceiptLineItemDto MapReceiptLine(PosPaymentLine line) => new()
+    {
+        ProductId = line.ProductId,
+        ProductName = line.ProductName,
+        Sku = line.Sku,
+        Quantity = line.Quantity,
+        UnitPrice = RoundMoney(line.UnitPrice),
+        Discount = RoundMoney(line.Discount),
+        Tax = RoundMoney(line.Tax),
+        LineTotal = RoundMoney(line.LineTotal)
+    };
 
     private static ProductDto MapProduct(Product product) => new()
     {

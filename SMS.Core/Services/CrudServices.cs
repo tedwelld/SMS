@@ -295,19 +295,49 @@ public class StaffUserService(SmsDbContext db) : IStaffUserService
 
     public async Task<StaffUserDto> CreateAsync(CreateStaffUserRequest request, CancellationToken cancellationToken = default)
     {
+        var username = request.Username.Trim();
+        var name = string.IsNullOrWhiteSpace(request.Name) ? username : request.Name.Trim();
+        var email = request.Email.Trim().ToLowerInvariant();
+        var password = request.Password ?? string.Empty;
+        if (password.Length < 6)
+        {
+            throw new InvalidOperationException("Password must be at least 6 characters.");
+        }
+
+        var role = NormalizeRole(request.Role);
+        var duplicateExists = await db.StaffUsers.AnyAsync(
+            x => x.Username.ToLower() == username.ToLower() || x.Email.ToLower() == email,
+            cancellationToken);
+
+        if (duplicateExists)
+        {
+            throw new InvalidOperationException("A user with this username or email already exists.");
+        }
+
         var entity = new StaffUser
         {
-            Username = request.Username.Trim(),
-            Name = string.IsNullOrWhiteSpace(request.Name) ? request.Username.Trim() : request.Name.Trim(),
-            Email = request.Email.Trim(),
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-            Role = request.Role.Trim(),
+            Username = username,
+            Name = name,
+            Email = email,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
+            Role = role,
             IsActive = request.IsActive,
             DateCreated = DateTime.UtcNow
         };
         db.StaffUsers.Add(entity);
         await db.SaveChangesAsync(cancellationToken);
         return new StaffUserDto(entity.Id, entity.Username, entity.Name, entity.Email, entity.Role, entity.IsActive, entity.DateCreated);
+    }
+
+    private static string NormalizeRole(string? role)
+    {
+        var normalized = role?.Trim().ToLowerInvariant();
+        return normalized switch
+        {
+            "staff" => "Staff",
+            "manager" => "Manager",
+            _ => "Admin"
+        };
     }
 
     public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)

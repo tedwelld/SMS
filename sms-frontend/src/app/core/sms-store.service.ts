@@ -12,8 +12,10 @@ import {
   DraftPurchaseOrder,
   EodReport,
   OperationResult,
+  PaymentTrackingRecord,
   PaymentMethod,
   Product,
+  ReceiptPayload,
   PromotionType,
   ShrinkageReportRow,
   UserRole,
@@ -39,6 +41,7 @@ export class SmsStoreService {
   readonly auditLogs = signal<AuditEntry[]>([]);
   readonly salesTrend = signal<Array<{ hour: string; sales: number }>>([]);
   readonly draftPurchaseOrders = signal<DraftPurchaseOrder[]>([]);
+  readonly paymentHistory = signal<PaymentTrackingRecord[]>([]);
 
   private readonly eod = signal<EodReport>({
     cash: 0,
@@ -101,6 +104,15 @@ export class SmsStoreService {
     const next = !this.offlineMode();
     this.offlineMode.set(next);
     void this.patchSettings({ offlineMode: next });
+  }
+
+  setOfflineMode(enabled: boolean): void {
+    if (enabled === this.offlineMode()) {
+      return;
+    }
+
+    this.offlineMode.set(enabled);
+    void this.patchSettings({ offlineMode: enabled });
   }
 
   searchProducts(term: string): Product[] {
@@ -227,7 +239,7 @@ export class SmsStoreService {
     method: PaymentMethod,
     customerPhone: string,
     pointsToRedeem: number
-  ): Promise<{ success: boolean; message: string; transactionId?: string }> {
+  ): Promise<{ success: boolean; message: string; transactionId?: string; receipt?: ReceiptPayload }> {
     if (this.cart().length === 0) {
       return { success: false, message: 'Cart is empty.' };
     }
@@ -249,7 +261,8 @@ export class SmsStoreService {
       return {
         success: true,
         message: response.message,
-        transactionId: response.transactionId
+        transactionId: response.transactionId,
+        receipt: response.receipt
       };
     } catch (error) {
       return {
@@ -280,11 +293,91 @@ export class SmsStoreService {
     );
   }
 
-  async addCustomer(name: string, phone: string): Promise<OperationResult> {
+  async updateProductStock(
+    productId: string,
+    quantity: number,
+    mode: 'set' | 'add'
+  ): Promise<OperationResult> {
+    const safeQuantity = Number.isFinite(quantity) ? Math.max(0, Math.floor(quantity)) : -1;
+    if (safeQuantity < 0) {
+      return { success: false, message: 'Enter a valid stock quantity.' };
+    }
+
     try {
-      await firstValueFrom(this.http.post(`${this.apiBaseUrl}/customers`, { name, phone }));
+      await firstValueFrom(
+        this.http.patch(`${this.apiBaseUrl}/products/${productId}/stock`, {
+          quantity: safeQuantity,
+          mode
+        })
+      );
+      await this.refreshBootstrap();
+
+      return {
+        success: true,
+        message: mode === 'set' ? 'System stock set successfully.' : 'Stock units added successfully.'
+      };
+    } catch (error) {
+      return { success: false, message: this.apiErrorMessage(error) };
+    }
+  }
+
+  async addCustomer(name: string, phone: string): Promise<OperationResult> {
+    const normalizedPhone = this.normalizePhoneForApi(phone);
+    if (!name.trim() || !normalizedPhone) {
+      return { success: false, message: 'Name and a valid phone number are required.' };
+    }
+
+    try {
+      await firstValueFrom(this.http.post(`${this.apiBaseUrl}/customers`, {
+        name: name.trim(),
+        phoneNumber: normalizedPhone,
+        phone: normalizedPhone
+      }));
       await this.refreshBootstrap();
       return { success: true, message: 'Member profile created.' };
+    } catch (error) {
+      return { success: false, message: this.apiErrorMessage(error) };
+    }
+  }
+
+  async updateCustomer(
+    customerId: number | string,
+    payload: { name: string; phone: string; email?: string; isActive?: boolean }
+  ): Promise<OperationResult> {
+    const parsedId = Number(customerId);
+    if (!Number.isFinite(parsedId) || parsedId <= 0) {
+      return { success: false, message: 'Invalid customer id.' };
+    }
+
+    const normalizedPhone = this.normalizePhoneForApi(payload.phone);
+    if (!payload.name.trim() || !normalizedPhone) {
+      return { success: false, message: 'Name and a valid phone number are required.' };
+    }
+
+    try {
+      await firstValueFrom(this.http.put(`${this.apiBaseUrl}/customers/${parsedId}`, {
+        name: payload.name.trim(),
+        phoneNumber: normalizedPhone,
+        email: (payload.email ?? '').trim(),
+        isActive: payload.isActive ?? true
+      }));
+      await this.refreshBootstrap();
+      return { success: true, message: 'Member profile updated.' };
+    } catch (error) {
+      return { success: false, message: this.apiErrorMessage(error) };
+    }
+  }
+
+  async deleteCustomer(customerId: number | string): Promise<OperationResult> {
+    const parsedId = Number(customerId);
+    if (!Number.isFinite(parsedId) || parsedId <= 0) {
+      return { success: false, message: 'Invalid customer id.' };
+    }
+
+    try {
+      await firstValueFrom(this.http.delete(`${this.apiBaseUrl}/customers/${parsedId}`));
+      await this.refreshBootstrap();
+      return { success: true, message: 'Member profile deleted.' };
     } catch (error) {
       return { success: false, message: this.apiErrorMessage(error) };
     }
@@ -294,6 +387,145 @@ export class SmsStoreService {
     void this.mutateAndRefresh(() =>
       firstValueFrom(this.http.post(`${this.apiBaseUrl}/purchase-orders/drafts/regenerate`, {}))
     );
+  }
+
+  createVendor(payload: {
+    name: string;
+    contact: string;
+    email: string;
+    leadTimeDays: number;
+    departments: string[];
+  }): OperationResult {
+    const normalizedName = payload.name.trim();
+    if (!normalizedName) {
+      return { success: false, message: 'Vendor name is required.' };
+    }
+
+    const vendor: Vendor = {
+      id: `V-${Date.now()}`,
+      name: normalizedName,
+      contact: payload.contact.trim() || 'N/A',
+      email: payload.email.trim() || `${normalizedName.toLowerCase().replace(/\s+/g, '.')}@vendor.local`,
+      leadTimeDays: Math.max(1, Math.floor(payload.leadTimeDays || 1)),
+      departments: payload.departments as Vendor['departments']
+    };
+
+    this.vendors.update((items) => [vendor, ...items]);
+    return { success: true, message: 'Vendor added.' };
+  }
+
+  updateVendor(vendorId: string, patch: Partial<Vendor>): OperationResult {
+    const existing = this.vendors().find((item) => item.id === vendorId);
+    if (!existing) {
+      return { success: false, message: 'Vendor not found.' };
+    }
+
+    const merged: Vendor = {
+      ...existing,
+      ...patch,
+      name: (patch.name ?? existing.name).trim(),
+      contact: (patch.contact ?? existing.contact).trim(),
+      email: (patch.email ?? existing.email).trim(),
+      leadTimeDays: Math.max(1, Math.floor(patch.leadTimeDays ?? existing.leadTimeDays))
+    };
+
+    this.vendors.update((items) => items.map((item) => (item.id === vendorId ? merged : item)));
+    return { success: true, message: 'Vendor updated.' };
+  }
+
+  deleteVendor(vendorId: string): OperationResult {
+    const exists = this.vendors().some((item) => item.id === vendorId);
+    if (!exists) {
+      return { success: false, message: 'Vendor not found.' };
+    }
+
+    this.vendors.update((items) => items.filter((item) => item.id !== vendorId));
+    this.draftPurchaseOrders.update((orders) => orders.filter((order) => order.vendorId !== vendorId));
+    return { success: true, message: 'Vendor deleted.' };
+  }
+
+  createDraftPurchaseOrder(payload: {
+    vendorId: string;
+    lines: Array<{ name: string; sku: string; currentStock: number; suggestedOrderQty: number }>;
+  }): OperationResult {
+    const vendor = this.vendors().find((item) => item.id === payload.vendorId);
+    if (!vendor) {
+      return { success: false, message: 'Vendor is required.' };
+    }
+
+    const lines = payload.lines
+      .map((line, index) => ({
+        productId: `${payload.vendorId}-${Date.now()}-${index + 1}`,
+        name: line.name.trim(),
+        sku: line.sku.trim() || `SKU-${Date.now()}-${index + 1}`,
+        currentStock: Math.max(0, Math.floor(line.currentStock || 0)),
+        suggestedOrderQty: Math.max(1, Math.floor(line.suggestedOrderQty || 1))
+      }))
+      .filter((line) => !!line.name);
+
+    if (lines.length === 0) {
+      return { success: false, message: 'At least one order line is required.' };
+    }
+
+    const order: DraftPurchaseOrder = {
+      id: `PO-${Date.now()}`,
+      vendorId: vendor.id,
+      vendorName: vendor.name,
+      createdAt: new Date().toISOString(),
+      lines
+    };
+
+    this.draftPurchaseOrders.update((orders) => [order, ...orders]);
+    return { success: true, message: 'Draft purchase order created.' };
+  }
+
+  updateDraftPurchaseOrder(
+    orderId: string,
+    payload: { vendorId: string; lines: Array<{ name: string; sku: string; currentStock: number; suggestedOrderQty: number }> }
+  ): OperationResult {
+    const existing = this.draftPurchaseOrders().find((item) => item.id === orderId);
+    if (!existing) {
+      return { success: false, message: 'Draft order not found.' };
+    }
+
+    const vendor = this.vendors().find((item) => item.id === payload.vendorId);
+    if (!vendor) {
+      return { success: false, message: 'Vendor is required.' };
+    }
+
+    const lines = payload.lines
+      .map((line, index) => ({
+        productId: existing.lines[index]?.productId ?? `${payload.vendorId}-${Date.now()}-${index + 1}`,
+        name: line.name.trim(),
+        sku: line.sku.trim() || `SKU-${Date.now()}-${index + 1}`,
+        currentStock: Math.max(0, Math.floor(line.currentStock || 0)),
+        suggestedOrderQty: Math.max(1, Math.floor(line.suggestedOrderQty || 1))
+      }))
+      .filter((line) => !!line.name);
+
+    if (lines.length === 0) {
+      return { success: false, message: 'At least one order line is required.' };
+    }
+
+    const updated: DraftPurchaseOrder = {
+      ...existing,
+      vendorId: vendor.id,
+      vendorName: vendor.name,
+      lines
+    };
+
+    this.draftPurchaseOrders.update((orders) => orders.map((order) => (order.id === orderId ? updated : order)));
+    return { success: true, message: 'Draft purchase order updated.' };
+  }
+
+  deleteDraftPurchaseOrder(orderId: string): OperationResult {
+    const exists = this.draftPurchaseOrders().some((item) => item.id === orderId);
+    if (!exists) {
+      return { success: false, message: 'Draft order not found.' };
+    }
+
+    this.draftPurchaseOrders.update((orders) => orders.filter((order) => order.id !== orderId));
+    return { success: true, message: 'Draft purchase order deleted.' };
   }
 
   eodReport(): EodReport {
@@ -328,6 +560,7 @@ export class SmsStoreService {
     this.draftPurchaseOrders.set(payload.draftPurchaseOrders);
     this.salesTrend.set(payload.salesTrend);
     this.auditLogs.set(payload.auditLogs);
+    this.paymentHistory.set(payload.recentPayments ?? []);
 
     this.eod.set(payload.reports.eod);
     this.shrinkage.set(payload.reports.shrinkage);
@@ -383,6 +616,10 @@ export class SmsStoreService {
 
   private normalizePhone(phone: string): string {
     return String(phone || '').replace(/\D/g, '');
+  }
+
+  private normalizePhoneForApi(phone: string): string {
+    return String(phone || '').trim().replace(/[^\d+]/g, '');
   }
 
   private apiErrorMessage(error: unknown): string {

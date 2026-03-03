@@ -35,6 +35,7 @@ public class SmsDbContext : Microsoft.EntityFrameworkCore.DbContext
     public DbSet<VendorDepartment> VendorDepartments => Set<VendorDepartment>();
     public DbSet<SalesTrendPoint> SalesTrendPoints => Set<SalesTrendPoint>();
     public DbSet<PosPayment> PosPayments => Set<PosPayment>();
+    public DbSet<PosPaymentLine> PosPaymentLines => Set<PosPaymentLine>();
     public DbSet<RetailAuditLog> RetailAuditLogs => Set<RetailAuditLog>();
     public DbSet<CustomerPurchaseRecord> CustomerPurchaseRecords => Set<CustomerPurchaseRecord>();
 
@@ -420,9 +421,34 @@ public class SmsDbContext : Microsoft.EntityFrameworkCore.DbContext
         modelBuilder.Entity<PosPayment>(entity =>
         {
             entity.HasKey(x => x.Id);
+            entity.Property(x => x.ExternalTransactionId).HasMaxLength(80).IsRequired();
             entity.Property(x => x.Method).HasConversion<string>().HasMaxLength(20);
+            entity.Property(x => x.CustomerPhone).HasMaxLength(30);
+            entity.Property(x => x.CustomerName).HasMaxLength(200);
+            entity.Property(x => x.Subtotal).HasColumnType("decimal(18,2)");
+            entity.Property(x => x.Tax).HasColumnType("decimal(18,2)");
+            entity.Property(x => x.Discount).HasColumnType("decimal(18,2)");
             entity.Property(x => x.Amount).HasColumnType("decimal(18,2)");
             entity.Property(x => x.Timestamp).HasDefaultValueSql("GETUTCDATE()");
+            entity.HasIndex(x => x.ExternalTransactionId);
+            entity.HasIndex(x => x.Timestamp);
+        });
+
+        modelBuilder.Entity<PosPaymentLine>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.ProductId).HasMaxLength(32).IsRequired();
+            entity.Property(x => x.ProductName).HasMaxLength(200).IsRequired();
+            entity.Property(x => x.Sku).HasMaxLength(50).IsRequired();
+            entity.Property(x => x.UnitPrice).HasColumnType("decimal(18,2)");
+            entity.Property(x => x.Discount).HasColumnType("decimal(18,2)");
+            entity.Property(x => x.Tax).HasColumnType("decimal(18,2)");
+            entity.Property(x => x.LineTotal).HasColumnType("decimal(18,2)");
+            entity.HasIndex(x => x.PosPaymentId);
+            entity.HasOne(x => x.PosPayment)
+                .WithMany(x => x.Lines)
+                .HasForeignKey(x => x.PosPaymentId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<RetailAuditLog>(entity =>

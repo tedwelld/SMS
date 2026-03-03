@@ -8,44 +8,89 @@
 <mat-tab-group class="dash-tabs" animationDuration="200ms">
   <mat-tab label="Overview">
     <section class="stats-grid">
-      <mat-card class="stat-card">
-        <p>End-of-day Revenue</p>
-        <h2>{{ totalRevenue() | currency }}</h2>
+      @for (point of statSeries(); track point.key) {
+        <mat-card class="stat-card clickable-card" [routerLink]="point.route">
+          <span class="card-icon"><i [class]="point.icon"></i></span>
+          <p>{{ point.label }}</p>
+          <h2>{{ formatStat(point) }}</h2>
+          <small>{{ point.description }}</small>
+        </mat-card>
+      }
+    </section>
+
+    <section class="projection-grid">
+      <mat-card class="projection-card clickable-card" routerLink="/reports">
+        <h3>Quarter End</h3>
+        <p>{{ quarterEnd() | date: 'MMM d, y' }}</p>
+      </mat-card>
+      <mat-card class="projection-card clickable-card" routerLink="/reports">
+        <h3>Projected Revenue</h3>
+        <p>{{ projectedQuarterRevenue() | currency }}</p>
+      </mat-card>
+      <mat-card class="projection-card clickable-card" routerLink="/pos">
+        <h3>Projected Transactions</h3>
+        <p>{{ projectedQuarterTransactions() | number }}</p>
+      </mat-card>
+      <mat-card class="projection-card clickable-card" routerLink="/customers">
+        <h3>Projected Customers</h3>
+        <p>{{ projectedQuarterCustomers() | number }}</p>
+      </mat-card>
+    </section>
+
+    <section class="charts-grid">
+      <mat-card class="chart-card clickable-card" routerLink="/reports">
+        <h3><i class="pi pi-chart-bar"></i> Statistical Bar Graph</h3>
+        <div class="bar-chart">
+          @for (point of statSeries(); track point.key) {
+            <article class="bar-item">
+              <div class="bar-meta">
+                <span>{{ point.label }}</span>
+                <strong>{{ formatStat(point) }}</strong>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill" [style.width]="barWidth(point.value)" [style.background]="point.color"></div>
+              </div>
+            </article>
+          }
+        </div>
       </mat-card>
 
-      <mat-card class="stat-card">
-        <p>Low Stock SKUs</p>
-        <h2>{{ store.lowStockItems().length }}</h2>
-      </mat-card>
-
-      <mat-card class="stat-card">
-        <p>Expiry Alerts</p>
-        <h2>{{ store.expiringSoonItems().length }}</h2>
-      </mat-card>
-
-      <mat-card class="stat-card">
-        <p>Suspended Transactions</p>
-        <h2>{{ openSuspended() }}</h2>
+      <mat-card class="chart-card pie-card clickable-card" routerLink="/reports">
+        <h3><i class="pi pi-chart-pie"></i> Statistical Pie Chart</h3>
+        <div class="pie-layout">
+          <div class="pie-graph" [style.background]="statPieGradient()"></div>
+          <div class="pie-legend">
+            @for (point of statSeries(); track point.key) {
+              <div class="legend-item">
+                <span class="dot" [style.background]="point.color"></span>
+                <div>
+                  <p>{{ point.label }}</p>
+                  <small>{{ formatStat(point) }} ({{ statPercentage(point) }})</small>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
       </mat-card>
     </section>
 
     <section class="workflow-grid">
-      <mat-card class="feature-card">
-        <h3>Point of Sale</h3>
+      <mat-card class="feature-card clickable-card" routerLink="/pos" tabindex="0" role="link" aria-label="Open POS Desk">
+        <h3><i class="pi pi-shopping-cart"></i> Point of Sale</h3>
         <p>Quick SKU search, hold/resume carts, loyalty redemption, and tax-aware totals.</p>
-        <a mat-stroked-button routerLink="/pos">Open POS Desk</a>
+        <span class="card-action">Open POS Desk <i class="pi pi-arrow-right"></i></span>
       </mat-card>
 
-      <mat-card class="feature-card">
-        <h3>Inventory Risk</h3>
+      <mat-card class="feature-card clickable-card" routerLink="/inventory" tabindex="0" role="link" aria-label="Open Inventory">
+        <h3><i class="pi pi-box"></i> Inventory Risk</h3>
         <p>Monitor near-expiry batches and stock variance before shrinkage impacts margin.</p>
-        <a mat-stroked-button routerLink="/inventory">Open Inventory</a>
+        <span class="card-action">Open Inventory <i class="pi pi-arrow-right"></i></span>
       </mat-card>
 
-      <mat-card class="feature-card">
-        <h3>Procurement</h3>
+      <mat-card class="feature-card clickable-card" routerLink="/procurement" tabindex="0" role="link" aria-label="Open Procurement">
+        <h3><i class="pi pi-truck"></i> Procurement</h3>
         <p>Auto-generate draft purchase orders when staple goods hit minimum stock levels.</p>
-        <a mat-stroked-button routerLink="/procurement">Open Procurement</a>
+        <span class="card-action">Open Procurement <i class="pi pi-arrow-right"></i></span>
       </mat-card>
     </section>
   </mat-tab>
@@ -53,8 +98,8 @@
   <mat-tab label="Roles">
     <section class="roles-grid">
       @for (card of roleCards; track card.role) {
-        <mat-card class="role-card">
-          <h3>{{ card.role }}</h3>
+        <mat-card class="role-card clickable-card" [routerLink]="card.route">
+          <h3><i [class]="card.icon"></i> {{ card.role }}</h3>
           <p>{{ card.summary }}</p>
         </mat-card>
       }
@@ -63,23 +108,15 @@
 
   <mat-tab label="Operations">
     <section class="ops-grid">
-      <mat-card class="ops-card">
-        <h3>Reliability</h3>
-        <p>Offline mode keeps checkout active during network interruptions.</p>
-      </mat-card>
-
-      <mat-card class="ops-card">
-        <h3>Data Integrity</h3>
-        <p>Every transaction and override is timestamped with role-level audit visibility.</p>
-      </mat-card>
-
-      <mat-card class="ops-card">
-        <h3>Efficiency</h3>
-        <p>POS shortcuts support keyboard-only execution for faster cashier throughput.</p>
-      </mat-card>
+      @for (card of operationsCards; track card.title) {
+        <mat-card class="ops-card clickable-card" [routerLink]="card.route">
+          <h3><i [class]="card.icon"></i> {{ card.title }}</h3>
+          <p>{{ card.summary }}</p>
+        </mat-card>
+      }
     </section>
 
-    <mat-card class="audit-block">
+    <mat-card class="audit-block clickable-card" routerLink="/reports">
       <div class="audit-head">
         <h3>Recent Audit Trail</h3>
         <span>{{ store.getRecentAuditEntries().length }} entries</span>
@@ -89,7 +126,7 @@
         @for (entry of store.getRecentAuditEntries(); track entry.id) {
           <article class="audit-entry">
             <p>{{ entry.action }}</p>
-            <small>{{ entry.userRole }} • {{ entry.timestamp | date: 'MMM d, h:mm a' }}</small>
+            <small>{{ entry.userRole }} &middot; {{ entry.timestamp | date: 'MMM d, h:mm a' }}</small>
           </article>
         }
       </div>

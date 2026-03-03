@@ -1,32 +1,28 @@
 .admin-page {
   border: 1px solid var(--line-soft);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.92);
+  border-radius: var(--sms-card-radius);
+  background: var(--sms-card-bg);
   padding: 1rem;
 
   header {
     display: flex;
     justify-content: space-between;
+    gap: 0.6rem;
     align-items: center;
     margin-bottom: 0.8rem;
+    flex-wrap: wrap;
   }
 
   h2 {
     margin: 0;
     color: var(--ink-900);
   }
-
-  button {
-    border: 1px solid rgba(22, 72, 139, 0.2);
-    border-radius: 10px;
-    background: #f9fcff;
-    padding: 0.4rem 0.65rem;
-    cursor: pointer;
-  }
 }
 
 .table-wrap {
-  overflow-x: auto;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid var(--line-soft);
 }
 
 table {
@@ -37,7 +33,7 @@ table {
   td {
     text-align: left;
     padding: 0.55rem;
-    border-bottom: 1px solid rgba(18, 40, 80, 0.08);
+    border-bottom: 1px solid var(--line-soft);
   }
 
   th {
@@ -46,9 +42,56 @@ table {
   }
 }
 
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+
+  input {
+    min-width: 260px;
+  }
+}
+
+.create-form {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: minmax(260px, 2fr) minmax(140px, 1fr) auto;
+  margin-bottom: 0.75rem;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+input,
+select {
+  border-radius: 12px;
+  border: 1px solid var(--line-soft);
+  background: var(--sms-card-bg);
+  color: var(--ink-700);
+  font: inherit;
+  padding: 0.5rem 0.6rem;
+}
+
 .actions {
   display: flex;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 0.4rem;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--ink-600);
+  font-size: 0.85rem;
+}
+
+.success {
+  color: #148459;
+  margin: 0 0 0.6rem;
 }
 
 .badge {
@@ -75,8 +118,16 @@ table {
 
 .error {
   color: #9f1f24;
+  margin: 0 0 0.6rem;
 }
 
 .loading {
   color: var(--ink-600);
 }
+
+small {
+  display: block;
+  color: var(--ink-500);
+}
+
+

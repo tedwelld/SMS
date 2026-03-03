@@ -1,0 +1,55 @@
+<section class="page-head">
+  <h1>System Settings</h1>
+  <p>Configure operations, appearance, and role defaults for the supermarket workspace.</p>
+</section>
+
+<section class="settings-grid">
+  <article class="settings-card">
+    <h2><i class="pi pi-cog"></i> Operational Preferences</h2>
+
+    <label>
+      <span>Default Role</span>
+      <select [ngModel]="activeRole()" (ngModelChange)="activeRole.set($event)">
+        @for (role of roleOptions(); track role) {
+          <option [value]="role">{{ role }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="toggle">
+      <input type="checkbox" [ngModel]="offlineMode()" (ngModelChange)="offlineMode.set($event)" />
+      <span>Enable offline mode by default</span>
+    </label>
+  </article>
+
+  <article class="settings-card">
+    <h2><i class="pi pi-palette"></i> Appearance Preferences</h2>
+
+    <label>
+      <span>Card Roundness (px)</span>
+      <input
+        type="range"
+        min="16"
+        max="32"
+        step="1"
+        [ngModel]="cardRadius()"
+        (ngModelChange)="cardRadius.set(+$event)"
+      />
+      <small>{{ cardRadius() }}px</small>
+    </label>
+
+    <label class="toggle">
+      <input type="checkbox" [ngModel]="softContrast()" (ngModelChange)="softContrast.set($event)" />
+      <span>Use softer contrast</span>
+    </label>
+  </article>
+</section>
+
+<section class="actions">
+  <button type="button" class="btn-primary-action" (click)="applySystemSettings()">Save Settings</button>
+  <button type="button" class="btn-neutral-action" (click)="resetAppearance()">Reset Appearance</button>
+</section>
+
+@if (saveMessage()) {
+  <p class="save-message">{{ saveMessage() }}</p>
+}

@@ -23,8 +23,28 @@ public class StaffUsersController(IStaffUserService service, SmsDbContext db) : 
     [HttpPost]
     public async Task<ActionResult<StaffUserDto>> Create([FromBody] CreateStaffUserRequest request, CancellationToken cancellationToken)
     {
-        var created = await service.CreateAsync(request, cancellationToken);
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        if (string.IsNullOrWhiteSpace(request.Username)
+            || string.IsNullOrWhiteSpace(request.Name)
+            || string.IsNullOrWhiteSpace(request.Email)
+            || string.IsNullOrWhiteSpace(request.Password))
+        {
+            return BadRequest(new { message = "Username, name, email, and password are required." });
+        }
+
+        try
+        {
+            var created = await service.CreateAsync(request, cancellationToken);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        }
+        catch (InvalidOperationException ex)
+        {
+            var status = ex.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase) ? 409 : 400;
+            return StatusCode(status, new { message = ex.Message });
+        }
+        catch (DbUpdateException)
+        {
+            return Conflict(new { message = "A user with this username or email already exists." });
+        }
     }
 
     [HttpPut("{id:int}/status")]

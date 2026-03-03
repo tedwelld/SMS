@@ -46,6 +46,42 @@ public class SmsRetailController(ISmsRetailService service) : ControllerBase
         }
     }
 
+    [HttpPatch("products/{productId}/stock")]
+    public async Task<ActionResult<object>> UpdateStock(
+        string productId,
+        [FromBody] UpdateStockRequestDto request,
+        CancellationToken cancellationToken)
+    {
+        if (request.Quantity < 0)
+        {
+            return BadRequest(new { message = "Invalid stock quantity." });
+        }
+
+        var mode = string.IsNullOrWhiteSpace(request.Mode) ? "set" : request.Mode.Trim().ToLowerInvariant();
+        if (mode is not ("set" or "add"))
+        {
+            return BadRequest(new { message = "Mode must be 'set' or 'add'." });
+        }
+
+        try
+        {
+            var result = await service.UpdateStockAsync(productId, request.Quantity, mode, ResolveRole(), cancellationToken);
+            return Ok(new
+            {
+                product = result.Product,
+                draftPurchaseOrders = result.DraftPurchaseOrders
+            });
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { message = "Product not found." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
     [HttpPatch("products/{productId}/promotion")]
     public async Task<ActionResult<object>> UpdatePromotion(
         string productId,
@@ -69,24 +105,24 @@ public class SmsRetailController(ISmsRetailService service) : ControllerBase
         }
     }
 
-    [HttpGet("customers")]
+    [HttpGet("retail/customers")]
     public async Task<ActionResult<IReadOnlyList<CustomerProfileDto>>> GetCustomers([FromQuery] string? search, CancellationToken cancellationToken)
         => Ok(await service.GetCustomersAsync(search, cancellationToken));
 
-    [HttpGet("customers/by-phone/{phone}")]
+    [HttpGet("retail/customers/by-phone/{phone}")]
     public async Task<ActionResult<CustomerProfileDto>> GetCustomerByPhone(string phone, CancellationToken cancellationToken)
     {
         var customer = await service.GetCustomerByPhoneAsync(phone, cancellationToken);
         return customer is null ? NotFound(new { message = "Customer not found." }) : Ok(customer);
     }
 
-    [HttpPost("customers")]
+    [HttpPost("retail/customers")]
     public async Task<ActionResult<CustomerProfileDto>> AddCustomer([FromBody] CreateRetailCustomerRequestDto request, CancellationToken cancellationToken)
     {
         try
         {
             var customer = await service.AddCustomerAsync(request, ResolveRole(), cancellationToken);
-            return Created($"/api/customers/{customer.Id}", customer);
+            return Created($"/api/retail/customers/{customer.Id}", customer);
         }
         catch (InvalidOperationException ex)
         {
@@ -114,6 +150,16 @@ public class SmsRetailController(ISmsRetailService service) : ControllerBase
     [HttpGet("reports/eod")]
     public async Task<ActionResult<EodReportDto>> GetEod(CancellationToken cancellationToken)
         => Ok(await service.GetEodReportAsync(cancellationToken));
+
+    [HttpGet("payments")]
+    public async Task<ActionResult<IReadOnlyList<PaymentTrackingRecordDto>>> GetPayments(
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
+        [FromQuery] string? method,
+        [FromQuery] string? query,
+        [FromQuery] int? limit,
+        CancellationToken cancellationToken)
+        => Ok(await service.GetPaymentsAsync(from, to, method, query, limit ?? 100, cancellationToken));
 
     [HttpGet("reports/shrinkage")]
     public async Task<ActionResult<IReadOnlyList<ShrinkageReportRowDto>>> GetShrinkage(CancellationToken cancellationToken)

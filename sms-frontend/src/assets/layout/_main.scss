@@ -1,0 +1,30 @@
+.layout-main-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+    height: 100dvh;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    padding: 4.75rem 1.1rem 0.55rem 1.1rem;
+    transition: margin-left var(--layout-section-transition-duration);
+}
+
+.layout-main {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding-bottom: 0.35rem;
+    min-width: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.layout-main > :not(router-outlet) {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+}

@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
 import { AuthService } from './auth.service';
-import { AdminWalletItem, StaffUserItem } from './wallet-admin.models';
+import { AdminWalletItem, StaffUserItem, WalletCustomerItem } from './wallet-admin.models';
 
 interface WalletDto {
   id: number;
@@ -23,11 +23,24 @@ interface CustomerAccountDto {
 interface CustomerDto {
   id: number;
   name: string;
+  phoneNumber?: string;
+  phone?: string;
 }
 
 interface NfcCardDto {
   walletId: number;
   cardUid: string;
+}
+
+interface CreateWalletByCustomerRequest {
+  customerId: number;
+  openingBalance: number;
+}
+
+interface UpdateWalletRequest {
+  balance?: number;
+  isFrozen?: boolean;
+  isActive?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -59,8 +72,13 @@ export class WalletAdminService {
 
         return {
           id: String(wallet.id),
+          customerId: customer?.id ?? 0,
+          customerAccountId: wallet.customerAccountId,
           ownerName: customer?.name ?? `Account #${wallet.customerAccountId}`,
+          ownerPhone: customer?.phoneNumber ?? customer?.phone ?? '',
           balance: account?.balance ?? 0,
+          isFrozen: account?.isFrozen ?? false,
+          isActive: wallet.isActive,
           status,
           cardId: card?.cardUid,
           createdAt: wallet.dateCreated
@@ -79,6 +97,55 @@ export class WalletAdminService {
     await firstValueFrom(this.http.put(`${this.apiBase}/wallets/${walletId}/status`, { status }, { headers }));
   }
 
+  async createWalletByCustomer(customerId: number, openingBalance: number): Promise<void> {
+    const headers = this.authHeaders();
+    const payload: CreateWalletByCustomerRequest = { customerId, openingBalance };
+    await firstValueFrom(this.http.post(`${this.apiBase}/wallets/by-customer`, payload, { headers }));
+  }
+
+  async updateWallet(
+    walletId: string,
+    payload: {
+      balance?: number;
+      isFrozen?: boolean;
+      isActive?: boolean;
+    }
+  ): Promise<void> {
+    const headers = this.authHeaders();
+    const request: UpdateWalletRequest = {};
+
+    if (typeof payload.balance === 'number') {
+      request.balance = payload.balance;
+    }
+
+    if (typeof payload.isFrozen === 'boolean') {
+      request.isFrozen = payload.isFrozen;
+    }
+
+    if (typeof payload.isActive === 'boolean') {
+      request.isActive = payload.isActive;
+    }
+
+    await firstValueFrom(this.http.put(`${this.apiBase}/wallets/${walletId}`, request, { headers }));
+  }
+
+  async deleteWallet(walletId: string): Promise<void> {
+    const headers = this.authHeaders();
+    await firstValueFrom(this.http.delete(`${this.apiBase}/wallets/${walletId}`, { headers }));
+  }
+
+  async getCustomers(): Promise<WalletCustomerItem[]> {
+    const headers = this.authHeaders();
+    const customers = await firstValueFrom(this.http.get<CustomerDto[]>(`${this.apiBase}/customers`, { headers }));
+    return customers
+      .map((item) => ({
+        id: item.id,
+        name: item.name,
+        phone: item.phoneNumber ?? item.phone ?? ''
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
   async createStaff(payload: {
     username: string;
     name: string;
@@ -87,7 +154,14 @@ export class WalletAdminService {
     role: string;
   }): Promise<void> {
     const headers = this.authHeaders();
-    await firstValueFrom(this.http.post(`${this.apiBase}/staff-users`, payload, { headers }));
+    await firstValueFrom(this.http.post(`${this.apiBase}/staff-users`, {
+      username: payload.username.trim(),
+      name: payload.name.trim(),
+      email: payload.email.trim().toLowerCase(),
+      password: payload.password,
+      role: payload.role.trim().toLowerCase(),
+      isActive: true
+    }, { headers }));
   }
 
   async updateStaffStatus(id: number, status: 'active' | 'inactive' | 'suspended'): Promise<void> {
@@ -98,6 +172,11 @@ export class WalletAdminService {
   async updateStaffRole(id: number, role: 'admin' | 'staff' | 'manager'): Promise<void> {
     const headers = this.authHeaders();
     await firstValueFrom(this.http.put(`${this.apiBase}/staff-users/${id}/role`, { role }, { headers }));
+  }
+
+  async deleteStaffUser(id: number): Promise<void> {
+    const headers = this.authHeaders();
+    await firstValueFrom(this.http.delete(`${this.apiBase}/staff-users/${id}`, { headers }));
   }
 
   private authHeaders(): HttpHeaders {

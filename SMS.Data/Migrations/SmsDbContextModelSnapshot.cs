@@ -664,10 +664,38 @@ namespace SMS.Data.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("CustomerName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("CustomerPhone")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<decimal>("Discount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("ExternalTransactionId")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
                     b.Property<string>("Method")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("PointsEarned")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PointsRedeemed")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Subtotal")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Tax")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("Timestamp")
                         .ValueGeneratedOnAdd()
@@ -676,7 +704,59 @@ namespace SMS.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ExternalTransactionId");
+
+                    b.HasIndex("Timestamp");
+
                     b.ToTable("PosPayments");
+                });
+
+            modelBuilder.Entity("SMS.Data.EntityModels.PosPaymentLine", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Discount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("LineTotal")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("PosPaymentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ProductId")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Sku")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("Tax")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PosPaymentId");
+
+                    b.ToTable("PosPaymentLines");
                 });
 
             modelBuilder.Entity("SMS.Data.EntityModels.Product", b =>
@@ -1321,6 +1401,17 @@ namespace SMS.Data.Migrations
                     b.Navigation("Wallet");
                 });
 
+            modelBuilder.Entity("SMS.Data.EntityModels.PosPaymentLine", b =>
+                {
+                    b.HasOne("SMS.Data.EntityModels.PosPayment", "PosPayment")
+                        .WithMany("Lines")
+                        .HasForeignKey("PosPaymentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PosPayment");
+                });
+
             modelBuilder.Entity("SMS.Data.EntityModels.QrToken", b =>
                 {
                     b.HasOne("SMS.Data.EntityModels.Wallet", "Wallet")
@@ -1432,6 +1523,11 @@ namespace SMS.Data.Migrations
                     b.Navigation("Transactions");
 
                     b.Navigation("Wallets");
+                });
+
+            modelBuilder.Entity("SMS.Data.EntityModels.PosPayment", b =>
+                {
+                    b.Navigation("Lines");
                 });
 
             modelBuilder.Entity("SMS.Data.EntityModels.QrToken", b =>

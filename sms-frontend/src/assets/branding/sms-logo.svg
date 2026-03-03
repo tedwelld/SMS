@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-labelledby="title desc">
+  <title id="title">SMS system logo</title>
+  <desc id="desc">Shield emblem with shopping cart and SMS initials.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f6a55" />
+      <stop offset="100%" stop-color="#1757b5" />
+    </linearGradient>
+  </defs>
+  <rect x="24" y="24" width="272" height="272" rx="68" fill="url(#bg)" />
+  <rect x="66" y="76" width="188" height="168" rx="22" fill="rgba(255,255,255,0.14)" stroke="rgba(255,255,255,0.45)" stroke-width="3" />
+  <path d="M96 122h20l14 66h90l16-46h-95" fill="none" stroke="#ffffff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="150" cy="210" r="10" fill="#ffffff" />
+  <circle cx="220" cy="210" r="10" fill="#ffffff" />
+  <text x="160" y="266" text-anchor="middle" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="40" font-weight="700" letter-spacing="6">SMS</text>
+</svg>

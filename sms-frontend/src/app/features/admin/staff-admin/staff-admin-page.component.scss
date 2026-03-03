@@ -1,5 +1,16 @@
 @use '../wallets-admin/wallets-admin-page.component.scss';
 
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+
+  input {
+    min-width: 260px;
+  }
+}
+
 .create-form {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -9,7 +20,7 @@
   input,
   select,
   button {
-    border-radius: 10px;
+    border-radius: var(--sms-input-radius);
     border: 1px solid rgba(22, 72, 139, 0.2);
     padding: 0.45rem 0.6rem;
     font: inherit;
@@ -27,3 +38,42 @@
 small {
   color: var(--ink-600);
 }
+
+.success {
+  color: #148459;
+  margin: 0 0 0.6rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.badge {
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.76rem;
+  text-transform: capitalize;
+
+  &.active {
+    background: rgba(42, 181, 116, 0.15);
+    color: #11633e;
+  }
+
+  &.suspended {
+    background: rgba(231, 159, 23, 0.2);
+    color: #7b5300;
+  }
+
+  &.inactive {
+    background: rgba(64, 83, 112, 0.12);
+    color: #35435d;
+  }
+}
+
+.empty {
+  text-align: center;
+  color: var(--ink-500);
+}
+

@@ -20,20 +20,21 @@
     border-bottom-width: 2px;
     border-radius: 6px;
     padding: 0.08rem 0.35rem;
-    background: #fff;
+    background: var(--sms-card-bg);
   }
 }
 
 .pos-grid {
   display: grid;
-  grid-template-columns: 1fr 1.15fr;
+  grid-template-columns: minmax(320px, 1fr) minmax(700px, 1.9fr);
   gap: 0.9rem;
+  align-items: start;
 }
 
 .panel {
-  background: #fff;
+  background: var(--sms-card-bg);
   border: 1px solid var(--line-soft);
-  border-radius: 14px;
+  border-radius: calc(var(--sms-card-radius) - 6px);
   padding: 0.9rem;
 }
 
@@ -98,7 +99,7 @@ mat-form-field {
 }
 
 .table-wrap {
-  overflow-x: auto;
+  overflow-x: hidden;
   border: 1px solid var(--line-soft);
   border-radius: 10px;
 }
@@ -106,6 +107,7 @@ mat-form-field {
 table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 
   th,
   td {
@@ -113,6 +115,7 @@ table {
     padding: 0.6rem;
     text-align: left;
     color: var(--ink-700);
+    word-break: break-word;
   }
 
   th {
@@ -191,6 +194,10 @@ table {
   color: var(--ink-600);
 }
 
+.payments-log {
+  margin-top: 0.9rem;
+}
+
 .empty {
   color: var(--ink-500);
   text-align: center;
@@ -201,3 +208,5 @@ table {
     grid-template-columns: 1fr;
   }
 }
+
+

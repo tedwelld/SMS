@@ -281,9 +281,42 @@ public static class DataSeeder
         if (!await db.PosPayments.AnyAsync(cancellationToken))
         {
             db.PosPayments.AddRange(
-                new PosPayment { Method = PosPaymentMethod.Cash, Amount = 184.20m, Timestamp = DateTime.UtcNow.AddHours(-4) },
-                new PosPayment { Method = PosPaymentMethod.Card, Amount = 421.88m, Timestamp = DateTime.UtcNow.AddHours(-3) },
-                new PosPayment { Method = PosPaymentMethod.Digital, Amount = 233.45m, Timestamp = DateTime.UtcNow.AddHours(-2) }
+                new PosPayment
+                {
+                    ExternalTransactionId = "tx-seed-0001",
+                    Method = PosPaymentMethod.Cash,
+                    Subtotal = 178.84m,
+                    Tax = 5.36m,
+                    Discount = 0m,
+                    PointsRedeemed = 0,
+                    PointsEarned = 15,
+                    Amount = 184.20m,
+                    Timestamp = DateTime.UtcNow.AddHours(-4)
+                },
+                new PosPayment
+                {
+                    ExternalTransactionId = "tx-seed-0002",
+                    Method = PosPaymentMethod.Card,
+                    Subtotal = 405.65m,
+                    Tax = 16.23m,
+                    Discount = 0m,
+                    PointsRedeemed = 0,
+                    PointsEarned = 35,
+                    Amount = 421.88m,
+                    Timestamp = DateTime.UtcNow.AddHours(-3)
+                },
+                new PosPayment
+                {
+                    ExternalTransactionId = "tx-seed-0003",
+                    Method = PosPaymentMethod.Digital,
+                    Subtotal = 226.65m,
+                    Tax = 6.80m,
+                    Discount = 0m,
+                    PointsRedeemed = 0,
+                    PointsEarned = 19,
+                    Amount = 233.45m,
+                    Timestamp = DateTime.UtcNow.AddHours(-2)
+                }
             );
         }
 

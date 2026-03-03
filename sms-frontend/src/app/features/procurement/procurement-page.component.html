@@ -4,29 +4,129 @@
 </section>
 
 <section class="stats-row">
-  <mat-card>
-    <p>Vendors</p>
-    <h2>{{ store.vendors().length }}</h2>
+  <mat-card class="metric-card">
+    <span class="metric-icon"><i class="pi pi-building"></i></span>
+    <div>
+      <p>Vendors</p>
+      <h2>{{ store.vendors().length }}</h2>
+    </div>
   </mat-card>
-  <mat-card>
-    <p>Draft Orders</p>
-    <h2>{{ orderCount() }}</h2>
+  <mat-card class="metric-card">
+    <span class="metric-icon"><i class="pi pi-file-edit"></i></span>
+    <div>
+      <p>Draft Orders</p>
+      <h2>{{ orderCount() }}</h2>
+    </div>
   </mat-card>
-  <mat-card>
-    <p>Generated</p>
-    <h2>{{ generatedAt() | date: 'h:mm a' }}</h2>
+  <mat-card class="metric-card">
+    <span class="metric-icon"><i class="pi pi-clock"></i></span>
+    <div>
+      <p>Generated</p>
+      <h2>{{ generatedAt() | date: 'h:mm a' }}</h2>
+    </div>
   </mat-card>
-  <button mat-stroked-button type="button" (click)="refreshOrders()">Regenerate Draft Orders</button>
+  <button mat-stroked-button class="btn-info-action" type="button" (click)="refreshOrders()">Regenerate Draft Orders</button>
+</section>
+
+<p class="feedback">{{ feedback() }}</p>
+
+<section class="crud-section">
+  <mat-card class="crud-card">
+    <h2>Vendor CRUD</h2>
+
+    <section class="toolbar-row">
+      <input type="search" [ngModel]="vendorQuery()" (ngModelChange)="vendorQuery.set($event)" placeholder="Filter vendors" />
+    </section>
+
+    <section class="form-grid">
+      <input type="text" [ngModel]="createVendorName()" (ngModelChange)="createVendorName.set($event)" placeholder="Vendor name" />
+      <input type="text" [ngModel]="createVendorContact()" (ngModelChange)="createVendorContact.set($event)" placeholder="Contact person" />
+      <input type="email" [ngModel]="createVendorEmail()" (ngModelChange)="createVendorEmail.set($event)" placeholder="Email" />
+      <input type="number" min="1" [ngModel]="createVendorLeadTime()" (ngModelChange)="createVendorLeadTime.set(+$event || 1)" placeholder="Lead time days" />
+      <input
+        type="text"
+        [ngModel]="createVendorDepartments()"
+        (ngModelChange)="createVendorDepartments.set($event)"
+        placeholder="Departments (comma separated)"
+      />
+      <button mat-flat-button class="btn-success-action" type="button" (click)="createVendor()">Create Vendor</button>
+    </section>
+  </mat-card>
+
+  <mat-card class="crud-card">
+    <h2>Draft Order CRUD</h2>
+
+    <section class="form-grid">
+      <select [ngModel]="orderVendorId()" (ngModelChange)="orderVendorId.set($event)">
+        @for (vendor of store.vendors(); track vendor.id) {
+          <option [value]="vendor.id">{{ vendor.name }}</option>
+        }
+      </select>
+      <input type="text" [ngModel]="orderLineName()" (ngModelChange)="orderLineName.set($event)" placeholder="Line item name" />
+      <input type="text" [ngModel]="orderLineSku()" (ngModelChange)="orderLineSku.set($event)" placeholder="SKU" />
+      <input
+        type="number"
+        min="0"
+        [ngModel]="orderLineCurrentStock()"
+        (ngModelChange)="orderLineCurrentStock.set(+$event || 0)"
+        placeholder="Current stock"
+      />
+      <input
+        type="number"
+        min="1"
+        [ngModel]="orderLineSuggestedQty()"
+        (ngModelChange)="orderLineSuggestedQty.set(+$event || 1)"
+        placeholder="Suggested qty"
+      />
+      <div class="action-set">
+        <button mat-flat-button class="btn-success-action" type="button" (click)="saveOrder()">
+          {{ editingOrderId() ? 'Update Order' : 'Create Order' }}
+        </button>
+        @if (editingOrderId()) {
+          <button mat-stroked-button class="btn-neutral-action" type="button" (click)="cancelOrderEdit()">Cancel</button>
+        }
+      </div>
+    </section>
+  </mat-card>
 </section>
 
 <section class="vendor-grid">
-  @for (vendor of store.vendors(); track vendor.id) {
+  @for (vendor of filteredVendors(); track vendor.id) {
     <mat-card class="vendor-card">
-      <h2>{{ vendor.name }}</h2>
-      <p>Contact: {{ vendor.contact }}</p>
-      <p>Email: {{ vendor.email }}</p>
-      <p>Lead time: {{ vendor.leadTimeDays }} days</p>
-      <p>Departments: {{ vendor.departments.join(', ') }}</p>
+      @if (editingVendorId() === vendor.id) {
+        <section class="form-grid compact">
+          <input type="text" [ngModel]="editVendorName()" (ngModelChange)="editVendorName.set($event)" placeholder="Vendor name" />
+          <input type="text" [ngModel]="editVendorContact()" (ngModelChange)="editVendorContact.set($event)" placeholder="Contact person" />
+          <input type="email" [ngModel]="editVendorEmail()" (ngModelChange)="editVendorEmail.set($event)" placeholder="Email" />
+          <input
+            type="number"
+            min="1"
+            [ngModel]="editVendorLeadTime()"
+            (ngModelChange)="editVendorLeadTime.set(+$event || 1)"
+            placeholder="Lead time days"
+          />
+          <input
+            type="text"
+            [ngModel]="editVendorDepartments()"
+            (ngModelChange)="editVendorDepartments.set($event)"
+            placeholder="Departments"
+          />
+          <div class="action-set">
+            <button mat-flat-button class="btn-success-action" type="button" (click)="saveVendor(vendor)">Save</button>
+            <button mat-stroked-button class="btn-neutral-action" type="button" (click)="cancelVendorEdit()">Cancel</button>
+          </div>
+        </section>
+      } @else {
+        <h2>{{ vendor.name }}</h2>
+        <p>Contact: {{ vendor.contact }}</p>
+        <p>Email: {{ vendor.email }}</p>
+        <p>Lead time: {{ vendor.leadTimeDays }} days</p>
+        <p>Departments: {{ vendor.departments.join(', ') }}</p>
+        <div class="card-actions">
+          <button mat-stroked-button class="btn-primary-action" type="button" (click)="beginEditVendor(vendor)">Edit</button>
+          <button mat-stroked-button class="btn-danger-action" type="button" (click)="deleteVendor(vendor)">Delete</button>
+        </div>
+      }
     </mat-card>
   }
 </section>
@@ -34,9 +134,28 @@
 <section class="po-list">
   <header>
     <h2>Draft Purchase Orders</h2>
+    <div class="report-toolbar">
+      <select [ngModel]="vendorFilter()" (ngModelChange)="vendorFilter.set($event)">
+        <option value="all">All Vendors</option>
+        @for (vendor of store.vendors(); track vendor.id) {
+          <option [value]="vendor.id">{{ vendor.name }}</option>
+        }
+      </select>
+      <input type="search" [ngModel]="orderQuery()" (ngModelChange)="orderQuery.set($event)" placeholder="Filter by vendor/item/SKU" />
+      <input
+        type="number"
+        min="0"
+        [ngModel]="minSuggestedQty()"
+        (ngModelChange)="minSuggestedQty.set(+$event || 0)"
+        placeholder="Min suggested qty"
+      />
+      <button mat-stroked-button class="btn-info-action" type="button" [disabled]="exporting()" (click)="exportProcurementReport()">
+        {{ exporting() ? 'Exporting...' : 'Export Filtered Report' }}
+      </button>
+    </div>
   </header>
 
-  @for (order of store.draftPurchaseOrders(); track order.id) {
+  @for (order of filteredOrders(); track order.id) {
     <mat-card class="po-card">
       <div class="po-head">
         <h3>{{ order.vendorName }}</h3>
@@ -63,10 +182,14 @@
           }
         </tbody>
       </table>
+      <div class="card-actions">
+        <button mat-stroked-button class="btn-primary-action" type="button" (click)="beginEditOrder(order.id)">Edit</button>
+        <button mat-stroked-button class="btn-danger-action" type="button" (click)="deleteOrder(order.id)">Delete</button>
+      </div>
     </mat-card>
   }
 
-  @if (store.draftPurchaseOrders().length === 0) {
+  @if (filteredOrders().length === 0) {
     <mat-card class="po-card empty">
       <p>No draft orders currently required. Stock levels are above minimum thresholds.</p>
     </mat-card>

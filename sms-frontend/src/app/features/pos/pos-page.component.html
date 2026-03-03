@@ -1,7 +1,7 @@
 <section class="page-head">
   <h1>Point of Sale</h1>
   <p>
-    Keyboard shortcuts: <kbd>Ctrl+K</kbd> search • <kbd>F2</kbd> hold transaction • <kbd>F3</kbd> resume transaction.
+    Keyboard shortcuts: <kbd>Ctrl+K</kbd> search | <kbd>F2</kbd> hold transaction | <kbd>F3</kbd> resume transaction.
   </p>
 </section>
 
@@ -30,12 +30,12 @@
         <div class="product-card">
           <div>
             <h3>{{ item.name }}</h3>
-            <p>{{ item.sku }} • {{ item.department }}</p>
+            <p>{{ item.sku }} | {{ item.department }}</p>
             <small>Stock: {{ item.stock }}</small>
           </div>
           <div class="product-actions">
             <strong>{{ item.price | currency }}</strong>
-            <button mat-stroked-button type="button" (click)="store.addToCart(item.id)">Add</button>
+            <button mat-stroked-button class="btn-success-action" type="button" (click)="store.addToCart(item.id)">Add</button>
           </div>
         </div>
       }
@@ -71,14 +71,14 @@
               </td>
               <td>
                 <div class="qty">
-                  <button mat-stroked-button type="button" (click)="store.decreaseCartQuantity(line.productId)">-</button>
+                  <button mat-stroked-button class="btn-neutral-action" type="button" (click)="store.decreaseCartQuantity(line.productId)">-</button>
                   <span>{{ line.quantity }}</span>
-                  <button mat-stroked-button type="button" (click)="store.increaseCartQuantity(line.productId)">+</button>
+                  <button mat-stroked-button class="btn-neutral-action" type="button" (click)="store.increaseCartQuantity(line.productId)">+</button>
                 </div>
               </td>
               <td>{{ line.price | currency }}</td>
               <td>
-                <button mat-stroked-button type="button" (click)="store.removeFromCart(line.productId)">Remove</button>
+                <button mat-stroked-button class="btn-danger-action" type="button" (click)="store.removeFromCart(line.productId)">Remove</button>
               </td>
             </tr>
           }
@@ -121,7 +121,7 @@
 
     @if (selectedCustomer()) {
       <p class="customer-pill">
-        Member: <strong>{{ selectedCustomer()?.name }}</strong> • Available points: {{ selectedCustomer()?.points }}
+        Member: <strong>{{ selectedCustomer()?.name }}</strong> | Available points: {{ selectedCustomer()?.points }}
       </p>
     } @else {
       <p class="customer-pill muted">No loyalty member selected. Checkout still allowed.</p>
@@ -137,12 +137,54 @@
     </div>
 
     <div class="actions">
-      <button mat-stroked-button type="button" (click)="holdTransaction()">Hold Transaction</button>
-      <button mat-stroked-button type="button" (click)="resumeTransaction()">Resume Held</button>
-      <button mat-stroked-button type="button" (click)="store.clearCart()">Clear Cart</button>
-      <button mat-flat-button color="primary" type="button" class="checkout" (click)="checkout()">Complete Checkout</button>
+      <button mat-stroked-button class="btn-warning-action" type="button" (click)="holdTransaction()">Hold Transaction</button>
+      <button mat-stroked-button class="btn-info-action" type="button" (click)="resumeTransaction()">Resume Held</button>
+      <button mat-stroked-button class="btn-primary-action" type="button" (click)="generateQuotation()">Generate Quotation</button>
+      <button mat-stroked-button class="btn-danger-action" type="button" (click)="store.clearCart()">Clear Cart</button>
+      <button mat-flat-button type="button" class="checkout btn-success-action" (click)="checkout()">Complete Checkout</button>
     </div>
 
     <p class="status">{{ message() }}</p>
+
+    <section class="payments-log">
+      <header>
+        <h2>Payment Tracking</h2>
+        <span>{{ recentPayments().length }} recent payments</span>
+      </header>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Transaction</th>
+              <th>When</th>
+              <th>Method</th>
+              <th>Items</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (payment of recentPayments(); track payment.transactionId) {
+              <tr>
+                <td>
+                  <strong>{{ payment.transactionId }}</strong>
+                  <small>{{ payment.customerName || 'Walk-in Customer' }}</small>
+                </td>
+                <td>{{ payment.timestamp | date: 'short' }}</td>
+                <td>{{ payment.paymentMethod }}</td>
+                <td>{{ payment.itemCount }}</td>
+                <td>{{ payment.total | currency }}</td>
+              </tr>
+            }
+
+            @if (recentPayments().length === 0) {
+              <tr>
+                <td colspan="5" class="empty">No tracked payments yet.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
   </mat-card>
 </section>

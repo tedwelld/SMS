@@ -14,7 +14,7 @@
 
     <label>
       Password
-      <input type="password" formControlName="password" placeholder="��������" />
+      <input type="password" formControlName="password" placeholder="********" />
     </label>
 
     <label>
@@ -29,7 +29,7 @@
       <p class="error">{{ error() }}</p>
     }
 
-    <button type="submit" [disabled]="submitting()">{{ submitting() ? 'Signing in...' : 'Sign in' }}</button>
+    <button class="btn-primary-action" type="submit" [disabled]="submitting()">{{ submitting() ? 'Signing in...' : 'Sign in' }}</button>
 
     <div class="links">
       <a routerLink="/auth/create-account">Create account</a>

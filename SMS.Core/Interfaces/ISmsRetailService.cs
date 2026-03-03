@@ -12,6 +12,12 @@ public interface ISmsRetailService
         int physicalCount,
         string userRole,
         CancellationToken cancellationToken = default);
+    Task<(ProductDto Product, IReadOnlyList<DraftPurchaseOrderDto> DraftPurchaseOrders)> UpdateStockAsync(
+        string productId,
+        int quantity,
+        string mode,
+        string userRole,
+        CancellationToken cancellationToken = default);
     Task<ProductDto> UpdatePromotionAsync(string productId, UpdatePromotionRequestDto request, string userRole, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<CustomerProfileDto>> GetCustomersAsync(string? search, CancellationToken cancellationToken = default);
     Task<CustomerProfileDto?> GetCustomerByPhoneAsync(string phone, CancellationToken cancellationToken = default);
@@ -21,6 +27,13 @@ public interface ISmsRetailService
     Task<IReadOnlyList<DraftPurchaseOrderDto>> RegenerateDraftPurchaseOrdersAsync(string userRole, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<RetailAuditLogDto>> GetAuditAsync(int limit, CancellationToken cancellationToken = default);
     Task<EodReportDto> GetEodReportAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<PaymentTrackingRecordDto>> GetPaymentsAsync(
+        DateTime? from,
+        DateTime? to,
+        string? method,
+        string? query,
+        int limit,
+        CancellationToken cancellationToken = default);
     Task<IReadOnlyList<ShrinkageReportRowDto>> GetShrinkageReportAsync(CancellationToken cancellationToken = default);
     Task<IReadOnlyList<SalesTrendPointDto>> GetSalesTrendAsync(CancellationToken cancellationToken = default);
     Task<CheckoutResponseDto> CheckoutAsync(CheckoutRequestDto request, CancellationToken cancellationToken = default);

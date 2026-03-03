@@ -1,0 +1,1278 @@
+dbug: Microsoft.EntityFrameworkCore.Infrastructure[10401]
+      An 'IServiceProvider' was created for internal use by Entity Framework.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'CommunicationMessage' to 'Customer' has been configured by convention because there are multiple properties on one entity type - {'RecipientCustomer', 'SenderCustomer'} that could be matched with the properties on the other entity type - {'ReceivedCommunicationMessages', 'SentCommunicationMessages'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'CommunicationMessage' to 'StaffUser' has been configured by convention because there are multiple properties on one entity type - {'RecipientStaffUser', 'SenderStaffUser'} that could be matched with the properties on the other entity type - {'ReceivedCommunicationMessages', 'SentCommunicationMessages'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'Customer' to 'CommunicationMessage' has been configured by convention because there are multiple properties on one entity type - {'ReceivedCommunicationMessages', 'SentCommunicationMessages'} that could be matched with the properties on the other entity type - {'RecipientCustomer', 'SenderCustomer'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'StaffUser' to 'CommunicationMessage' has been configured by convention because there are multiple properties on one entity type - {'ReceivedCommunicationMessages', 'SentCommunicationMessages'} that could be matched with the properties on the other entity type - {'RecipientStaffUser', 'SenderStaffUser'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'StaffUser' to 'TransactionReversal' has been configured by convention because there are multiple properties on one entity type - {'RequestedReversals', 'ReviewedReversals'} that could be matched with the properties on the other entity type - {'RequestedByStaffUser', 'ReviewedByStaffUser'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'TransactionReversal' to 'StaffUser' has been configured by convention because there are multiple properties on one entity type - {'RequestedByStaffUser', 'ReviewedByStaffUser'} that could be matched with the properties on the other entity type - {'RequestedReversals', 'ReviewedReversals'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'CommunicationMessage' to 'Customer' has been configured by convention because there are multiple properties on one entity type - {'RecipientCustomer', 'SenderCustomer'} that could be matched with the properties on the other entity type - {'ReceivedCommunicationMessages', 'SentCommunicationMessages'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'CommunicationMessage' to 'StaffUser' has been configured by convention because there are multiple properties on one entity type - {'RecipientStaffUser', 'SenderStaffUser'} that could be matched with the properties on the other entity type - {'ReceivedCommunicationMessages', 'SentCommunicationMessages'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'Customer' to 'CommunicationMessage' has been configured by convention because there are multiple properties on one entity type - {'ReceivedCommunicationMessages', 'SentCommunicationMessages'} that could be matched with the properties on the other entity type - {'RecipientCustomer', 'SenderCustomer'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'CommunicationMessage' to 'StaffUser' has been configured by convention because there are multiple properties on one entity type - {'RecipientStaffUser', 'SenderStaffUser'} that could be matched with the properties on the other entity type - {'ReceivedCommunicationMessages', 'SentCommunicationMessages'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'CommunicationMessage' to 'StaffUser' has been configured by convention because there are multiple properties on one entity type - {'RecipientStaffUser', 'SenderStaffUser'} that could be matched with the properties on the other entity type - {'ReceivedCommunicationMessages', 'SentCommunicationMessages'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'StaffUser' to 'CommunicationMessage' has been configured by convention because there are multiple properties on one entity type - {'ReceivedCommunicationMessages', 'SentCommunicationMessages'} that could be matched with the properties on the other entity type - {'RecipientStaffUser', 'SenderStaffUser'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'StaffUser' to 'TransactionReversal' has been configured by convention because there are multiple properties on one entity type - {'RequestedReversals', 'ReviewedReversals'} that could be matched with the properties on the other entity type - {'RequestedByStaffUser', 'ReviewedByStaffUser'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'StaffUser' to 'TransactionReversal' has been configured by convention because there are multiple properties on one entity type - {'RequestedReversals', 'ReviewedReversals'} that could be matched with the properties on the other entity type - {'RequestedByStaffUser', 'ReviewedByStaffUser'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'TransactionReversal' to 'StaffUser' has been configured by convention because there are multiple properties on one entity type - {'RequestedByStaffUser', 'ReviewedByStaffUser'} that could be matched with the properties on the other entity type - {'RequestedReversals', 'ReviewedReversals'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10607]
+      No relationship from 'StaffUser' to 'TransactionReversal' has been configured by convention because there are multiple properties on one entity type - {'RequestedReversals', 'ReviewedReversals'} that could be matched with the properties on the other entity type - {'RequestedByStaffUser', 'ReviewedByStaffUser'}. This message can be disregarded if explicit configuration has been specified in 'OnModelCreating'.
+dbug: Microsoft.EntityFrameworkCore.Model[10601]
+      The index {'CustomerId'} was not created on entity type 'AccountNotification' as the properties are already covered by the index {'CustomerId', 'CreatedAt'}.
+dbug: Microsoft.EntityFrameworkCore.Model[10601]
+      The index {'CustomerAccountId'} was not created on entity type 'AgentFloatTransaction' as the properties are already covered by the index {'CustomerAccountId', 'CreatedAt'}.
+dbug: Microsoft.EntityFrameworkCore.Model[10601]
+      The index {'CustomerAccountId'} was not created on entity type 'AirtimePurchase' as the properties are already covered by the index {'CustomerAccountId', 'CreatedAt'}.
+dbug: Microsoft.EntityFrameworkCore.Model[10601]
+      The index {'CustomerAccountId'} was not created on entity type 'BillPayment' as the properties are already covered by the index {'CustomerAccountId', 'CreatedAt'}.
+dbug: Microsoft.EntityFrameworkCore.Model[10601]
+      The index {'RecipientCustomerId'} was not created on entity type 'CommunicationMessage' as the properties are already covered by the index {'RecipientCustomerId', 'RecipientStaffUserId', 'CreatedAt'}.
+dbug: Microsoft.EntityFrameworkCore.Model[10601]
+      The index {'SenderCustomerId'} was not created on entity type 'CommunicationMessage' as the properties are already covered by the index {'SenderCustomerId', 'SenderStaffUserId', 'CreatedAt'}.
+dbug: Microsoft.EntityFrameworkCore.Model[10601]
+      The index {'CustomerId'} was not created on entity type 'CustomerPurchaseRecord' as the properties are already covered by the index {'CustomerId', 'Date'}.
+dbug: Microsoft.EntityFrameworkCore.Model[10601]
+      The index {'CustomerAccountId'} was not created on entity type 'MerchantTillPayment' as the properties are already covered by the index {'CustomerAccountId', 'CreatedAt'}.
+dbug: Microsoft.EntityFrameworkCore.Model[10601]
+      The index {'VendorId'} was not created on entity type 'VendorDepartment' as the properties are already covered by the index {'VendorId', 'Department'}.
+dbug: Microsoft.EntityFrameworkCore.Model[10601]
+      The index {'CustomerAccountId'} was not created on entity type 'WalletTransaction' as the properties are already covered by the index {'CustomerAccountId', 'CreatedAt'}.
+warn: Microsoft.EntityFrameworkCore.Model.Validation[10400]
+      Sensitive data logging is enabled. Log entries and exception messages may include sensitive application data; this mode should only be enabled during development.
+dbug: Microsoft.EntityFrameworkCore.Infrastructure[10403]
+      Entity Framework Core 10.0.3 initialized 'SmsDbContext' using provider 'Microsoft.EntityFrameworkCore.SqlServer:10.0.3' with options: SensitiveDataLoggingEnabled DetailedErrorsEnabled CommandTimeout=30 MigrationsAssembly=SMS.Data EngineType=SqlServer 
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20005]
+      Creating DbConnection.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20006]
+      Created DbConnection. (39ms).
+dbug: Microsoft.EntityFrameworkCore.Migrations[20400]
+      Migrating using database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20000]
+      Opening connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20001]
+      Opened connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20103]
+      Creating DbCommand for 'ExecuteNonQuery'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20104]
+      Created DbCommand for 'ExecuteNonQuery' (11ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20106]
+      Initialized DbCommand for 'ExecuteNonQuery' (22ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20100]
+      Executing DbCommand [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (54ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT 1
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20002]
+      Closing connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20003]
+      Closed connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB' (6ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20000]
+      Opening connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20001]
+      Opened connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+info: Microsoft.EntityFrameworkCore.Migrations[20411]
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20103]
+      Creating DbCommand for 'ExecuteScalar'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20104]
+      Created DbCommand for 'ExecuteScalar' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20106]
+      Initialized DbCommand for 'ExecuteScalar' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20100]
+      Executing DbCommand [Parameters=[], CommandType='Text', CommandTimeout='30']
+      DECLARE @result int;
+      EXEC @result = sp_getapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session', @LockMode = 'Exclusive';
+      SELECT @result
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (41ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      DECLARE @result int;
+      EXEC @result = sp_getapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session', @LockMode = 'Exclusive';
+      SELECT @result
+dbug: Microsoft.EntityFrameworkCore.Database.Transaction[20209]
+      Beginning transaction with isolation level 'Unspecified'.
+dbug: Microsoft.EntityFrameworkCore.Database.Transaction[20200]
+      Began transaction with isolation level 'ReadCommitted'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20103]
+      Creating DbCommand for 'ExecuteNonQuery'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20104]
+      Created DbCommand for 'ExecuteNonQuery' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20106]
+      Initialized DbCommand for 'ExecuteNonQuery' (1ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20100]
+      Executing DbCommand [Parameters=[], CommandType='Text', CommandTimeout='30']
+      IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+      BEGIN
+          CREATE TABLE [__EFMigrationsHistory] (
+              [MigrationId] nvarchar(150) NOT NULL,
+              [ProductVersion] nvarchar(32) NOT NULL,
+              CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+          );
+      END;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+      BEGIN
+          CREATE TABLE [__EFMigrationsHistory] (
+              [MigrationId] nvarchar(150) NOT NULL,
+              [ProductVersion] nvarchar(32) NOT NULL,
+              CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+          );
+      END;
+dbug: Microsoft.EntityFrameworkCore.Database.Transaction[20210]
+      Committing transaction.
+dbug: Microsoft.EntityFrameworkCore.Database.Transaction[20202]
+      Committed transaction.
+dbug: Microsoft.EntityFrameworkCore.Database.Transaction[20204]
+      Disposing transaction.
+dbug: Microsoft.EntityFrameworkCore.Database.Transaction[20209]
+      Beginning transaction with isolation level 'Unspecified'.
+dbug: Microsoft.EntityFrameworkCore.Database.Transaction[20200]
+      Began transaction with isolation level 'ReadCommitted'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20103]
+      Creating DbCommand for 'ExecuteNonQuery'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20104]
+      Created DbCommand for 'ExecuteNonQuery' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20106]
+      Initialized DbCommand for 'ExecuteNonQuery' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20100]
+      Executing DbCommand [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT 1
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20103]
+      Creating DbCommand for 'ExecuteScalar'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20104]
+      Created DbCommand for 'ExecuteScalar' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20106]
+      Initialized DbCommand for 'ExecuteScalar' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20100]
+      Executing DbCommand [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20103]
+      Creating DbCommand for 'ExecuteReader'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20104]
+      Created DbCommand for 'ExecuteReader' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20106]
+      Initialized DbCommand for 'ExecuteReader' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20100]
+      Executing DbCommand [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [MigrationId], [ProductVersion]
+      FROM [__EFMigrationsHistory]
+      ORDER BY [MigrationId];
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [MigrationId], [ProductVersion]
+      FROM [__EFMigrationsHistory]
+      ORDER BY [MigrationId];
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20301]
+      Closing data reader to 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20300]
+      A data reader for 'SMSDb' on server '(localdb)\MSSQLLocalDB' is being disposed after spending 13ms reading results.
+info: Microsoft.EntityFrameworkCore.Migrations[20405]
+      No migrations were applied. The database is already up to date.
+dbug: Microsoft.EntityFrameworkCore.Database.Transaction[20210]
+      Committing transaction.
+dbug: Microsoft.EntityFrameworkCore.Database.Transaction[20202]
+      Committed transaction.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20103]
+      Creating DbCommand for 'ExecuteScalar'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20104]
+      Created DbCommand for 'ExecuteScalar' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20106]
+      Initialized DbCommand for 'ExecuteScalar' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20100]
+      Executing DbCommand [Parameters=[], CommandType='Text', CommandTimeout='30']
+      DECLARE @result int;
+      EXEC @result = sp_releaseapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session';
+      SELECT @result
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      DECLARE @result int;
+      EXEC @result = sp_releaseapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session';
+      SELECT @result
+dbug: Microsoft.EntityFrameworkCore.Database.Transaction[20204]
+      Disposing transaction.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20002]
+      Closing connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20003]
+      Closed connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Query[10111]
+      Compiling query expression: 
+      'DbSet<StaffUser>()
+          .FirstOrDefault(x => x.Username == @seed_Username || x.Email == @seed_Email)'
+dbug: Microsoft.EntityFrameworkCore.Query[10107]
+      Generated query execution expression: 
+      'queryContext => ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync<StaffUser>(
+          asyncEnumerable: SingleQueryingEnumerable.Create<StaffUser>(
+              relationalQueryContext: (RelationalQueryContext)queryContext, 
+              relationalCommandResolver: parameters => [LIFTABLE Constant: RelationalCommandCache.QueryExpression(
+                  Projection Mapping:
+                      EmptyProjectionMember -> Dictionary<IPropertyBase, int> { [Property: StaffUser.Id (int) Required PK AfterSave:Throw ValueGenerated.OnAdd, 0], [Property: StaffUser.CanApproveReversals (bool) Required Sentinel:True ValueGenerated.OnAdd, 1], [Property: StaffUser.DateCreated (DateTime) Required ValueGenerated.OnAdd, 2], [Property: StaffUser.Department (string) MaxLength(100), 3], [Property: StaffUser.Email (string) Required Index MaxLength(200), 4], [Property: StaffUser.IsActive (bool) Required, 5], [Property: StaffUser.Name (string) Required MaxLength(200), 6], [Property: StaffUser.NotificationsEnabled (bool) Required Sentinel:True ValueGenerated.OnAdd, 7], [Property: StaffUser.PasswordHash (string) Required MaxLength(256), 8], [Property: StaffUser.PhoneNumber (string) MaxLength(30), 9], [Property: StaffUser.ProfileImageUrl (string) MaxLength(4000), 10], [Property: StaffUser.Role (string) Required MaxLength(50), 11], [Property: StaffUser.Username (string) Required Index MaxLength(100), 12] }
+                  SELECT TOP(1) s.Id, s.CanApproveReversals, s.DateCreated, s.Department, s.Email, s.IsActive, s.Name, s.NotificationsEnabled, s.PasswordHash, s.PhoneNumber, s.ProfileImageUrl, s.Role, s.Username
+                  FROM StaffUsers AS s
+                  WHERE (s.Username == @seed_Username) || (s.Email == @seed_Email)) | Resolver: c => new RelationalCommandCache(
+                  c.Dependencies.MemoryCache, 
+                  c.RelationalDependencies.QuerySqlGeneratorFactory, 
+                  c.RelationalDependencies.RelationalParameterBasedSqlProcessorFactory, 
+                  Projection Mapping:
+                      EmptyProjectionMember -> Dictionary<IPropertyBase, int> { [Property: StaffUser.Id (int) Required PK AfterSave:Throw ValueGenerated.OnAdd, 0], [Property: StaffUser.CanApproveReversals (bool) Required Sentinel:True ValueGenerated.OnAdd, 1], [Property: StaffUser.DateCreated (DateTime) Required ValueGenerated.OnAdd, 2], [Property: StaffUser.Department (string) MaxLength(100), 3], [Property: StaffUser.Email (string) Required Index MaxLength(200), 4], [Property: StaffUser.IsActive (bool) Required, 5], [Property: StaffUser.Name (string) Required MaxLength(200), 6], [Property: StaffUser.NotificationsEnabled (bool) Required Sentinel:True ValueGenerated.OnAdd, 7], [Property: StaffUser.PasswordHash (string) Required MaxLength(256), 8], [Property: StaffUser.PhoneNumber (string) MaxLength(30), 9], [Property: StaffUser.ProfileImageUrl (string) MaxLength(4000), 10], [Property: StaffUser.Role (string) Required MaxLength(50), 11], [Property: StaffUser.Username (string) Required Index MaxLength(100), 12] }
+                  SELECT TOP(1) s.Id, s.CanApproveReversals, s.DateCreated, s.Department, s.Email, s.IsActive, s.Name, s.NotificationsEnabled, s.PasswordHash, s.PhoneNumber, s.ProfileImageUrl, s.Role, s.Username
+                  FROM StaffUsers AS s
+                  WHERE (s.Username == @seed_Username) || (s.Email == @seed_Email), 
+                  False, 
+                  MultipleParameters
+              )].GetRelationalCommandTemplate(parameters), 
+              readerColumns: [LIFTABLE Constant: ReaderColumn[] { ReaderColumn<int>, ReaderColumn<bool>, ReaderColumn<DateTime>, ReaderColumn<object>, ReaderColumn<object>, ReaderColumn<bool>, ReaderColumn<object>, ReaderColumn<bool>, ReaderColumn<object>, ReaderColumn<object>, ReaderColumn<object>, ReaderColumn<object>, ReaderColumn<object> } | Resolver: namelessParameter{0} => new ReaderColumn[]
+              { 
+                  new ReaderColumn<int>(
+                      False, 
+                      null, 
+                      namelessParameter{0}.Dependencies.Model.FindEntityType("SMS.Data.EntityModels.StaffUser").FindProperty("Id"), 
+                      (dataReader, indexMap) => dataReader.GetInt32(0)
+                  ), 
+                  new ReaderColumn<bool>(
+                      False, 
+                      null, 
+                      namelessParameter{0}.Dependencies.Model.FindEntityType("SMS.Data.EntityModels.StaffUser").FindProperty("CanApproveReversals"), 
+                      (dataReader, indexMap) => dataReader.GetBoolean(1)
+                  ), 
+                  new ReaderColumn<DateTime>(
+                      False, 
+                      null, 
+                      namelessParameter{0}.Dependencies.Model.FindEntityType("SMS.Data.EntityModels.StaffUser").FindProperty("DateCreated"), 
+                      (dataReader, indexMap) => dataReader.GetDateTime(2)
+                  ), 
+                  new ReaderColumn<object>(
+                      True, 
+                      null, 
+                      namelessParameter{0}.Dependencies.Model.FindEntityType("SMS.Data.EntityModels.StaffUser").FindProperty("Department"), 
+                      (dataReader, indexMap) => (object)dataReader.GetString(3)
+                  ), 
+                  new ReaderColumn<object>(
+                      False, 
+                      null, 
+                      namelessParameter{0}.Dependencies.Model.FindEntityType("SMS.Data.EntityModels.StaffUser").FindProperty("Email"), 
+                      (dataReader, indexMap) => (object)dataReader.GetString(4)
+                  ), 
+                  new ReaderColumn<bool>(
+                      False, 
+                      null, 
+                      namelessParameter{0}.Dependencies.Model.FindEntityType("SMS.Data.EntityModels.StaffUser").FindProperty("IsActive"), 
+                      (dataReader, indexMap) => dataReader.GetBoolean(5)
+                  ), 
+                  new ReaderColumn<object>(
+                      False, 
+                      null, 
+                      namelessParameter{0}.Dependencies.Model.FindEntityType("SMS.Data.EntityModels.StaffUser").FindProperty("Name"), 
+                      (dataReader, indexMap) => (object)dataReader.GetString(6)
+                  ), 
+                  new ReaderColumn<bool>(
+                      False, 
+                      null, 
+                      namelessParameter{0}.Dependencies.Model.FindEntityType("SMS.Data.EntityModels.StaffUser").FindProperty("NotificationsEnabled"), 
+                      (dataReader, indexMap) => dataReader.GetBoolean(7)
+                  ), 
+                  new ReaderColumn<object>(
+                      False, 
+                      null, 
+                      namelessParameter{0}.Dependencies.Model.FindEntityType("SMS.Data.EntityModels.StaffUser").FindProperty("PasswordHash"), 
+                      (dataReader, indexMap) => (object)dataReader.GetString(8)
+                  ), 
+                  new ReaderColumn<object>(
+                      True, 
+                      null, 
+                      namelessParameter{0}.Dependencies.Model.FindEntityType("SMS.Data.EntityModels.StaffUser").FindProperty("PhoneNumber"), 
+                      (dataReader, indexMap) => (object)dataReader.GetString(9)
+                  ), 
+                  new ReaderColumn<object>(
+                      True, 
+                      null, 
+                      namelessParameter{0}.Dependencies.Model.FindEntityType("SMS.Data.EntityModels.StaffUser").FindProperty("ProfileImageUrl"), 
+                      (dataReader, indexMap) => (object)dataReader.GetString(10)
+                  ), 
+                  new ReaderColumn<object>(
+                      False, 
+                      null, 
+                      namelessParameter{0}.Dependencies.Model.FindEntityType("SMS.Data.EntityModels.StaffUser").FindProperty("Role"), 
+                      (dataReader, indexMap) => (object)dataReader.GetString(11)
+                  ), 
+                  new ReaderColumn<object>(
+                      False, 
+                      null, 
+                      namelessParameter{0}.Dependencies.Model.FindEntityType("SMS.Data.EntityModels.StaffUser").FindProperty("Username"), 
+                      (dataReader, indexMap) => (object)dataReader.GetString(12)
+                  ) 
+              }], 
+              shaper: (queryContext, dataReader, resultContext, resultCoordinator) => 
+              {
+                  StaffUser entity;
+                  entity = 
+                  {
+                      MaterializationContext materializationContext1;
+                      IEntityType entityType1;
+                      StaffUser instance1;
+                      InternalEntityEntry entry1;
+                      bool hasNullKey1;
+                      materializationContext1 = new MaterializationContext(
+                          [LIFTABLE Constant: ValueBuffer | Resolver: _ => (object)ValueBuffer.Empty], 
+                          queryContext.Context
+                      );
+                      instance1 = default(StaffUser);
+                      entry1 = queryContext.TryGetEntry(
+                          key: [LIFTABLE Constant: Key: StaffUser.Id PK | Resolver: c => c.Dependencies.Model.FindEntityType("SMS.Data.EntityModels.StaffUser").FindPrimaryKey()], 
+                          keyValues: new object[]{ (object)dataReader.GetInt32(0) }, 
+                          throwOnNullKey: True, 
+                          hasNullKey: hasNullKey1);
+                      !(hasNullKey1) ? entry1 != default(InternalEntityEntry) ? 
+                      {
+                          entityType1 = entry1.EntityType;
+                          return instance1 = (StaffUser)entry1.Entity;
+                      } : 
+                      {
+                          ISnapshot shadowSnapshot1;
+                          shadowSnapshot1 = [LIFTABLE Constant: Snapshot | Resolver: _ => Snapshot.Empty];
+                          entityType1 = [LIFTABLE Constant: EntityType: StaffUser | Resolver: namelessParameter{1} => namelessParameter{1}.Dependencies.Model.FindEntityType("SMS.Data.EntityModels.StaffUser")];
+                          instance1 = switch (entityType1)
+                          {
+                              case [LIFTABLE Constant: EntityType: StaffUser | Resolver: namelessParameter{2} => namelessParameter{2}.Dependencies.Model.FindEntityType("SMS.Data.EntityModels.StaffUser")]: 
+                                  {
+                                      return 
+                                      {
+                                          StaffUser instance;
+                                          instance = new StaffUser();
+                                          instance.<Id>k__BackingField = dataReader.GetInt32(0);
+                                          instance.<CanApproveReversals>k__BackingField = dataReader.GetBoolean(1);
+                                          instance.<DateCreated>k__BackingField = dataReader.GetDateTime(2);
+                                          instance.<Department>k__BackingField = dataReader.IsDBNull(3) ? default(string) : (string)dataReader.GetFieldValue<object>(3);
+                                          instance.<Email>k__BackingField = (string)dataReader.GetFieldValue<object>(4);
+                                          instance.<IsActive>k__BackingField = dataReader.GetBoolean(5);
+                                          instance.<Name>k__BackingField = (string)dataReader.GetFieldValue<object>(6);
+                                          instance.<NotificationsEnabled>k__BackingField = dataReader.GetBoolean(7);
+                                          instance.<PasswordHash>k__BackingField = (string)dataReader.GetFieldValue<object>(8);
+                                          instance.<PhoneNumber>k__BackingField = dataReader.IsDBNull(9) ? default(string) : (string)dataReader.GetFieldValue<object>(9);
+                                          instance.<ProfileImageUrl>k__BackingField = dataReader.IsDBNull(10) ? default(string) : (string)dataReader.GetFieldValue<object>(10);
+                                          instance.<Role>k__BackingField = (string)dataReader.GetFieldValue<object>(11);
+                                          instance.<Username>k__BackingField = (string)dataReader.GetFieldValue<object>(12);
+                                          (instance is IInjectableService) ? ((IInjectableService)instance).Injected(
+                                              context: materializationContext1.Context, 
+                                              entity: instance, 
+                                              queryTrackingBehavior: TrackAll, 
+                                              structuralType: [LIFTABLE Constant: EntityType: StaffUser | Resolver: namelessParameter{3} => namelessParameter{3}.Dependencies.Model.FindEntityType("SMS.Data.EntityModels.StaffUser")]) : default(void);
+                                          return instance;
+                                      }}
+                              default: 
+                                  default(StaffUser)
+                          }
+                          ;
+                          entry1 = entityType1 == default(IEntityType) ? default(InternalEntityEntry) : queryContext.StartTracking(
+                              entityType: entityType1, 
+                              entity: instance1, 
+                              snapshot: shadowSnapshot1);
+                          return instance1;
+                      } : default(void);
+                      return instance1;
+                  };
+                  return entity;
+              }, 
+              contextType: SMS.Data.DbContext.SmsDbContext, 
+              standAloneStateManager: False, 
+              detailedErrorsEnabled: True, 
+              threadSafetyChecksEnabled: True), 
+          cancellationToken: queryContext.CancellationToken)'
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20000]
+      Opening connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20001]
+      Opened connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20103]
+      Creating DbCommand for 'ExecuteReader'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20104]
+      Created DbCommand for 'ExecuteReader' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20106]
+      Initialized DbCommand for 'ExecuteReader' (6ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20100]
+      Executing DbCommand [Parameters=[@seed_Username='admin' (Size = 100), @seed_Email='admin@sms.local' (Size = 200)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[CanApproveReversals], [s].[DateCreated], [s].[Department], [s].[Email], [s].[IsActive], [s].[Name], [s].[NotificationsEnabled], [s].[PasswordHash], [s].[PhoneNumber], [s].[ProfileImageUrl], [s].[Role], [s].[Username]
+      FROM [StaffUsers] AS [s]
+      WHERE [s].[Username] = @seed_Username OR [s].[Email] = @seed_Email
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (44ms) [Parameters=[@seed_Username='admin' (Size = 100), @seed_Email='admin@sms.local' (Size = 200)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[CanApproveReversals], [s].[DateCreated], [s].[Department], [s].[Email], [s].[IsActive], [s].[Name], [s].[NotificationsEnabled], [s].[PasswordHash], [s].[PhoneNumber], [s].[ProfileImageUrl], [s].[Role], [s].[Username]
+      FROM [StaffUsers] AS [s]
+      WHERE [s].[Username] = @seed_Username OR [s].[Email] = @seed_Email
+dbug: Microsoft.EntityFrameworkCore.ChangeTracking[10806]
+      Context 'SmsDbContext' started tracking 'StaffUser' entity with key '{Id: 1}'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20301]
+      Closing data reader to 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20300]
+      A data reader for 'SMSDb' on server '(localdb)\MSSQLLocalDB' is being disposed after spending 229ms reading results.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20002]
+      Closing connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20003]
+      Closed connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20000]
+      Opening connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20001]
+      Opened connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20103]
+      Creating DbCommand for 'ExecuteReader'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20104]
+      Created DbCommand for 'ExecuteReader' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20106]
+      Initialized DbCommand for 'ExecuteReader' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20100]
+      Executing DbCommand [Parameters=[@seed_Username='admin_ops' (Size = 100), @seed_Email='admin.ops@sms.local' (Size = 200)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[CanApproveReversals], [s].[DateCreated], [s].[Department], [s].[Email], [s].[IsActive], [s].[Name], [s].[NotificationsEnabled], [s].[PasswordHash], [s].[PhoneNumber], [s].[ProfileImageUrl], [s].[Role], [s].[Username]
+      FROM [StaffUsers] AS [s]
+      WHERE [s].[Username] = @seed_Username OR [s].[Email] = @seed_Email
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@seed_Username='admin_ops' (Size = 100), @seed_Email='admin.ops@sms.local' (Size = 200)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[CanApproveReversals], [s].[DateCreated], [s].[Department], [s].[Email], [s].[IsActive], [s].[Name], [s].[NotificationsEnabled], [s].[PasswordHash], [s].[PhoneNumber], [s].[ProfileImageUrl], [s].[Role], [s].[Username]
+      FROM [StaffUsers] AS [s]
+      WHERE [s].[Username] = @seed_Username OR [s].[Email] = @seed_Email
+dbug: Microsoft.EntityFrameworkCore.ChangeTracking[10806]
+      Context 'SmsDbContext' started tracking 'StaffUser' entity with key '{Id: 2}'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20301]
+      Closing data reader to 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20300]
+      A data reader for 'SMSDb' on server '(localdb)\MSSQLLocalDB' is being disposed after spending 0ms reading results.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20002]
+      Closing connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20003]
+      Closed connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20000]
+      Opening connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20001]
+      Opened connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20103]
+      Creating DbCommand for 'ExecuteReader'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20104]
+      Created DbCommand for 'ExecuteReader' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20106]
+      Initialized DbCommand for 'ExecuteReader' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20100]
+      Executing DbCommand [Parameters=[@seed_Username='staff_pos' (Size = 100), @seed_Email='staff@sms.local' (Size = 200)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[CanApproveReversals], [s].[DateCreated], [s].[Department], [s].[Email], [s].[IsActive], [s].[Name], [s].[NotificationsEnabled], [s].[PasswordHash], [s].[PhoneNumber], [s].[ProfileImageUrl], [s].[Role], [s].[Username]
+      FROM [StaffUsers] AS [s]
+      WHERE [s].[Username] = @seed_Username OR [s].[Email] = @seed_Email
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@seed_Username='staff_pos' (Size = 100), @seed_Email='staff@sms.local' (Size = 200)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [s].[Id], [s].[CanApproveReversals], [s].[DateCreated], [s].[Department], [s].[Email], [s].[IsActive], [s].[Name], [s].[NotificationsEnabled], [s].[PasswordHash], [s].[PhoneNumber], [s].[ProfileImageUrl], [s].[Role], [s].[Username]
+      FROM [StaffUsers] AS [s]
+      WHERE [s].[Username] = @seed_Username OR [s].[Email] = @seed_Email
+dbug: Microsoft.EntityFrameworkCore.ChangeTracking[10806]
+      Context 'SmsDbContext' started tracking 'StaffUser' entity with key '{Id: 3}'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20301]
+      Closing data reader to 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20300]
+      A data reader for 'SMSDb' on server '(localdb)\MSSQLLocalDB' is being disposed after spending 0ms reading results.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20002]
+      Closing connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20003]
+      Closed connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Query[10111]
+      Compiling query expression: 
+      'DbSet<RetailSetting>()
+          .OrderBy(x => x.Id)
+          .FirstOrDefault()'
+dbug: Microsoft.EntityFrameworkCore.Query[10107]
+      Generated query execution expression: 
+      'queryContext => ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync<RetailSetting>(
+          asyncEnumerable: SingleQueryingEnumerable.Create<RetailSetting>(
+              relationalQueryContext: (RelationalQueryContext)queryContext, 
+              relationalCommandResolver: parameters => [LIFTABLE Constant: RelationalCommandCache.QueryExpression(
+                  Projection Mapping:
+                      EmptyProjectionMember -> Dictionary<IPropertyBase, int> { [Property: RetailSetting.Id (int) Required PK AfterSave:Throw ValueGenerated.OnAdd, 0], [Property: RetailSetting.ActiveRole (string) Required MaxLength(50), 1], [Property: RetailSetting.OfflineMode (bool) Required, 2] }
+                  SELECT TOP(1) r.Id, r.ActiveRole, r.OfflineMode
+                  FROM RetailSettings AS r
+                  ORDER BY r.Id ASC) | Resolver: c => new RelationalCommandCache(
+                  c.Dependencies.MemoryCache, 
+                  c.RelationalDependencies.QuerySqlGeneratorFactory, 
+                  c.RelationalDependencies.RelationalParameterBasedSqlProcessorFactory, 
+                  Projection Mapping:
+                      EmptyProjectionMember -> Dictionary<IPropertyBase, int> { [Property: RetailSetting.Id (int) Required PK AfterSave:Throw ValueGenerated.OnAdd, 0], [Property: RetailSetting.ActiveRole (string) Required MaxLength(50), 1], [Property: RetailSetting.OfflineMode (bool) Required, 2] }
+                  SELECT TOP(1) r.Id, r.ActiveRole, r.OfflineMode
+                  FROM RetailSettings AS r
+                  ORDER BY r.Id ASC, 
+                  False, 
+                  MultipleParameters
+              )].GetRelationalCommandTemplate(parameters), 
+              readerColumns: [LIFTABLE Constant: ReaderColumn[] { ReaderColumn<int>, ReaderColumn<object>, ReaderColumn<bool> } | Resolver: namelessParameter{0} => new ReaderColumn[]
+              { 
+                  new ReaderColumn<int>(
+                      False, 
+                      null, 
+                      namelessParameter{0}.Dependencies.Model.FindEntityType("SMS.Data.EntityModels.RetailSetting").FindProperty("Id"), 
+                      (dataReader, indexMap) => dataReader.GetInt32(0)
+                  ), 
+                  new ReaderColumn<object>(
+                      False, 
+                      null, 
+                      namelessParameter{0}.Dependencies.Model.FindEntityType("SMS.Data.EntityModels.RetailSetting").FindProperty("ActiveRole"), 
+                      (dataReader, indexMap) => (object)dataReader.GetString(1)
+                  ), 
+                  new ReaderColumn<bool>(
+                      False, 
+                      null, 
+                      namelessParameter{0}.Dependencies.Model.FindEntityType("SMS.Data.EntityModels.RetailSetting").FindProperty("OfflineMode"), 
+                      (dataReader, indexMap) => dataReader.GetBoolean(2)
+                  ) 
+              }], 
+              shaper: (queryContext, dataReader, resultContext, resultCoordinator) => 
+              {
+                  RetailSetting entity;
+                  entity = 
+                  {
+                      MaterializationContext materializationContext1;
+                      IEntityType entityType1;
+                      RetailSetting instance1;
+                      InternalEntityEntry entry1;
+                      bool hasNullKey1;
+                      materializationContext1 = new MaterializationContext(
+                          [LIFTABLE Constant: ValueBuffer | Resolver: _ => (object)ValueBuffer.Empty], 
+                          queryContext.Context
+                      );
+                      instance1 = default(RetailSetting);
+                      entry1 = queryContext.TryGetEntry(
+                          key: [LIFTABLE Constant: Key: RetailSetting.Id PK | Resolver: c => c.Dependencies.Model.FindEntityType("SMS.Data.EntityModels.RetailSetting").FindPrimaryKey()], 
+                          keyValues: new object[]{ (object)dataReader.GetInt32(0) }, 
+                          throwOnNullKey: True, 
+                          hasNullKey: hasNullKey1);
+                      !(hasNullKey1) ? entry1 != default(InternalEntityEntry) ? 
+                      {
+                          entityType1 = entry1.EntityType;
+                          return instance1 = (RetailSetting)entry1.Entity;
+                      } : 
+                      {
+                          ISnapshot shadowSnapshot1;
+                          shadowSnapshot1 = [LIFTABLE Constant: Snapshot | Resolver: _ => Snapshot.Empty];
+                          entityType1 = [LIFTABLE Constant: EntityType: RetailSetting | Resolver: namelessParameter{1} => namelessParameter{1}.Dependencies.Model.FindEntityType("SMS.Data.EntityModels.RetailSetting")];
+                          instance1 = switch (entityType1)
+                          {
+                              case [LIFTABLE Constant: EntityType: RetailSetting | Resolver: namelessParameter{2} => namelessParameter{2}.Dependencies.Model.FindEntityType("SMS.Data.EntityModels.RetailSetting")]: 
+                                  {
+                                      return 
+                                      {
+                                          RetailSetting instance;
+                                          instance = new RetailSetting();
+                                          instance.<Id>k__BackingField = dataReader.GetInt32(0);
+                                          instance.<ActiveRole>k__BackingField = (string)dataReader.GetFieldValue<object>(1);
+                                          instance.<OfflineMode>k__BackingField = dataReader.GetBoolean(2);
+                                          (instance is IInjectableService) ? ((IInjectableService)instance).Injected(
+                                              context: materializationContext1.Context, 
+                                              entity: instance, 
+                                              queryTrackingBehavior: TrackAll, 
+                                              structuralType: [LIFTABLE Constant: EntityType: RetailSetting | Resolver: namelessParameter{3} => namelessParameter{3}.Dependencies.Model.FindEntityType("SMS.Data.EntityModels.RetailSetting")]) : default(void);
+                                          return instance;
+                                      }}
+                              default: 
+                                  default(RetailSetting)
+                          }
+                          ;
+                          entry1 = entityType1 == default(IEntityType) ? default(InternalEntityEntry) : queryContext.StartTracking(
+                              entityType: entityType1, 
+                              entity: instance1, 
+                              snapshot: shadowSnapshot1);
+                          return instance1;
+                      } : default(void);
+                      return instance1;
+                  };
+                  return entity;
+              }, 
+              contextType: SMS.Data.DbContext.SmsDbContext, 
+              standAloneStateManager: False, 
+              detailedErrorsEnabled: True, 
+              threadSafetyChecksEnabled: True), 
+          cancellationToken: queryContext.CancellationToken)'
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20000]
+      Opening connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20001]
+      Opened connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20103]
+      Creating DbCommand for 'ExecuteReader'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20104]
+      Created DbCommand for 'ExecuteReader' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20106]
+      Initialized DbCommand for 'ExecuteReader' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20100]
+      Executing DbCommand [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [r].[Id], [r].[ActiveRole], [r].[OfflineMode]
+      FROM [RetailSettings] AS [r]
+      ORDER BY [r].[Id]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [r].[Id], [r].[ActiveRole], [r].[OfflineMode]
+      FROM [RetailSettings] AS [r]
+      ORDER BY [r].[Id]
+dbug: Microsoft.EntityFrameworkCore.ChangeTracking[10806]
+      Context 'SmsDbContext' started tracking 'RetailSetting' entity with key '{Id: 1}'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20301]
+      Closing data reader to 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20300]
+      A data reader for 'SMSDb' on server '(localdb)\MSSQLLocalDB' is being disposed after spending 10ms reading results.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20002]
+      Closing connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20003]
+      Closed connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Query[10111]
+      Compiling query expression: 
+      'DbSet<Product>()
+          .Any()'
+dbug: Microsoft.EntityFrameworkCore.Query[10107]
+      Generated query execution expression: 
+      'queryContext => ShapedQueryCompilingExpressionVisitor.SingleAsync<bool>(
+          asyncEnumerable: SingleQueryingEnumerable.Create<bool>(
+              relationalQueryContext: (RelationalQueryContext)queryContext, 
+              relationalCommandResolver: parameters => [LIFTABLE Constant: RelationalCommandCache.QueryExpression(
+                  Projection Mapping:
+                      EmptyProjectionMember -> 0
+                  SELECT EXISTS (
+                      SELECT 1
+                      FROM Products AS p)) | Resolver: c => new RelationalCommandCache(
+                  c.Dependencies.MemoryCache, 
+                  c.RelationalDependencies.QuerySqlGeneratorFactory, 
+                  c.RelationalDependencies.RelationalParameterBasedSqlProcessorFactory, 
+                  Projection Mapping:
+                      EmptyProjectionMember -> 0
+                  SELECT EXISTS (
+                      SELECT 1
+                      FROM Products AS p), 
+                  False, 
+                  MultipleParameters
+              )].GetRelationalCommandTemplate(parameters), 
+              readerColumns: [LIFTABLE Constant: ReaderColumn[] { ReaderColumn<bool> } | Resolver: namelessParameter{0} => new ReaderColumn[]{ new ReaderColumn<bool>(
+                  True, 
+                  null, 
+                  default(IPropertyBase), 
+                  (dataReader, indexMap) => dataReader.GetBoolean(0)
+              ) }], 
+              shaper: (queryContext, dataReader, resultContext, resultCoordinator) => 
+              {
+                  bool? value1;
+                  value1 = dataReader.IsDBNull(0) ? default(bool?) : (bool?)dataReader.GetBoolean(0);
+                  return (bool)value1;
+              }, 
+              contextType: SMS.Data.DbContext.SmsDbContext, 
+              standAloneStateManager: False, 
+              detailedErrorsEnabled: True, 
+              threadSafetyChecksEnabled: True), 
+          cancellationToken: queryContext.CancellationToken)'
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20000]
+      Opening connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20001]
+      Opened connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20103]
+      Creating DbCommand for 'ExecuteReader'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20104]
+      Created DbCommand for 'ExecuteReader' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20106]
+      Initialized DbCommand for 'ExecuteReader' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20100]
+      Executing DbCommand [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [Products] AS [p]) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [Products] AS [p]) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20301]
+      Closing data reader to 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20300]
+      A data reader for 'SMSDb' on server '(localdb)\MSSQLLocalDB' is being disposed after spending 2ms reading results.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20002]
+      Closing connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20003]
+      Closed connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Query[10111]
+      Compiling query expression: 
+      'DbSet<Vendor>()
+          .Any()'
+dbug: Microsoft.EntityFrameworkCore.Query[10107]
+      Generated query execution expression: 
+      'queryContext => ShapedQueryCompilingExpressionVisitor.SingleAsync<bool>(
+          asyncEnumerable: SingleQueryingEnumerable.Create<bool>(
+              relationalQueryContext: (RelationalQueryContext)queryContext, 
+              relationalCommandResolver: parameters => [LIFTABLE Constant: RelationalCommandCache.QueryExpression(
+                  Projection Mapping:
+                      EmptyProjectionMember -> 0
+                  SELECT EXISTS (
+                      SELECT 1
+                      FROM Vendors AS v)) | Resolver: c => new RelationalCommandCache(
+                  c.Dependencies.MemoryCache, 
+                  c.RelationalDependencies.QuerySqlGeneratorFactory, 
+                  c.RelationalDependencies.RelationalParameterBasedSqlProcessorFactory, 
+                  Projection Mapping:
+                      EmptyProjectionMember -> 0
+                  SELECT EXISTS (
+                      SELECT 1
+                      FROM Vendors AS v), 
+                  False, 
+                  MultipleParameters
+              )].GetRelationalCommandTemplate(parameters), 
+              readerColumns: [LIFTABLE Constant: ReaderColumn[] { ReaderColumn<bool> } | Resolver: namelessParameter{0} => new ReaderColumn[]{ new ReaderColumn<bool>(
+                  True, 
+                  null, 
+                  default(IPropertyBase), 
+                  (dataReader, indexMap) => dataReader.GetBoolean(0)
+              ) }], 
+              shaper: (queryContext, dataReader, resultContext, resultCoordinator) => 
+              {
+                  bool? value1;
+                  value1 = dataReader.IsDBNull(0) ? default(bool?) : (bool?)dataReader.GetBoolean(0);
+                  return (bool)value1;
+              }, 
+              contextType: SMS.Data.DbContext.SmsDbContext, 
+              standAloneStateManager: False, 
+              detailedErrorsEnabled: True, 
+              threadSafetyChecksEnabled: True), 
+          cancellationToken: queryContext.CancellationToken)'
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20000]
+      Opening connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20001]
+      Opened connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20103]
+      Creating DbCommand for 'ExecuteReader'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20104]
+      Created DbCommand for 'ExecuteReader' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20106]
+      Initialized DbCommand for 'ExecuteReader' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20100]
+      Executing DbCommand [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [Vendors] AS [v]) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [Vendors] AS [v]) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20301]
+      Closing data reader to 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20300]
+      A data reader for 'SMSDb' on server '(localdb)\MSSQLLocalDB' is being disposed after spending 0ms reading results.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20002]
+      Closing connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20003]
+      Closed connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Query[10111]
+      Compiling query expression: 
+      'DbSet<SalesTrendPoint>()
+          .Any()'
+dbug: Microsoft.EntityFrameworkCore.Query[10107]
+      Generated query execution expression: 
+      'queryContext => ShapedQueryCompilingExpressionVisitor.SingleAsync<bool>(
+          asyncEnumerable: SingleQueryingEnumerable.Create<bool>(
+              relationalQueryContext: (RelationalQueryContext)queryContext, 
+              relationalCommandResolver: parameters => [LIFTABLE Constant: RelationalCommandCache.QueryExpression(
+                  Projection Mapping:
+                      EmptyProjectionMember -> 0
+                  SELECT EXISTS (
+                      SELECT 1
+                      FROM SalesTrendPoints AS s)) | Resolver: c => new RelationalCommandCache(
+                  c.Dependencies.MemoryCache, 
+                  c.RelationalDependencies.QuerySqlGeneratorFactory, 
+                  c.RelationalDependencies.RelationalParameterBasedSqlProcessorFactory, 
+                  Projection Mapping:
+                      EmptyProjectionMember -> 0
+                  SELECT EXISTS (
+                      SELECT 1
+                      FROM SalesTrendPoints AS s), 
+                  False, 
+                  MultipleParameters
+              )].GetRelationalCommandTemplate(parameters), 
+              readerColumns: [LIFTABLE Constant: ReaderColumn[] { ReaderColumn<bool> } | Resolver: namelessParameter{0} => new ReaderColumn[]{ new ReaderColumn<bool>(
+                  True, 
+                  null, 
+                  default(IPropertyBase), 
+                  (dataReader, indexMap) => dataReader.GetBoolean(0)
+              ) }], 
+              shaper: (queryContext, dataReader, resultContext, resultCoordinator) => 
+              {
+                  bool? value1;
+                  value1 = dataReader.IsDBNull(0) ? default(bool?) : (bool?)dataReader.GetBoolean(0);
+                  return (bool)value1;
+              }, 
+              contextType: SMS.Data.DbContext.SmsDbContext, 
+              standAloneStateManager: False, 
+              detailedErrorsEnabled: True, 
+              threadSafetyChecksEnabled: True), 
+          cancellationToken: queryContext.CancellationToken)'
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20000]
+      Opening connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20001]
+      Opened connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20103]
+      Creating DbCommand for 'ExecuteReader'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20104]
+      Created DbCommand for 'ExecuteReader' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20106]
+      Initialized DbCommand for 'ExecuteReader' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20100]
+      Executing DbCommand [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [SalesTrendPoints] AS [s]) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [SalesTrendPoints] AS [s]) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20301]
+      Closing data reader to 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20300]
+      A data reader for 'SMSDb' on server '(localdb)\MSSQLLocalDB' is being disposed after spending 0ms reading results.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20002]
+      Closing connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20003]
+      Closed connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Query[10111]
+      Compiling query expression: 
+      'DbSet<PosPayment>()
+          .Any()'
+dbug: Microsoft.EntityFrameworkCore.Query[10107]
+      Generated query execution expression: 
+      'queryContext => ShapedQueryCompilingExpressionVisitor.SingleAsync<bool>(
+          asyncEnumerable: SingleQueryingEnumerable.Create<bool>(
+              relationalQueryContext: (RelationalQueryContext)queryContext, 
+              relationalCommandResolver: parameters => [LIFTABLE Constant: RelationalCommandCache.QueryExpression(
+                  Projection Mapping:
+                      EmptyProjectionMember -> 0
+                  SELECT EXISTS (
+                      SELECT 1
+                      FROM PosPayments AS p)) | Resolver: c => new RelationalCommandCache(
+                  c.Dependencies.MemoryCache, 
+                  c.RelationalDependencies.QuerySqlGeneratorFactory, 
+                  c.RelationalDependencies.RelationalParameterBasedSqlProcessorFactory, 
+                  Projection Mapping:
+                      EmptyProjectionMember -> 0
+                  SELECT EXISTS (
+                      SELECT 1
+                      FROM PosPayments AS p), 
+                  False, 
+                  MultipleParameters
+              )].GetRelationalCommandTemplate(parameters), 
+              readerColumns: [LIFTABLE Constant: ReaderColumn[] { ReaderColumn<bool> } | Resolver: namelessParameter{0} => new ReaderColumn[]{ new ReaderColumn<bool>(
+                  True, 
+                  null, 
+                  default(IPropertyBase), 
+                  (dataReader, indexMap) => dataReader.GetBoolean(0)
+              ) }], 
+              shaper: (queryContext, dataReader, resultContext, resultCoordinator) => 
+              {
+                  bool? value1;
+                  value1 = dataReader.IsDBNull(0) ? default(bool?) : (bool?)dataReader.GetBoolean(0);
+                  return (bool)value1;
+              }, 
+              contextType: SMS.Data.DbContext.SmsDbContext, 
+              standAloneStateManager: False, 
+              detailedErrorsEnabled: True, 
+              threadSafetyChecksEnabled: True), 
+          cancellationToken: queryContext.CancellationToken)'
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20000]
+      Opening connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20001]
+      Opened connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20103]
+      Creating DbCommand for 'ExecuteReader'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20104]
+      Created DbCommand for 'ExecuteReader' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20106]
+      Initialized DbCommand for 'ExecuteReader' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20100]
+      Executing DbCommand [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [PosPayments] AS [p]) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [PosPayments] AS [p]) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20301]
+      Closing data reader to 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20300]
+      A data reader for 'SMSDb' on server '(localdb)\MSSQLLocalDB' is being disposed after spending 0ms reading results.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20002]
+      Closing connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20003]
+      Closed connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Query[10111]
+      Compiling query expression: 
+      'DbSet<RetailAuditLog>()
+          .Any()'
+dbug: Microsoft.EntityFrameworkCore.Query[10107]
+      Generated query execution expression: 
+      'queryContext => ShapedQueryCompilingExpressionVisitor.SingleAsync<bool>(
+          asyncEnumerable: SingleQueryingEnumerable.Create<bool>(
+              relationalQueryContext: (RelationalQueryContext)queryContext, 
+              relationalCommandResolver: parameters => [LIFTABLE Constant: RelationalCommandCache.QueryExpression(
+                  Projection Mapping:
+                      EmptyProjectionMember -> 0
+                  SELECT EXISTS (
+                      SELECT 1
+                      FROM RetailAuditLogs AS r)) | Resolver: c => new RelationalCommandCache(
+                  c.Dependencies.MemoryCache, 
+                  c.RelationalDependencies.QuerySqlGeneratorFactory, 
+                  c.RelationalDependencies.RelationalParameterBasedSqlProcessorFactory, 
+                  Projection Mapping:
+                      EmptyProjectionMember -> 0
+                  SELECT EXISTS (
+                      SELECT 1
+                      FROM RetailAuditLogs AS r), 
+                  False, 
+                  MultipleParameters
+              )].GetRelationalCommandTemplate(parameters), 
+              readerColumns: [LIFTABLE Constant: ReaderColumn[] { ReaderColumn<bool> } | Resolver: namelessParameter{0} => new ReaderColumn[]{ new ReaderColumn<bool>(
+                  True, 
+                  null, 
+                  default(IPropertyBase), 
+                  (dataReader, indexMap) => dataReader.GetBoolean(0)
+              ) }], 
+              shaper: (queryContext, dataReader, resultContext, resultCoordinator) => 
+              {
+                  bool? value1;
+                  value1 = dataReader.IsDBNull(0) ? default(bool?) : (bool?)dataReader.GetBoolean(0);
+                  return (bool)value1;
+              }, 
+              contextType: SMS.Data.DbContext.SmsDbContext, 
+              standAloneStateManager: False, 
+              detailedErrorsEnabled: True, 
+              threadSafetyChecksEnabled: True), 
+          cancellationToken: queryContext.CancellationToken)'
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20000]
+      Opening connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20001]
+      Opened connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20103]
+      Creating DbCommand for 'ExecuteReader'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20104]
+      Created DbCommand for 'ExecuteReader' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20106]
+      Initialized DbCommand for 'ExecuteReader' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20100]
+      Executing DbCommand [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [RetailAuditLogs] AS [r]) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [RetailAuditLogs] AS [r]) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20301]
+      Closing data reader to 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20300]
+      A data reader for 'SMSDb' on server '(localdb)\MSSQLLocalDB' is being disposed after spending 0ms reading results.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20002]
+      Closing connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20003]
+      Closed connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Query[10111]
+      Compiling query expression: 
+      'DbSet<Customer>()
+          .Any()'
+dbug: Microsoft.EntityFrameworkCore.Query[10107]
+      Generated query execution expression: 
+      'queryContext => ShapedQueryCompilingExpressionVisitor.SingleAsync<bool>(
+          asyncEnumerable: SingleQueryingEnumerable.Create<bool>(
+              relationalQueryContext: (RelationalQueryContext)queryContext, 
+              relationalCommandResolver: parameters => [LIFTABLE Constant: RelationalCommandCache.QueryExpression(
+                  Projection Mapping:
+                      EmptyProjectionMember -> 0
+                  SELECT EXISTS (
+                      SELECT 1
+                      FROM Customers AS c)) | Resolver: c => new RelationalCommandCache(
+                  c.Dependencies.MemoryCache, 
+                  c.RelationalDependencies.QuerySqlGeneratorFactory, 
+                  c.RelationalDependencies.RelationalParameterBasedSqlProcessorFactory, 
+                  Projection Mapping:
+                      EmptyProjectionMember -> 0
+                  SELECT EXISTS (
+                      SELECT 1
+                      FROM Customers AS c), 
+                  False, 
+                  MultipleParameters
+              )].GetRelationalCommandTemplate(parameters), 
+              readerColumns: [LIFTABLE Constant: ReaderColumn[] { ReaderColumn<bool> } | Resolver: namelessParameter{0} => new ReaderColumn[]{ new ReaderColumn<bool>(
+                  True, 
+                  null, 
+                  default(IPropertyBase), 
+                  (dataReader, indexMap) => dataReader.GetBoolean(0)
+              ) }], 
+              shaper: (queryContext, dataReader, resultContext, resultCoordinator) => 
+              {
+                  bool? value1;
+                  value1 = dataReader.IsDBNull(0) ? default(bool?) : (bool?)dataReader.GetBoolean(0);
+                  return (bool)value1;
+              }, 
+              contextType: SMS.Data.DbContext.SmsDbContext, 
+              standAloneStateManager: False, 
+              detailedErrorsEnabled: True, 
+              threadSafetyChecksEnabled: True), 
+          cancellationToken: queryContext.CancellationToken)'
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20000]
+      Opening connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20001]
+      Opened connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20103]
+      Creating DbCommand for 'ExecuteReader'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20104]
+      Created DbCommand for 'ExecuteReader' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20106]
+      Initialized DbCommand for 'ExecuteReader' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20100]
+      Executing DbCommand [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [Customers] AS [c]) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [Customers] AS [c]) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20301]
+      Closing data reader to 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20300]
+      A data reader for 'SMSDb' on server '(localdb)\MSSQLLocalDB' is being disposed after spending 0ms reading results.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20002]
+      Closing connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20003]
+      Closed connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Query[10111]
+      Compiling query expression: 
+      'DbSet<Wallet>()
+          .Any()'
+dbug: Microsoft.EntityFrameworkCore.Query[10107]
+      Generated query execution expression: 
+      'queryContext => ShapedQueryCompilingExpressionVisitor.SingleAsync<bool>(
+          asyncEnumerable: SingleQueryingEnumerable.Create<bool>(
+              relationalQueryContext: (RelationalQueryContext)queryContext, 
+              relationalCommandResolver: parameters => [LIFTABLE Constant: RelationalCommandCache.QueryExpression(
+                  Projection Mapping:
+                      EmptyProjectionMember -> 0
+                  SELECT EXISTS (
+                      SELECT 1
+                      FROM Wallets AS w)) | Resolver: c => new RelationalCommandCache(
+                  c.Dependencies.MemoryCache, 
+                  c.RelationalDependencies.QuerySqlGeneratorFactory, 
+                  c.RelationalDependencies.RelationalParameterBasedSqlProcessorFactory, 
+                  Projection Mapping:
+                      EmptyProjectionMember -> 0
+                  SELECT EXISTS (
+                      SELECT 1
+                      FROM Wallets AS w), 
+                  False, 
+                  MultipleParameters
+              )].GetRelationalCommandTemplate(parameters), 
+              readerColumns: [LIFTABLE Constant: ReaderColumn[] { ReaderColumn<bool> } | Resolver: namelessParameter{0} => new ReaderColumn[]{ new ReaderColumn<bool>(
+                  True, 
+                  null, 
+                  default(IPropertyBase), 
+                  (dataReader, indexMap) => dataReader.GetBoolean(0)
+              ) }], 
+              shaper: (queryContext, dataReader, resultContext, resultCoordinator) => 
+              {
+                  bool? value1;
+                  value1 = dataReader.IsDBNull(0) ? default(bool?) : (bool?)dataReader.GetBoolean(0);
+                  return (bool)value1;
+              }, 
+              contextType: SMS.Data.DbContext.SmsDbContext, 
+              standAloneStateManager: False, 
+              detailedErrorsEnabled: True, 
+              threadSafetyChecksEnabled: True), 
+          cancellationToken: queryContext.CancellationToken)'
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20000]
+      Opening connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20001]
+      Opened connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20103]
+      Creating DbCommand for 'ExecuteReader'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20104]
+      Created DbCommand for 'ExecuteReader' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20106]
+      Initialized DbCommand for 'ExecuteReader' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20100]
+      Executing DbCommand [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [Wallets] AS [w]) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [Wallets] AS [w]) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20301]
+      Closing data reader to 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20300]
+      A data reader for 'SMSDb' on server '(localdb)\MSSQLLocalDB' is being disposed after spending 0ms reading results.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20002]
+      Closing connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20003]
+      Closed connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Update[10004]
+      SaveChanges starting for 'SmsDbContext'.
+dbug: Microsoft.EntityFrameworkCore.ChangeTracking[10800]
+      DetectChanges starting for 'SmsDbContext'.
+dbug: Microsoft.EntityFrameworkCore.ChangeTracking[10802]
+      The unchanged property 'StaffUser.PasswordHash' was detected as changed from '$2a$11$6tbL9o4ITox0l4RPZ5e9sOeKGbj/H1c1oUAR.W42KxZMQoXmo8tfW' to '$2a$11$yeOwwwA25vXe5kOWkABKZOI/.CUspR7gFEwLL3DPccQUuXvS45Wha' and will be marked as modified for entity with key '{Id: 1}'.
+dbug: Microsoft.EntityFrameworkCore.ChangeTracking[10807]
+      The 'StaffUser' entity with key '{Id: 1}' tracked by 'SmsDbContext' changed state from 'Unchanged' to 'Modified'.
+dbug: Microsoft.EntityFrameworkCore.ChangeTracking[10802]
+      The unchanged property 'StaffUser.PasswordHash' was detected as changed from '$2a$11$vrw0d6tIyIk0n1/V66q/N.CQzfuhHQyDOAVRWfjh3yi8ih5QmCv4.' to '$2a$11$0syJJQ/aGDe.bTletUsg4Oip7Dyr5pM7uFCb52QdTyOxclBdjkxCy' and will be marked as modified for entity with key '{Id: 2}'.
+dbug: Microsoft.EntityFrameworkCore.ChangeTracking[10807]
+      The 'StaffUser' entity with key '{Id: 2}' tracked by 'SmsDbContext' changed state from 'Unchanged' to 'Modified'.
+dbug: Microsoft.EntityFrameworkCore.ChangeTracking[10802]
+      The unchanged property 'StaffUser.PasswordHash' was detected as changed from '$2a$11$3A1QAp8NQYZooFTFFz/1M.PvmeH6Q2xymLUTHlXHXy9Y7Mefjvlne' to '$2a$11$FlpEvTGmc04f8UuQ34YbBOm9O5pCC9sDHx896Zqe4U3G7nbgCzXs2' and will be marked as modified for entity with key '{Id: 3}'.
+dbug: Microsoft.EntityFrameworkCore.ChangeTracking[10807]
+      The 'StaffUser' entity with key '{Id: 3}' tracked by 'SmsDbContext' changed state from 'Unchanged' to 'Modified'.
+dbug: Microsoft.EntityFrameworkCore.ChangeTracking[10801]
+      DetectChanges completed for 'SmsDbContext'.
+dbug: Microsoft.EntityFrameworkCore.Update[20700]
+      Executing 3 update commands as a batch.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20000]
+      Opening connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20001]
+      Opened connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Transaction[20209]
+      Beginning transaction with isolation level 'Unspecified'.
+dbug: Microsoft.EntityFrameworkCore.Database.Transaction[20200]
+      Began transaction with isolation level 'ReadCommitted'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20103]
+      Creating DbCommand for 'ExecuteReader'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20104]
+      Created DbCommand for 'ExecuteReader' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20106]
+      Initialized DbCommand for 'ExecuteReader' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20100]
+      Executing DbCommand [Parameters=[@p1='1', @p0='$2a$11$yeOwwwA25vXe5kOWkABKZOI/.CUspR7gFEwLL3DPccQUuXvS45Wha' (Nullable = false) (Size = 256), @p3='2', @p2='$2a$11$0syJJQ/aGDe.bTletUsg4Oip7Dyr5pM7uFCb52QdTyOxclBdjkxCy' (Nullable = false) (Size = 256), @p5='3', @p4='$2a$11$FlpEvTGmc04f8UuQ34YbBOm9O5pCC9sDHx896Zqe4U3G7nbgCzXs2' (Nullable = false) (Size = 256)], CommandType='Text', CommandTimeout='30']
+      SET NOCOUNT ON;
+      UPDATE [StaffUsers] SET [PasswordHash] = @p0
+      OUTPUT 1
+      WHERE [Id] = @p1;
+      UPDATE [StaffUsers] SET [PasswordHash] = @p2
+      OUTPUT 1
+      WHERE [Id] = @p3;
+      UPDATE [StaffUsers] SET [PasswordHash] = @p4
+      OUTPUT 1
+      WHERE [Id] = @p5;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (17ms) [Parameters=[@p1='1', @p0='$2a$11$yeOwwwA25vXe5kOWkABKZOI/.CUspR7gFEwLL3DPccQUuXvS45Wha' (Nullable = false) (Size = 256), @p3='2', @p2='$2a$11$0syJJQ/aGDe.bTletUsg4Oip7Dyr5pM7uFCb52QdTyOxclBdjkxCy' (Nullable = false) (Size = 256), @p5='3', @p4='$2a$11$FlpEvTGmc04f8UuQ34YbBOm9O5pCC9sDHx896Zqe4U3G7nbgCzXs2' (Nullable = false) (Size = 256)], CommandType='Text', CommandTimeout='30']
+      SET NOCOUNT ON;
+      UPDATE [StaffUsers] SET [PasswordHash] = @p0
+      OUTPUT 1
+      WHERE [Id] = @p1;
+      UPDATE [StaffUsers] SET [PasswordHash] = @p2
+      OUTPUT 1
+      WHERE [Id] = @p3;
+      UPDATE [StaffUsers] SET [PasswordHash] = @p4
+      OUTPUT 1
+      WHERE [Id] = @p5;
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20301]
+      Closing data reader to 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Command[20300]
+      A data reader for 'SMSDb' on server '(localdb)\MSSQLLocalDB' is being disposed after spending 4ms reading results.
+dbug: Microsoft.EntityFrameworkCore.Database.Transaction[20210]
+      Committing transaction.
+dbug: Microsoft.EntityFrameworkCore.Database.Transaction[20202]
+      Committed transaction.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20002]
+      Closing connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20003]
+      Closed connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB' (0ms).
+dbug: Microsoft.EntityFrameworkCore.Database.Transaction[20204]
+      Disposing transaction.
+dbug: Microsoft.EntityFrameworkCore.ChangeTracking[10807]
+      The 'StaffUser' entity with key '{Id: 1}' tracked by 'SmsDbContext' changed state from 'Modified' to 'Unchanged'.
+dbug: Microsoft.EntityFrameworkCore.ChangeTracking[10807]
+      The 'StaffUser' entity with key '{Id: 2}' tracked by 'SmsDbContext' changed state from 'Modified' to 'Unchanged'.
+dbug: Microsoft.EntityFrameworkCore.ChangeTracking[10807]
+      The 'StaffUser' entity with key '{Id: 3}' tracked by 'SmsDbContext' changed state from 'Modified' to 'Unchanged'.
+dbug: Microsoft.EntityFrameworkCore.Update[10005]
+      SaveChanges completed for 'SmsDbContext' with 3 entities written to the database.
+dbug: Microsoft.EntityFrameworkCore.Infrastructure[10407]
+      'SmsDbContext' disposed.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20007]
+      Disposing connection to database 'SMSDb' on server '(localdb)\MSSQLLocalDB'.
+dbug: Microsoft.EntityFrameworkCore.Database.Connection[20008]
+      Disposed connection to database '' on server '' (1ms).
+dbug: Microsoft.Extensions.Hosting.Internal.Host[1]
+      Hosting starting
+info: Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager[63]
+      User profile is available. Using 'C:\Users\tedwell_d\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://127.0.0.1:5093
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Users\tedwell_d\source\repos\SMS\_build_tmp\api-verify2
+dbug: Microsoft.Extensions.Hosting.Internal.Host[2]
+      Hosting started
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://127.0.0.1:5093/swagger/v1/swagger.json - - -
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://127.0.0.1:5093/swagger/v1/swagger.json - 200 - application/json;charset=utf-8 484.6948ms

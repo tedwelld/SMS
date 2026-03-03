@@ -3,30 +3,80 @@
   <p>End-of-day payment summaries, shrinkage visibility, and hourly sales trend analytics.</p>
 </section>
 
+<section class="report-toolbar">
+  <input
+    type="search"
+    [ngModel]="filterQuery()"
+    (ngModelChange)="filterQuery.set($event)"
+    placeholder="Search reports by product, SKU, or hour"
+  />
+
+  <select [ngModel]="varianceFilter()" (ngModelChange)="varianceFilter.set($event)">
+    <option value="all">All Variances</option>
+    <option value="loss">Loss Only</option>
+    <option value="gain">Gain Only</option>
+    <option value="balanced">Balanced Only</option>
+  </select>
+
+  <label>
+    <span>Min Sales</span>
+    <input
+      type="number"
+      min="0"
+      [ngModel]="minSales()"
+      (ngModelChange)="minSales.set(+$event || 0)"
+    />
+  </label>
+</section>
+
 <mat-tab-group animationDuration="200ms">
   <mat-tab label="EOD Summary">
+    <section class="export-actions">
+      <button mat-stroked-button class="btn-info-action" type="button" [disabled]="exporting()" (click)="exportPdf('eod')">
+        {{ exporting() ? 'Exporting...' : 'Export EOD PDF' }}
+      </button>
+    </section>
+
     <section class="cards">
-      <mat-card>
-        <p>Cash</p>
-        <h2>{{ eod().cash | currency }}</h2>
+      <mat-card class="metric-card">
+        <span class="metric-icon"><i class="pi pi-money-bill"></i></span>
+        <div>
+          <p>Cash</p>
+          <h2>{{ eod().cash | currency }}</h2>
+        </div>
       </mat-card>
-      <mat-card>
-        <p>Card</p>
-        <h2>{{ eod().card | currency }}</h2>
+      <mat-card class="metric-card">
+        <span class="metric-icon"><i class="pi pi-credit-card"></i></span>
+        <div>
+          <p>Card</p>
+          <h2>{{ eod().card | currency }}</h2>
+        </div>
       </mat-card>
-      <mat-card>
-        <p>Digital</p>
-        <h2>{{ eod().digital | currency }}</h2>
+      <mat-card class="metric-card">
+        <span class="metric-icon"><i class="pi pi-mobile"></i></span>
+        <div>
+          <p>Digital</p>
+          <h2>{{ eod().digital | currency }}</h2>
+        </div>
       </mat-card>
-      <mat-card>
-        <p>Total Collections</p>
-        <h2>{{ eod().total | currency }}</h2>
-        <small>{{ eod().transactions }} transactions</small>
+      <mat-card class="metric-card">
+        <span class="metric-icon"><i class="pi pi-chart-bar"></i></span>
+        <div>
+          <p>Total Collections</p>
+          <h2>{{ eod().total | currency }}</h2>
+          <small>{{ eod().transactions }} transactions</small>
+        </div>
       </mat-card>
     </section>
   </mat-tab>
 
   <mat-tab label="Shrinkage">
+    <section class="export-actions">
+      <button mat-stroked-button class="btn-info-action" type="button" [disabled]="exporting()" (click)="exportPdf('shrinkage')">
+        {{ exporting() ? 'Exporting...' : 'Export Shrinkage PDF' }}
+      </button>
+    </section>
+
     <section class="table-wrap">
       <table>
         <thead>
@@ -39,7 +89,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (row of shrinkageRows(); track row.sku) {
+          @for (row of filteredShrinkageRows(); track row.sku) {
             <tr>
               <td>{{ row.product }}</td>
               <td>{{ row.sku }}</td>
@@ -48,20 +98,38 @@
               <td [class.risk]="row.variance < 0">{{ row.variance > 0 ? '+' : '' }}{{ row.variance }}</td>
             </tr>
           }
+          @if (filteredShrinkageRows().length === 0) {
+            <tr>
+              <td colspan="5">No shrinkage data matches the current filters.</td>
+            </tr>
+          }
         </tbody>
       </table>
     </section>
   </mat-tab>
 
   <mat-tab label="Sales Trends">
+    <section class="export-actions">
+      <button mat-stroked-button class="btn-info-action" type="button" [disabled]="exporting()" (click)="exportPdf('sales')">
+        {{ exporting() ? 'Exporting...' : 'Export Trends PDF' }}
+      </button>
+    </section>
+
     <section class="trend-grid">
-      @for (slot of store.salesTrend(); track slot.hour) {
+      @for (slot of filteredSalesTrend(); track slot.hour) {
         <article class="bar-row">
           <span>{{ slot.hour }}</span>
           <div class="bar-wrap">
             <div class="bar" [style.width]="widthFor(slot.sales)"></div>
           </div>
           <strong>{{ slot.sales | currency }}</strong>
+        </article>
+      }
+      @if (filteredSalesTrend().length === 0) {
+        <article class="bar-row empty-row">
+          <span>-</span>
+          <div class="bar-wrap"></div>
+          <strong>No trend data for the current filters.</strong>
         </article>
       }
     </section>

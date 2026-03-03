@@ -45,6 +45,8 @@ export interface CustomerProfile {
   id: string;
   name: string;
   phone: string;
+  email?: string;
+  isActive?: boolean;
   points: number;
   purchaseHistory: PurchaseRecord[];
 }
@@ -140,6 +142,7 @@ export interface BootstrapPayload {
   salesTrend: SalesTrendPoint[];
   reports: ReportsPayload;
   auditLogs: AuditEntry[];
+  recentPayments: PaymentTrackingRecord[];
 }
 
 export interface CheckoutLineItem {
@@ -160,7 +163,45 @@ export interface CheckoutResponse {
   transactionId: string;
   message: string;
   totals: CartTotals;
+  receipt: ReceiptPayload;
   bootstrap: BootstrapPayload;
+}
+
+export interface ReceiptLineItem {
+  productId: string;
+  productName: string;
+  sku: string;
+  quantity: number;
+  unitPrice: number;
+  discount: number;
+  tax: number;
+  lineTotal: number;
+}
+
+export interface ReceiptPayload {
+  transactionId: string;
+  timestamp: string;
+  paymentMethod: PaymentMethod;
+  customerName: string;
+  customerPhone: string;
+  totals: CartTotals;
+  lineItems: ReceiptLineItem[];
+}
+
+export interface PaymentTrackingRecord {
+  transactionId: string;
+  timestamp: string;
+  paymentMethod: PaymentMethod;
+  customerName: string;
+  customerPhone: string;
+  subtotal: number;
+  tax: number;
+  discount: number;
+  pointsRedeemed: number;
+  pointsEarned: number;
+  total: number;
+  itemCount: number;
+  lineItems: ReceiptLineItem[];
 }
 
 export interface OperationResult {
