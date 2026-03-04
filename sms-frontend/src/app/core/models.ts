@@ -1,4 +1,18 @@
 export type UserRole = 'Store Manager' | 'Cashier' | 'Stock Clerk';
+export type CurrencyCode = 'USD' | 'ZAR' | 'ZWG';
+
+export interface CurrencyOption {
+  code: CurrencyCode;
+  label: string;
+  symbol: string;
+  rateToUsd: number;
+}
+
+export const SUPPORTED_CURRENCIES: CurrencyOption[] = [
+  { code: 'USD', label: 'US Dollar', symbol: '$', rateToUsd: 1 },
+  { code: 'ZAR', label: 'South African Rand', symbol: 'R', rateToUsd: 18.5 },
+  { code: 'ZWG', label: 'Zimbabwe Gold', symbol: 'ZiG', rateToUsd: 13.75 }
+];
 
 export type Department = 'Grocery' | 'Dairy' | 'Electronics' | 'Household' | 'Produce';
 
@@ -66,6 +80,7 @@ export type PaymentMethod = 'Cash' | 'Card' | 'EcoCash';
 export interface PaymentRecord {
   id: string;
   method: PaymentMethod;
+  currencyCode: CurrencyCode;
   amount: number;
   timestamp: string;
 }
@@ -108,6 +123,7 @@ export interface EodReport {
   digital: number;
   total: number;
   transactions: number;
+  currencyCode: CurrencyCode;
 }
 
 export interface ShrinkageReportRow {
@@ -154,6 +170,7 @@ export interface CheckoutLineItem {
 export interface CheckoutRequest {
   cart: CheckoutLineItem[];
   paymentMethod: PaymentMethod;
+  currencyCode: CurrencyCode;
   customerPhone: string;
   pointsToRedeem: number;
   userRole: UserRole;
@@ -185,6 +202,8 @@ export interface ReceiptPayload {
   transactionId: string;
   timestamp: string;
   paymentMethod: PaymentMethod;
+  currencyCode: CurrencyCode;
+  exchangeRateToUsd: number;
   customerName: string;
   customerPhone: string;
   qrToken?: string;
@@ -211,6 +230,7 @@ export interface PaymentTrackingRecord {
   transactionId: string;
   timestamp: string;
   paymentMethod: PaymentMethod;
+  currencyCode: CurrencyCode;
   customerName: string;
   customerPhone: string;
   subtotal: number;
@@ -227,6 +247,7 @@ export interface StaffCashUp {
   id: number;
   staffUserId: number;
   staffName: string;
+  currencyCode: CurrencyCode;
   businessDate: string;
   cashTotal: number;
   cardTotal: number;
@@ -239,6 +260,7 @@ export interface StaffCashUp {
 export interface SubmitCashUpRequest {
   staffUserId: number;
   staffName: string;
+  currencyCode: CurrencyCode;
   businessDate?: string;
 }
 

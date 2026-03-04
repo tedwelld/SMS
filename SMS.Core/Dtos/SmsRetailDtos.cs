@@ -82,6 +82,7 @@ public sealed class EodReportDto
     public decimal Digital { get; set; }
     public decimal Total { get; set; }
     public int Transactions { get; set; }
+    public string CurrencyCode { get; set; } = "USD";
 }
 
 public sealed class ShrinkageReportRowDto
@@ -136,6 +137,7 @@ public sealed class CheckoutRequestDto
 {
     public List<CheckoutLineItemDto> Cart { get; set; } = [];
     public string PaymentMethod { get; set; } = string.Empty;
+    public string CurrencyCode { get; set; } = "USD";
     public string CustomerPhone { get; set; } = string.Empty;
     public int PointsToRedeem { get; set; }
     public string UserRole { get; set; } = string.Empty;
@@ -180,6 +182,8 @@ public sealed class ReceiptPayloadDto
     public string TransactionId { get; set; } = string.Empty;
     public string Timestamp { get; set; } = string.Empty;
     public string PaymentMethod { get; set; } = string.Empty;
+    public string CurrencyCode { get; set; } = "USD";
+    public decimal ExchangeRateToUsd { get; set; } = 1m;
     public string CustomerName { get; set; } = string.Empty;
     public string CustomerPhone { get; set; } = string.Empty;
     public string QrToken { get; set; } = string.Empty;
@@ -209,6 +213,7 @@ public sealed class PaymentTrackingRecordDto
     public string TransactionId { get; set; } = string.Empty;
     public string Timestamp { get; set; } = string.Empty;
     public string PaymentMethod { get; set; } = string.Empty;
+    public string CurrencyCode { get; set; } = "USD";
     public string CustomerName { get; set; } = string.Empty;
     public string CustomerPhone { get; set; } = string.Empty;
     public decimal Subtotal { get; set; }
@@ -226,6 +231,7 @@ public sealed class StaffCashUpDto
     public int Id { get; set; }
     public int StaffUserId { get; set; }
     public string StaffName { get; set; } = string.Empty;
+    public string CurrencyCode { get; set; } = "USD";
     public string BusinessDate { get; set; } = string.Empty;
     public decimal CashTotal { get; set; }
     public decimal CardTotal { get; set; }
@@ -239,6 +245,7 @@ public sealed class SubmitCashUpRequestDto
 {
     public int StaffUserId { get; set; }
     public string StaffName { get; set; } = string.Empty;
+    public string CurrencyCode { get; set; } = "USD";
     public string? BusinessDate { get; set; }
 }
 

@@ -4,7 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 
 import { AuthService } from '../../core/auth.service';
-import { PaymentMethod, StaffCashUp } from '../../core/models';
+import { CurrencyCode, PaymentMethod, StaffCashUp, SUPPORTED_CURRENCIES } from '../../core/models';
 import { SmsStoreService } from '../../core/sms-store.service';
 
 @Component({
@@ -19,6 +19,7 @@ export class CashUpsPageComponent {
 
   readonly salesQuery = signal('');
   readonly salesMethodFilter = signal<PaymentMethod | 'all'>('all');
+  readonly salesCurrencyFilter = signal<CurrencyCode | 'all'>('all');
   readonly salesFromDate = signal('');
   readonly salesToDate = signal('');
   readonly loadingSalesLedger = signal(false);
@@ -26,9 +27,13 @@ export class CashUpsPageComponent {
   readonly cashUpFromDate = signal('');
   readonly cashUpToDate = signal('');
   readonly cashUpStaffSearch = signal('');
+  readonly cashUpCurrencyFilter = signal<CurrencyCode | 'all'>('all');
+  readonly staffCashUpCurrency = signal<CurrencyCode>('USD');
   readonly loadingCashUps = signal(false);
   readonly submittingCashUp = signal(false);
   readonly statusMessage = signal('Ready.');
+  readonly cashUpNotice = signal<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
+  readonly currencyOptions = SUPPORTED_CURRENCIES;
 
   readonly isAdmin = computed(() => this.auth.role === 'admin');
   readonly staffUserId = computed(() => this.auth.session()?.staffUserId ?? 0);
@@ -42,6 +47,7 @@ export class CashUpsPageComponent {
 
     return this.store.paymentHistory()
       .filter((payment) => method === 'all' || payment.paymentMethod === method)
+      .filter((payment) => this.salesCurrencyFilter() === 'all' || payment.currencyCode === this.salesCurrencyFilter())
       .filter((payment) => {
         const timestamp = new Date(payment.timestamp);
         if (Number.isNaN(timestamp.getTime())) {
@@ -132,6 +138,12 @@ export class CashUpsPageComponent {
     }
   }
 
+  setSalesCurrencyFilter(currencyCode: string): void {
+    if (currencyCode === 'USD' || currencyCode === 'ZAR' || currencyCode === 'ZWG' || currencyCode === 'all') {
+      this.salesCurrencyFilter.set(currencyCode);
+    }
+  }
+
   updateSalesFromDate(event: Event): void {
     this.salesFromDate.set((event.target as HTMLInputElement).value);
   }
@@ -152,6 +164,18 @@ export class CashUpsPageComponent {
     this.cashUpStaffSearch.set((event.target as HTMLInputElement).value);
   }
 
+  setCashUpCurrencyFilter(currencyCode: string): void {
+    if (currencyCode === 'USD' || currencyCode === 'ZAR' || currencyCode === 'ZWG' || currencyCode === 'all') {
+      this.cashUpCurrencyFilter.set(currencyCode);
+    }
+  }
+
+  setStaffCashUpCurrency(currencyCode: string): void {
+    if (currencyCode === 'USD' || currencyCode === 'ZAR' || currencyCode === 'ZWG') {
+      this.staffCashUpCurrency.set(currencyCode);
+    }
+  }
+
   async refreshSalesLedger(): Promise<void> {
     if (!this.isAdmin()) {
       return;
@@ -162,6 +186,7 @@ export class CashUpsPageComponent {
       from: this.salesFromDate(),
       to: this.salesToDate(),
       method: this.salesMethodFilter(),
+      currency: this.salesCurrencyFilter(),
       query: this.salesQuery()
     });
     this.loadingSalesLedger.set(false);
@@ -172,7 +197,8 @@ export class CashUpsPageComponent {
     await this.store.refreshCashUps({
       from: this.cashUpFromDate(),
       to: this.cashUpToDate(),
-      staffUserId: this.isAdmin() ? undefined : this.staffUserId()
+      staffUserId: this.isAdmin() ? undefined : this.staffUserId(),
+      currency: this.cashUpCurrencyFilter()
     });
     this.loadingCashUps.set(false);
   }
@@ -181,6 +207,7 @@ export class CashUpsPageComponent {
     const staffUserId = this.staffUserId();
     if (!Number.isFinite(staffUserId) || staffUserId <= 0) {
       this.statusMessage.set('Your account is missing a staff id. Cannot submit cash up.');
+      this.cashUpNotice.set({ type: 'error', message: 'Your account is missing a staff id. Cannot submit cash up.' });
       return;
     }
 
@@ -188,14 +215,20 @@ export class CashUpsPageComponent {
     const result = await this.store.submitDailyCashUp({
       staffUserId,
       staffName: this.staffDisplayName(),
+      currencyCode: this.staffCashUpCurrency(),
       businessDate: new Date().toISOString().slice(0, 10)
     });
     this.submittingCashUp.set(false);
 
     this.statusMessage.set(result.message);
+    this.cashUpNotice.set({ type: result.success ? 'success' : 'error', message: result.message });
     if (result.success) {
       await this.refreshCashUps();
     }
+  }
+
+  clearCashUpNotice(): void {
+    this.cashUpNotice.set(null);
   }
 
   private parseDateFilter(value: string): Date | null {

@@ -13,8 +13,15 @@ namespace SMS.Core.Services;
 public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : ISmsRetailService
 {
     private const decimal PointValue = 0.05m;
+    private const string BaseCurrencyCode = "USD";
     private const string ReceiptVerificationSecretConfigPath = "ReceiptVerification:SecretKey";
     private const string JwtSecretConfigPath = "Jwt:SecretKey";
+    private static readonly IReadOnlyDictionary<string, decimal> SupportedCurrencyRates = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase)
+    {
+        [BaseCurrencyCode] = 1m,
+        ["ZAR"] = 18.50m,
+        ["ZWG"] = 13.75m
+    };
 
     public async Task<BootstrapPayloadDto> GetBootstrapAsync(CancellationToken cancellationToken = default)
     {
@@ -59,7 +66,7 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
                     UserRole = x.UserRole,
                     Action = x.Action
                 }).ToListAsync(cancellationToken),
-            RecentPayments = (await GetPaymentsAsync(null, null, null, null, 20, cancellationToken)).ToList()
+            RecentPayments = (await GetPaymentsAsync(null, null, null, null, null, 20, cancellationToken)).ToList()
         };
     }
 
@@ -453,9 +460,9 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
     public async Task<EodReportDto> GetEodReportAsync(CancellationToken cancellationToken = default)
     {
         var payments = await db.PosPayments.AsNoTracking().ToListAsync(cancellationToken);
-        var cash = payments.Where(x => x.Method == PosPaymentMethod.Cash).Sum(x => x.Amount);
-        var card = payments.Where(x => x.Method == PosPaymentMethod.Card).Sum(x => x.Amount);
-        var ecoCash = payments.Where(x => x.Method == PosPaymentMethod.EcoCash).Sum(x => x.Amount);
+        var cash = payments.Where(x => x.Method == PosPaymentMethod.Cash).Sum(ConvertToBaseCurrency);
+        var card = payments.Where(x => x.Method == PosPaymentMethod.Card).Sum(ConvertToBaseCurrency);
+        var ecoCash = payments.Where(x => x.Method == PosPaymentMethod.EcoCash).Sum(ConvertToBaseCurrency);
 
         return new EodReportDto
         {
@@ -463,7 +470,8 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
             Card = RoundMoney(card),
             Digital = RoundMoney(ecoCash),
             Total = RoundMoney(cash + card + ecoCash),
-            Transactions = payments.Count
+            Transactions = payments.Count,
+            CurrencyCode = BaseCurrencyCode
         };
     }
 
@@ -472,6 +480,7 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
         DateTime? to,
         string? method,
         string? query,
+        string? currency,
         int limit,
         CancellationToken cancellationToken = default)
     {
@@ -494,6 +503,11 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
         if (TryParsePaymentMethod(method, out var paymentMethod))
         {
             paymentsQuery = paymentsQuery.Where(x => x.Method == paymentMethod);
+        }
+
+        if (TryNormalizeCurrencyCode(currency, out var normalizedCurrency))
+        {
+            paymentsQuery = paymentsQuery.Where(x => x.CurrencyCode == normalizedCurrency);
         }
 
         if (!string.IsNullOrWhiteSpace(query))
@@ -522,6 +536,8 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
             throw new InvalidOperationException("A valid staff user id is required.");
         }
 
+        var targetCurrencyCode = NormalizeCurrencyCode(request.CurrencyCode);
+        var targetExchangeRate = ResolveExchangeRateToUsd(targetCurrencyCode);
         var businessDate = ParseBusinessDateOrUtcToday(request.BusinessDate);
         var periodStartUtc = DateTime.SpecifyKind(businessDate.Date, DateTimeKind.Utc);
         var periodEndUtc = periodStartUtc.AddDays(1);
@@ -552,14 +568,20 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
                 && x.Timestamp < periodEndUtc)
             .ToListAsync(cancellationToken);
 
-        var cash = payments.Where(x => x.Method == PosPaymentMethod.Cash).Sum(x => x.Amount);
-        var card = payments.Where(x => x.Method == PosPaymentMethod.Card).Sum(x => x.Amount);
-        var ecoCash = payments.Where(x => x.Method == PosPaymentMethod.EcoCash).Sum(x => x.Amount);
+        decimal ToTargetCurrency(PosPayment payment) =>
+            ConvertFromBaseCurrency(ConvertToBaseCurrency(payment), targetExchangeRate);
+
+        var cash = payments.Where(x => x.Method == PosPaymentMethod.Cash).Sum(ToTargetCurrency);
+        var card = payments.Where(x => x.Method == PosPaymentMethod.Card).Sum(ToTargetCurrency);
+        var ecoCash = payments.Where(x => x.Method == PosPaymentMethod.EcoCash).Sum(ToTargetCurrency);
         var total = cash + card + ecoCash;
         var transactionCount = payments.Count;
 
         var existing = await db.StaffCashUps.FirstOrDefaultAsync(
-            x => x.StaffUserId == request.StaffUserId && x.BusinessDate == periodStartUtc.Date,
+            x =>
+                x.StaffUserId == request.StaffUserId
+                && x.BusinessDate == periodStartUtc.Date
+                && x.CurrencyCode == targetCurrencyCode,
             cancellationToken);
 
         if (existing is null)
@@ -568,6 +590,7 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
             {
                 StaffUserId = request.StaffUserId,
                 StaffName = staffName,
+                CurrencyCode = targetCurrencyCode,
                 BusinessDate = periodStartUtc.Date,
                 CashTotal = RoundMoney(cash),
                 CardTotal = RoundMoney(card),
@@ -581,6 +604,7 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
         else
         {
             existing.StaffName = staffName;
+            existing.CurrencyCode = targetCurrencyCode;
             existing.CashTotal = RoundMoney(cash);
             existing.CardTotal = RoundMoney(card);
             existing.EcoCashTotal = RoundMoney(ecoCash);
@@ -590,7 +614,7 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
         }
 
         await AddRetailAuditAsync(
-            $"Cash up submitted by {staffName} for {periodStartUtc:yyyy-MM-dd} totalling ${RoundMoney(total):0.00}.",
+            $"Cash up submitted by {staffName} for {periodStartUtc:yyyy-MM-dd} totalling {RoundMoney(total):0.00} {targetCurrencyCode}.",
             staffName,
             cancellationToken);
 
@@ -602,6 +626,7 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
         DateTime? from,
         DateTime? to,
         int? staffUserId,
+        string? currency,
         CancellationToken cancellationToken = default)
     {
         var query = db.StaffCashUps.AsNoTracking().AsQueryable();
@@ -621,6 +646,11 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
         if (staffUserId.HasValue && staffUserId.Value > 0)
         {
             query = query.Where(x => x.StaffUserId == staffUserId.Value);
+        }
+
+        if (TryNormalizeCurrencyCode(currency, out var normalizedCurrency))
+        {
+            query = query.Where(x => x.CurrencyCode == normalizedCurrency);
         }
 
         var entries = await query
@@ -656,6 +686,8 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
     public async Task<CheckoutResponseDto> CheckoutAsync(CheckoutRequestDto request, CancellationToken cancellationToken = default)
     {
         var method = ParsePaymentMethod(request.PaymentMethod);
+        var paymentCurrencyCode = NormalizeCurrencyCode(request.CurrencyCode);
+        var exchangeRateToUsd = ResolveExchangeRateToUsd(paymentCurrencyCode);
         if (request.Cart.Count == 0)
         {
             throw new InvalidOperationException("Cart is empty.");
@@ -719,8 +751,8 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
         var maxByTotal = (int)Math.Floor(gross / PointValue);
         var pointsRedeemed = Math.Min(allowedPoints, maxByTotal);
 
-        var total = Math.Max(0, gross - pointsRedeemed * PointValue);
-        var pointsEarned = (int)Math.Floor(total / 12m);
+        var totalBase = Math.Max(0, gross - pointsRedeemed * PointValue);
+        var pointsEarned = (int)Math.Floor(totalBase / 12m);
 
         foreach (var line in lineCalculations)
         {
@@ -729,7 +761,11 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
 
         var transactionId = BuildTransactionId("tx");
         var now = DateTime.UtcNow;
-        var roundedTotal = RoundMoney(total);
+        var roundedTotalBase = RoundMoney(totalBase);
+        var convertedSubtotal = RoundMoney(ConvertFromBaseCurrency(subtotal, exchangeRateToUsd));
+        var convertedTax = RoundMoney(ConvertFromBaseCurrency(tax, exchangeRateToUsd));
+        var convertedDiscount = RoundMoney(ConvertFromBaseCurrency(discount, exchangeRateToUsd));
+        var convertedTotal = RoundMoney(ConvertFromBaseCurrency(totalBase, exchangeRateToUsd));
         int? checkoutStaffId = request.StaffUserId.HasValue && request.StaffUserId.Value > 0
             ? request.StaffUserId.Value
             : null;
@@ -741,16 +777,18 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
         {
             ExternalTransactionId = transactionId,
             Method = method,
+            CurrencyCode = paymentCurrencyCode,
+            ExchangeRateToUsd = exchangeRateToUsd,
             StaffUserId = checkoutStaffId,
             ProcessedByName = checkoutStaffName,
             CustomerPhone = customer?.PhoneNumber ?? customerPhone,
             CustomerName = customer?.Name,
-            Subtotal = RoundMoney(subtotal),
-            Tax = RoundMoney(tax),
-            Discount = RoundMoney(discount),
+            Subtotal = convertedSubtotal,
+            Tax = convertedTax,
+            Discount = convertedDiscount,
             PointsRedeemed = pointsRedeemed,
             PointsEarned = pointsEarned,
-            Amount = roundedTotal,
+            Amount = convertedTotal,
             Timestamp = now,
             Lines = lineCalculations.Select(line => new PosPaymentLine
             {
@@ -758,10 +796,10 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
                 ProductName = line.Product.Name,
                 Sku = line.Product.Sku,
                 Quantity = line.Quantity,
-                UnitPrice = line.UnitPrice,
-                Discount = line.Discount,
-                Tax = line.Tax,
-                LineTotal = line.LineTotal
+                UnitPrice = RoundMoney(ConvertFromBaseCurrency(line.UnitPrice, exchangeRateToUsd)),
+                Discount = RoundMoney(ConvertFromBaseCurrency(line.Discount, exchangeRateToUsd)),
+                Tax = RoundMoney(ConvertFromBaseCurrency(line.Tax, exchangeRateToUsd)),
+                LineTotal = RoundMoney(ConvertFromBaseCurrency(line.LineTotal, exchangeRateToUsd))
             }).ToList()
         };
 
@@ -774,7 +812,7 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
             {
                 ExternalTransactionId = transactionId,
                 Date = now,
-                Total = roundedTotal,
+                Total = roundedTotalBase,
                 PointsEarned = pointsEarned
             });
         }
@@ -786,17 +824,17 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
             db.SalesTrendPoints.Add(new SalesTrendPoint
             {
                 Hour = currentHour,
-                Sales = roundedTotal
+                Sales = roundedTotalBase
             });
         }
         else
         {
-            slot.Sales = RoundMoney(slot.Sales + total);
+            slot.Sales = RoundMoney(slot.Sales + totalBase);
         }
 
         var role = string.IsNullOrWhiteSpace(request.UserRole) ? (await GetOrCreateSettingsAsync(cancellationToken)).ActiveRole : request.UserRole.Trim();
         await AddRetailAuditAsync(
-            $"Checkout {transactionId} completed ({request.PaymentMethod}) for ${RoundMoney(total):0.00}.",
+            $"Checkout {transactionId} completed ({request.PaymentMethod}) for {convertedTotal:0.00} {paymentCurrencyCode}.",
             role,
             cancellationToken);
 
@@ -804,11 +842,11 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
 
         var roundedTotals = new CartTotalsDto
         {
-            Subtotal = RoundMoney(subtotal),
-            Tax = RoundMoney(tax),
-            Discount = RoundMoney(discount),
+            Subtotal = convertedSubtotal,
+            Tax = convertedTax,
+            Discount = convertedDiscount,
             PointsRedeemed = pointsRedeemed,
-            Total = roundedTotal,
+            Total = convertedTotal,
             PointsEarned = pointsEarned
         };
 
@@ -823,6 +861,8 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
                 TransactionId = transactionId,
                 Timestamp = now.ToString("O"),
                 PaymentMethod = method.ToString(),
+                CurrencyCode = paymentCurrencyCode,
+                ExchangeRateToUsd = exchangeRateToUsd,
                 CustomerName = customer?.Name ?? "Walk-in Customer",
                 CustomerPhone = customer?.PhoneNumber ?? customerPhone,
                 QrToken = BuildReceiptQrToken(transactionId),
@@ -878,6 +918,8 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
             TransactionId = payment.ExternalTransactionId,
             Timestamp = payment.Timestamp.ToString("O"),
             PaymentMethod = payment.Method.ToString(),
+            CurrencyCode = NormalizeCurrencyCode(payment.CurrencyCode),
+            ExchangeRateToUsd = NormalizeExchangeRateToUsd(payment.ExchangeRateToUsd),
             CustomerName = string.IsNullOrWhiteSpace(payment.CustomerName) ? "Walk-in Customer" : payment.CustomerName,
             CustomerPhone = payment.CustomerPhone ?? string.Empty,
             QrToken = BuildReceiptQrToken(payment.ExternalTransactionId),
@@ -1094,6 +1136,56 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
         return DateTime.UtcNow.Date;
     }
 
+    private static bool TryNormalizeCurrencyCode(string? rawCurrencyCode, out string currencyCode)
+    {
+        if (string.IsNullOrWhiteSpace(rawCurrencyCode))
+        {
+            currencyCode = BaseCurrencyCode;
+            return false;
+        }
+
+        var normalized = rawCurrencyCode.Trim().ToUpperInvariant();
+        if (SupportedCurrencyRates.ContainsKey(normalized))
+        {
+            currencyCode = normalized;
+            return true;
+        }
+
+        currencyCode = BaseCurrencyCode;
+        return false;
+    }
+
+    private static string NormalizeCurrencyCode(string? rawCurrencyCode)
+    {
+        return TryNormalizeCurrencyCode(rawCurrencyCode, out var currencyCode)
+            ? currencyCode
+            : BaseCurrencyCode;
+    }
+
+    private static decimal ResolveExchangeRateToUsd(string currencyCode)
+    {
+        var normalized = NormalizeCurrencyCode(currencyCode);
+        return SupportedCurrencyRates.TryGetValue(normalized, out var rate) && rate > 0
+            ? rate
+            : 1m;
+    }
+
+    private static decimal NormalizeExchangeRateToUsd(decimal exchangeRateToUsd)
+    {
+        return exchangeRateToUsd > 0m ? exchangeRateToUsd : 1m;
+    }
+
+    private static decimal ConvertFromBaseCurrency(decimal amountInUsd, decimal exchangeRateToUsd)
+    {
+        return amountInUsd * NormalizeExchangeRateToUsd(exchangeRateToUsd);
+    }
+
+    private static decimal ConvertToBaseCurrency(PosPayment payment)
+    {
+        var normalizedRate = NormalizeExchangeRateToUsd(payment.ExchangeRateToUsd);
+        return payment.Amount / normalizedRate;
+    }
+
     private static string NormalizePhone(string phone) => string.Concat(phone.Where(char.IsDigit));
 
     private static decimal RoundMoney(decimal value) => Math.Round(value, 2, MidpointRounding.AwayFromZero);
@@ -1146,6 +1238,7 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
         TransactionId = payment.ExternalTransactionId,
         Timestamp = payment.Timestamp.ToString("O"),
         PaymentMethod = payment.Method.ToString(),
+        CurrencyCode = NormalizeCurrencyCode(payment.CurrencyCode),
         CustomerName = payment.CustomerName ?? string.Empty,
         CustomerPhone = payment.CustomerPhone ?? string.Empty,
         Subtotal = RoundMoney(payment.Subtotal),
@@ -1166,6 +1259,7 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
         Id = cashUp.Id,
         StaffUserId = cashUp.StaffUserId,
         StaffName = cashUp.StaffName,
+        CurrencyCode = NormalizeCurrencyCode(cashUp.CurrencyCode),
         BusinessDate = cashUp.BusinessDate.ToString("yyyy-MM-dd"),
         CashTotal = RoundMoney(cashUp.CashTotal),
         CardTotal = RoundMoney(cashUp.CardTotal),

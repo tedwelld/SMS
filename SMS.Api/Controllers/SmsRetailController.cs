@@ -243,9 +243,10 @@ public class SmsRetailController(ISmsRetailService service) : ControllerBase
         [FromQuery] DateTime? to,
         [FromQuery] string? method,
         [FromQuery] string? query,
+        [FromQuery] string? currency,
         [FromQuery] int? limit,
         CancellationToken cancellationToken)
-        => Ok(await service.GetPaymentsAsync(from, to, method, query, limit ?? 100, cancellationToken));
+        => Ok(await service.GetPaymentsAsync(from, to, method, query, currency, limit ?? 100, cancellationToken));
 
     [HttpPost("cash-ups/submit")]
     [HttpPost("cashups/submit")]
@@ -272,8 +273,9 @@ public class SmsRetailController(ISmsRetailService service) : ControllerBase
         [FromQuery] DateTime? from,
         [FromQuery] DateTime? to,
         [FromQuery] int? staffUserId,
+        [FromQuery] string? currency,
         CancellationToken cancellationToken)
-        => Ok(await service.GetCashUpsAsync(from, to, staffUserId, cancellationToken));
+        => Ok(await service.GetCashUpsAsync(from, to, staffUserId, currency, cancellationToken));
 
     [HttpGet("reports/shrinkage")]
     public async Task<ActionResult<IReadOnlyList<ShrinkageReportRowDto>>> GetShrinkage(CancellationToken cancellationToken)

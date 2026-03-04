@@ -32,6 +32,39 @@ public static class DataSeeder
             WHERE UPPER(LTRIM(RTRIM([Method]))) IN ('DIGITAL', 'ECO CASH', 'ECO-CASH');
             """,
             cancellationToken);
+
+        await db.Database.ExecuteSqlRawAsync(
+            """
+            IF COL_LENGTH('PosPayments', 'CurrencyCode') IS NOT NULL
+            BEGIN
+                UPDATE [PosPayments]
+                SET [CurrencyCode] = 'USD'
+                WHERE [CurrencyCode] IS NULL OR LTRIM(RTRIM([CurrencyCode])) = '';
+            END;
+            """,
+            cancellationToken);
+
+        await db.Database.ExecuteSqlRawAsync(
+            """
+            IF COL_LENGTH('PosPayments', 'ExchangeRateToUsd') IS NOT NULL
+            BEGIN
+                UPDATE [PosPayments]
+                SET [ExchangeRateToUsd] = 1
+                WHERE [ExchangeRateToUsd] IS NULL OR [ExchangeRateToUsd] <= 0;
+            END;
+            """,
+            cancellationToken);
+
+        await db.Database.ExecuteSqlRawAsync(
+            """
+            IF COL_LENGTH('StaffCashUps', 'CurrencyCode') IS NOT NULL
+            BEGIN
+                UPDATE [StaffCashUps]
+                SET [CurrencyCode] = 'USD'
+                WHERE [CurrencyCode] IS NULL OR LTRIM(RTRIM([CurrencyCode])) = '';
+            END;
+            """,
+            cancellationToken);
     }
 
     private static async Task SeedStaffUsersAsync(SmsDbContext db, CancellationToken cancellationToken)
@@ -307,6 +340,8 @@ public static class DataSeeder
                 {
                     ExternalTransactionId = "tx-seed-0001",
                     Method = PosPaymentMethod.Cash,
+                    CurrencyCode = "USD",
+                    ExchangeRateToUsd = 1m,
                     Subtotal = 178.84m,
                     Tax = 5.36m,
                     Discount = 0m,
@@ -319,6 +354,8 @@ public static class DataSeeder
                 {
                     ExternalTransactionId = "tx-seed-0002",
                     Method = PosPaymentMethod.Card,
+                    CurrencyCode = "USD",
+                    ExchangeRateToUsd = 1m,
                     Subtotal = 405.65m,
                     Tax = 16.23m,
                     Discount = 0m,
@@ -331,6 +368,8 @@ public static class DataSeeder
                 {
                     ExternalTransactionId = "tx-seed-0003",
                     Method = PosPaymentMethod.EcoCash,
+                    CurrencyCode = "USD",
+                    ExchangeRateToUsd = 1m,
                     Subtotal = 226.65m,
                     Tax = 6.80m,
                     Discount = 0m,

@@ -22,6 +22,7 @@ import {
   ShrinkageReportRow,
   StaffCashUp,
   SubmitCashUpRequest,
+  CurrencyCode,
   UserRole,
   Vendor
 } from './models';
@@ -57,7 +58,8 @@ export class SmsStoreService {
     card: 0,
     digital: 0,
     total: 0,
-    transactions: 0
+    transactions: 0,
+    currencyCode: 'USD'
   });
 
   private readonly shrinkage = signal<ShrinkageReportRow[]>([]);
@@ -247,6 +249,7 @@ export class SmsStoreService {
 
   async checkout(
     method: PaymentMethod,
+    currencyCode: CurrencyCode,
     customerPhone: string,
     pointsToRedeem: number
   ): Promise<{ success: boolean; message: string; transactionId?: string; receipt?: ReceiptPayload }> {
@@ -259,6 +262,7 @@ export class SmsStoreService {
         this.http.post<CheckoutResponse>(`${this.apiBaseUrl}/checkout`, {
           cart: this.cart().map((line) => ({ productId: line.productId, quantity: line.quantity })),
           paymentMethod: method,
+          currencyCode,
           customerPhone,
           pointsToRedeem,
           userRole: this.resolveRetailRole(),
@@ -419,6 +423,7 @@ export class SmsStoreService {
       from?: string;
       to?: string;
       method?: PaymentMethod | 'all';
+      currency?: CurrencyCode | 'all';
       query?: string;
     }
   ): Promise<void> {
@@ -436,6 +441,9 @@ export class SmsStoreService {
     }
     if (filters?.method && filters.method !== 'all') {
       params = params.set('method', filters.method);
+    }
+    if (filters?.currency && filters.currency !== 'all') {
+      params = params.set('currency', filters.currency);
     }
 
     try {
@@ -505,7 +513,7 @@ export class SmsStoreService {
     }
   }
 
-  async refreshCashUps(filters?: { from?: string; to?: string; staffUserId?: number }): Promise<void> {
+  async refreshCashUps(filters?: { from?: string; to?: string; staffUserId?: number; currency?: CurrencyCode | 'all' }): Promise<void> {
     let params = new HttpParams();
 
     if (filters?.from?.trim()) {
@@ -518,6 +526,9 @@ export class SmsStoreService {
 
     if (Number.isFinite(filters?.staffUserId) && (filters?.staffUserId ?? 0) > 0) {
       params = params.set('staffUserId', String(filters!.staffUserId));
+    }
+    if (filters?.currency && filters.currency !== 'all') {
+      params = params.set('currency', filters.currency);
     }
 
     try {

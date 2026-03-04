@@ -424,6 +424,8 @@ public class SmsDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.HasKey(x => x.Id);
             entity.Property(x => x.ExternalTransactionId).HasMaxLength(80).IsRequired();
             entity.Property(x => x.Method).HasConversion<string>().HasMaxLength(20);
+            entity.Property(x => x.CurrencyCode).HasMaxLength(3).HasDefaultValue("USD").IsRequired();
+            entity.Property(x => x.ExchangeRateToUsd).HasColumnType("decimal(18,6)").HasDefaultValue(1m);
             entity.Property(x => x.ProcessedByName).HasMaxLength(200);
             entity.Property(x => x.CustomerPhone).HasMaxLength(30);
             entity.Property(x => x.CustomerName).HasMaxLength(200);
@@ -470,13 +472,14 @@ public class SmsDbContext : Microsoft.EntityFrameworkCore.DbContext
         {
             entity.HasKey(x => x.Id);
             entity.Property(x => x.StaffName).HasMaxLength(200).IsRequired();
+            entity.Property(x => x.CurrencyCode).HasMaxLength(3).HasDefaultValue("USD").IsRequired();
             entity.Property(x => x.BusinessDate).HasColumnType("date");
             entity.Property(x => x.CashTotal).HasColumnType("decimal(18,2)");
             entity.Property(x => x.CardTotal).HasColumnType("decimal(18,2)");
             entity.Property(x => x.EcoCashTotal).HasColumnType("decimal(18,2)");
             entity.Property(x => x.Total).HasColumnType("decimal(18,2)");
             entity.Property(x => x.SubmittedAt).HasDefaultValueSql("GETUTCDATE()");
-            entity.HasIndex(x => new { x.StaffUserId, x.BusinessDate }).IsUnique();
+            entity.HasIndex(x => new { x.StaffUserId, x.BusinessDate, x.CurrencyCode }).IsUnique();
             entity.HasIndex(x => x.BusinessDate);
             entity.HasOne(x => x.StaffUser)
                 .WithMany()

@@ -33,7 +33,7 @@
             <small>Stock: {{ item.stock }}</small>
           </div>
           <div class="product-actions">
-            <strong>{{ item.price | currency }}</strong>
+            <strong>{{ formatBaseAmount(item.price) }}</strong>
             <button mat-stroked-button class="btn-success-action" type="button" (click)="store.addToCart(item.id)">Add</button>
           </div>
         </div>
@@ -75,7 +75,7 @@
                   <button mat-stroked-button class="btn-neutral-action" type="button" (click)="store.increaseCartQuantity(line.productId)">+</button>
                 </div>
               </td>
-              <td>{{ line.price | currency }}</td>
+              <td>{{ formatBaseAmount(line.price) }}</td>
               <td>
                 <button mat-stroked-button class="btn-danger-action" type="button" (click)="store.removeFromCart(line.productId)">Remove</button>
               </td>
@@ -115,6 +115,15 @@
           }
         </select>
       </label>
+
+      <label class="field-control">
+        <span>Currency</span>
+        <select [value]="paymentCurrency()" (change)="setPaymentCurrency(($any($event.target)).value)">
+          @for (currency of currencyOptions; track currency.code) {
+            <option [value]="currency.code">{{ currency.code }} - {{ currency.label }}</option>
+          }
+        </select>
+      </label>
     </div>
 
     @if (selectedCustomer()) {
@@ -126,12 +135,12 @@
     }
 
     <div class="totals-grid">
-      <p>Subtotal <strong>{{ totals().subtotal | currency }}</strong></p>
-      <p>Tax <strong>{{ totals().tax | currency }}</strong></p>
-      <p>Promo Discount <strong>-{{ totals().discount | currency }}</strong></p>
-      <p>Points Redeemed <strong>{{ totals().pointsRedeemed }}</strong></p>
-      <p class="grand">Total <strong>{{ totals().total | currency }}</strong></p>
-      <p>Points Earned <strong>{{ totals().pointsEarned }}</strong></p>
+      <p>Subtotal <strong>{{ formatAmount(convertedTotals().subtotal) }}</strong></p>
+      <p>Tax <strong>{{ formatAmount(convertedTotals().tax) }}</strong></p>
+      <p>Promo Discount <strong>-{{ formatAmount(convertedTotals().discount) }}</strong></p>
+      <p>Points Redeemed <strong>{{ convertedTotals().pointsRedeemed }}</strong></p>
+      <p class="grand">Total <strong>{{ formatAmount(convertedTotals().total) }}</strong></p>
+      <p>Points Earned <strong>{{ convertedTotals().pointsEarned }}</strong></p>
     </div>
 
     @if (paymentMethod() === 'EcoCash' && ecoCashPromptQr()) {

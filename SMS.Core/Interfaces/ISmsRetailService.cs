@@ -35,6 +35,7 @@ public interface ISmsRetailService
         DateTime? to,
         string? method,
         string? query,
+        string? currency,
         int limit,
         CancellationToken cancellationToken = default);
     Task<StaffCashUpDto> SubmitDailyCashUpAsync(SubmitCashUpRequestDto request, CancellationToken cancellationToken = default);
@@ -42,6 +43,7 @@ public interface ISmsRetailService
         DateTime? from,
         DateTime? to,
         int? staffUserId,
+        string? currency,
         CancellationToken cancellationToken = default);
     Task<IReadOnlyList<ShrinkageReportRowDto>> GetShrinkageReportAsync(CancellationToken cancellationToken = default);
     Task<IReadOnlyList<SalesTrendPointDto>> GetSalesTrendAsync(CancellationToken cancellationToken = default);

@@ -21,6 +21,44 @@
   gap: 0.9rem;
 }
 
+.cashup-notice {
+  margin-bottom: 0.8rem;
+  border: 1px solid var(--line-soft);
+  border-left: 4px solid var(--primary-color);
+  border-radius: 10px;
+  background: var(--sms-card-bg);
+  padding: 0.65rem 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+
+  p {
+    margin: 0;
+    color: var(--ink-700);
+    font-weight: 600;
+  }
+
+  button {
+    border: 1px solid var(--line-soft);
+    border-radius: 8px;
+    padding: 0.25rem 0.55rem;
+    background: var(--sms-card-bg-strong);
+    color: var(--ink-700);
+    cursor: pointer;
+  }
+}
+
+.cashup-notice.is-success {
+  border-left-color: #1f995f;
+  background: rgba(31, 153, 95, 0.08);
+}
+
+.cashup-notice.is-error {
+  border-left-color: #bb2d2f;
+  background: rgba(187, 45, 47, 0.08);
+}
+
 .panel {
   background: var(--sms-card-bg);
   border: 1px solid var(--line-soft);
@@ -57,6 +95,10 @@ header {
     margin: 0;
     color: var(--ink-600);
   }
+}
+
+.field-control.compact {
+  min-width: 240px;
 }
 
 .latest {

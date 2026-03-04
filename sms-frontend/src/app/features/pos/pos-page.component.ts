@@ -1,16 +1,16 @@
-import { CommonModule, CurrencyPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, ElementRef, HostListener, ViewChild, computed, effect, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { toDataURL } from 'qrcode';
 
-import { CartItem, PaymentMethod, ReceiptPayload } from '../../core/models';
+import { CartItem, CurrencyCode, CurrencyOption, PaymentMethod, ReceiptPayload, SUPPORTED_CURRENCIES } from '../../core/models';
 import { SmsStoreService } from '../../core/sms-store.service';
 import { SYSTEM_BRANDING, SYSTEM_BRANDING_FULL_ADDRESS } from '../../core/system-branding';
 
 @Component({
   selector: 'app-pos-page',
-  imports: [CommonModule, CurrencyPipe, MatButtonModule, MatCardModule],
+  imports: [CommonModule, MatButtonModule, MatCardModule],
   templateUrl: './pos-page.component.html',
   styleUrl: './pos-page.component.scss'
 })
@@ -25,6 +25,7 @@ export class PosPageComponent {
   readonly customerPhone = signal('');
   readonly pointsToRedeem = signal(0);
   readonly paymentMethod = signal<PaymentMethod>('Card');
+  readonly paymentCurrency = signal<CurrencyCode>('USD');
   readonly message = signal('Ready for checkout.');
   readonly lastGeneratedReceipt = signal<ReceiptPayload | null>(null);
   readonly ecoCashPromptQr = signal<string | null>(null);
@@ -32,9 +33,13 @@ export class PosPageComponent {
   @ViewChild('searchBox') searchBox?: ElementRef<HTMLInputElement>;
 
   readonly paymentOptions: PaymentMethod[] = ['Cash', 'Card', 'EcoCash'];
+  readonly currencyOptions: CurrencyOption[] = SUPPORTED_CURRENCIES;
 
   readonly matchedProducts = computed(() => this.store.searchProducts(this.searchTerm()).slice(0, 16));
   readonly selectedCustomer = computed(() => this.store.getCustomerByPhone(this.customerPhone()));
+  readonly activeCurrency = computed(() =>
+    this.currencyOptions.find((item) => item.code === this.paymentCurrency()) ?? this.currencyOptions[0]
+  );
 
   readonly totals = computed(() => {
     const customer = this.selectedCustomer();
@@ -43,12 +48,24 @@ export class PosPageComponent {
     const safePoints = Math.min(allowedPoints, requested);
     return this.store.getCartTotals(safePoints);
   });
-  readonly ecoCashDialCode = computed(() => this.buildEcoCashDialCode(this.totals().total));
+  readonly convertedTotals = computed(() => {
+    const baseTotals = this.totals();
+    const rate = this.activeCurrency().rateToUsd;
+
+    return {
+      ...baseTotals,
+      subtotal: this.roundMoney(baseTotals.subtotal * rate),
+      tax: this.roundMoney(baseTotals.tax * rate),
+      discount: this.roundMoney(baseTotals.discount * rate),
+      total: this.roundMoney(baseTotals.total * rate)
+    };
+  });
+  readonly ecoCashDialCode = computed(() => this.buildEcoCashDialCode(this.convertedTotals().total));
 
   constructor() {
     effect(() => {
       const method = this.paymentMethod();
-      const amount = this.totals().total;
+      const amount = this.convertedTotals().total;
       if (method !== 'EcoCash' || this.store.cart().length === 0 || amount <= 0) {
         this.ecoCashPromptQr.set(null);
         return;
@@ -92,6 +109,12 @@ export class PosPageComponent {
   setPaymentMethod(method: string): void {
     if (method === 'Cash' || method === 'Card' || method === 'EcoCash') {
       this.paymentMethod.set(method);
+    }
+  }
+
+  setPaymentCurrency(code: string): void {
+    if (code === 'USD' || code === 'ZAR' || code === 'ZWG') {
+      this.paymentCurrency.set(code);
     }
   }
 
@@ -145,7 +168,7 @@ export class PosPageComponent {
 
   async processPayment(): Promise<void> {
     if (this.paymentMethod() === 'EcoCash') {
-      const amount = this.roundMoney(this.totals().total);
+      const amount = this.roundMoney(this.convertedTotals().total);
       const ussd = this.buildEcoCashDialCode(amount);
       const promptText = this.buildEcoCashPromptText(amount);
       this.tryLaunchDialer(ussd);
@@ -161,6 +184,7 @@ export class PosPageComponent {
 
     const result = await this.store.checkout(
       this.paymentMethod(),
+      this.paymentCurrency(),
       this.customerPhone(),
       this.selectedCustomer() ? this.pointsToRedeem() : 0
     );
@@ -182,9 +206,11 @@ export class PosPageComponent {
     }
 
     const customer = this.selectedCustomer();
-    const totals = this.totals();
+    const totals = this.convertedTotals();
     const timestamp = new Date().toISOString();
     const transactionId = `qt-${Date.now().toString().slice(-8)}`;
+    const currencyCode = this.paymentCurrency();
+    const exchangeRateToUsd = this.activeCurrency().rateToUsd;
 
     const lineItems = cart.map((line) => {
       const computed = this.computeLineTotals(line);
@@ -193,10 +219,10 @@ export class PosPageComponent {
         productName: line.name,
         sku: line.sku,
         quantity: line.quantity,
-        unitPrice: this.roundMoney(line.price),
-        discount: computed.discount,
-        tax: computed.tax,
-        lineTotal: computed.total
+        unitPrice: this.roundMoney(line.price * exchangeRateToUsd),
+        discount: this.roundMoney(computed.discount * exchangeRateToUsd),
+        tax: this.roundMoney(computed.tax * exchangeRateToUsd),
+        lineTotal: this.roundMoney(computed.total * exchangeRateToUsd)
       };
     });
 
@@ -204,6 +230,8 @@ export class PosPageComponent {
       transactionId,
       timestamp,
       paymentMethod: this.paymentMethod(),
+      currencyCode,
+      exchangeRateToUsd,
       customerName: customer?.name ?? 'Walk-in Customer',
       customerPhone: customer?.phone ?? this.customerPhone().trim(),
       totals,
@@ -219,12 +247,16 @@ export class PosPageComponent {
   private buildCartReceiptPayload(): ReceiptPayload {
     const cart = this.store.cart();
     const customer = this.selectedCustomer();
-    const totals = this.totals();
+    const totals = this.convertedTotals();
+    const currencyCode = this.paymentCurrency();
+    const exchangeRateToUsd = this.activeCurrency().rateToUsd;
 
     return {
       transactionId: `tmp-${Date.now().toString().slice(-8)}`,
       timestamp: new Date().toISOString(),
       paymentMethod: this.paymentMethod(),
+      currencyCode,
+      exchangeRateToUsd,
       customerName: customer?.name ?? 'Walk-in Customer',
       customerPhone: customer?.phone ?? this.customerPhone().trim(),
       totals,
@@ -235,10 +267,10 @@ export class PosPageComponent {
           productName: line.name,
           sku: line.sku,
           quantity: line.quantity,
-          unitPrice: this.roundMoney(line.price),
-          discount: computed.discount,
-          tax: computed.tax,
-          lineTotal: computed.total
+          unitPrice: this.roundMoney(line.price * exchangeRateToUsd),
+          discount: this.roundMoney(computed.discount * exchangeRateToUsd),
+          tax: this.roundMoney(computed.tax * exchangeRateToUsd),
+          lineTotal: this.roundMoney(computed.total * exchangeRateToUsd)
         };
       })
     };
@@ -251,7 +283,7 @@ export class PosPageComponent {
 
   private buildEcoCashPromptText(amount: number): string {
     const ussd = this.buildEcoCashDialCode(amount);
-    return `Prompt customer to dial:\n${ussd}\n\nSend to ${PosPageComponent.ECOCASH_NUMBER} for $${amount.toFixed(2)}.`;
+    return `Prompt customer to dial:\n${ussd}\n\nSend to ${PosPageComponent.ECOCASH_NUMBER} for ${this.formatCurrencyValue(amount, this.paymentCurrency())}.`;
   }
 
   private async refreshEcoCashPromptQr(amount: number): Promise<void> {
@@ -308,8 +340,8 @@ export class PosPageComponent {
                 <small>${this.escapeHtml(line.sku)}</small>
               </td>
               <td>${line.quantity}</td>
-              <td>$${line.unitPrice.toFixed(2)}</td>
-              <td>$${line.lineTotal.toFixed(2)}</td>
+              <td>${this.escapeHtml(this.formatCurrencyValue(line.unitPrice, normalized.currencyCode))}</td>
+              <td>${this.escapeHtml(this.formatCurrencyValue(line.lineTotal, normalized.currencyCode))}</td>
             </tr>`)
           .join('');
 
@@ -375,6 +407,7 @@ export class PosPageComponent {
               <p><strong>${this.escapeHtml(documentType)}:</strong> ${this.escapeHtml(normalized.transactionId)}</p>
               <p><strong>Date:</strong> ${this.escapeHtml(normalized.timestamp)}</p>
               ${includePaymentMethod ? `<p><strong>Payment:</strong> ${this.escapeHtml(normalized.paymentMethod)}</p>` : ''}
+              <p><strong>Currency:</strong> ${this.escapeHtml(normalized.currencyCode)}</p>
               <p><strong>Customer:</strong> ${this.escapeHtml(normalized.customerName)}</p>
               <p><strong>Phone:</strong> ${this.escapeHtml(normalized.customerPhone)}</p>
             </section>
@@ -394,11 +427,11 @@ export class PosPageComponent {
             </table>
 
             <section class="totals">
-              <p><span>Subtotal</span><span>$${normalized.totals.subtotal.toFixed(2)}</span></p>
-              <p><span>Tax</span><span>$${normalized.totals.tax.toFixed(2)}</span></p>
-              <p><span>Discount</span><span>-$${normalized.totals.discount.toFixed(2)}</span></p>
+              <p><span>Subtotal</span><span>${this.escapeHtml(this.formatCurrencyValue(normalized.totals.subtotal, normalized.currencyCode))}</span></p>
+              <p><span>Tax</span><span>${this.escapeHtml(this.formatCurrencyValue(normalized.totals.tax, normalized.currencyCode))}</span></p>
+              <p><span>Discount</span><span>-${this.escapeHtml(this.formatCurrencyValue(normalized.totals.discount, normalized.currencyCode))}</span></p>
               <p><span>Points Redeemed</span><span>${normalized.totals.pointsRedeemed}</span></p>
-              <p><strong>Grand Total</strong><strong>$${normalized.totals.total.toFixed(2)}</strong></p>
+              <p><strong>Grand Total</strong><strong>${this.escapeHtml(this.formatCurrencyValue(normalized.totals.total, normalized.currencyCode))}</strong></p>
               <p><span>Points Earned</span><span>${normalized.totals.pointsEarned}</span></p>
             </section>
 
@@ -446,6 +479,8 @@ export class PosPageComponent {
     transactionId: string;
     timestamp: string;
     paymentMethod: string;
+    currencyCode: CurrencyCode;
+    exchangeRateToUsd: number;
     customerName: string;
     customerPhone: string;
     qrToken: string;
@@ -479,6 +514,8 @@ export class PosPageComponent {
       transactionId: String(receipt.transactionId || `doc-${Date.now()}`),
       timestamp: new Date(receipt.timestamp || new Date().toISOString()).toLocaleString(),
       paymentMethod: String(receipt.paymentMethod || 'N/A'),
+      currencyCode: this.normalizeCurrencyCode(receipt.currencyCode),
+      exchangeRateToUsd: this.safeExchangeRate(receipt.exchangeRateToUsd),
       customerName: String(receipt.customerName || 'Walk-in Customer'),
       customerPhone: String(receipt.customerPhone || 'N/A'),
       qrToken: String(receipt.qrToken || ''),
@@ -570,8 +607,44 @@ export class PosPageComponent {
     };
   }
 
+  formatAmount(amount: number): string {
+    return this.formatCurrencyValue(amount, this.paymentCurrency());
+  }
+
+  formatBaseAmount(amountInUsd: number): string {
+    const converted = this.roundMoney(amountInUsd * this.activeCurrency().rateToUsd);
+    return this.formatCurrencyValue(converted, this.paymentCurrency());
+  }
+
   private roundMoney(value: number): number {
     return Math.round(value * 100) / 100;
+  }
+
+  private formatCurrencyValue(amount: number, currencyCode: CurrencyCode): string {
+    try {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: currencyCode,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(this.roundMoney(amount));
+    } catch {
+      return `${currencyCode} ${this.roundMoney(amount).toFixed(2)}`;
+    }
+  }
+
+  private normalizeCurrencyCode(rawCode: unknown): CurrencyCode {
+    const code = String(rawCode || '').trim().toUpperCase();
+    if (code === 'USD' || code === 'ZAR' || code === 'ZWG') {
+      return code;
+    }
+
+    return 'USD';
+  }
+
+  private safeExchangeRate(value: unknown): number {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
   }
 
   private safeMoney(value: unknown): number {

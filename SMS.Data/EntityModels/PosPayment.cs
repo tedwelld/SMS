@@ -7,6 +7,8 @@ public class PosPayment
     public int Id { get; set; }
     public string ExternalTransactionId { get; set; } = string.Empty;
     public PosPaymentMethod Method { get; set; }
+    public string CurrencyCode { get; set; } = "USD";
+    public decimal ExchangeRateToUsd { get; set; } = 1m;
     public int? StaffUserId { get; set; }
     public string? ProcessedByName { get; set; }
     public string? CustomerPhone { get; set; }
