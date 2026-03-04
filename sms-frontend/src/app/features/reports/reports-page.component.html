@@ -1,6 +1,6 @@
 <section class="page-head">
   <h1>Reporting and BI</h1>
-  <p>End-of-day payment summaries, shrinkage visibility, and hourly sales trend analytics.</p>
+  <p>Single report workspace for EOD totals, shrinkage visibility, and hourly sales trend analytics.</p>
 </section>
 
 <section class="report-toolbar">
@@ -27,16 +27,22 @@
       (ngModelChange)="minSales.set(+$event || 0)"
     />
   </label>
+
+  <select [ngModel]="selectedReport()" (ngModelChange)="selectedReport.set($event)">
+    <option value="all">All Reports</option>
+    <option value="eod">EOD Summary</option>
+    <option value="shrinkage">Shrinkage</option>
+    <option value="sales">Sales Trends</option>
+  </select>
+
+  <button mat-stroked-button class="btn-info-action" type="button" [disabled]="exporting()" (click)="exportPdf()">
+    {{ exporting() ? 'Exporting...' : 'Generate PDF' }}
+  </button>
 </section>
 
-<mat-tab-group animationDuration="200ms">
-  <mat-tab label="EOD Summary">
-    <section class="export-actions">
-      <button mat-stroked-button class="btn-info-action" type="button" [disabled]="exporting()" (click)="exportPdf('eod')">
-        {{ exporting() ? 'Exporting...' : 'Export EOD PDF' }}
-      </button>
-    </section>
-
+@if (selectedReport() === 'all' || selectedReport() === 'eod') {
+  <section class="report-block" #eodVisualBlock>
+    <h2>EOD Summary</h2>
     <section class="cards">
       <mat-card class="metric-card">
         <span class="metric-icon"><i class="pi pi-money-bill"></i></span>
@@ -68,15 +74,12 @@
         </div>
       </mat-card>
     </section>
-  </mat-tab>
+  </section>
+}
 
-  <mat-tab label="Shrinkage">
-    <section class="export-actions">
-      <button mat-stroked-button class="btn-info-action" type="button" [disabled]="exporting()" (click)="exportPdf('shrinkage')">
-        {{ exporting() ? 'Exporting...' : 'Export Shrinkage PDF' }}
-      </button>
-    </section>
-
+@if (selectedReport() === 'all' || selectedReport() === 'shrinkage') {
+  <section class="report-block">
+    <h2>Shrinkage</h2>
     <section class="table-wrap">
       <table>
         <thead>
@@ -106,15 +109,12 @@
         </tbody>
       </table>
     </section>
-  </mat-tab>
+  </section>
+}
 
-  <mat-tab label="Sales Trends">
-    <section class="export-actions">
-      <button mat-stroked-button class="btn-info-action" type="button" [disabled]="exporting()" (click)="exportPdf('sales')">
-        {{ exporting() ? 'Exporting...' : 'Export Trends PDF' }}
-      </button>
-    </section>
-
+@if (selectedReport() === 'all' || selectedReport() === 'sales') {
+  <section class="report-block" #salesVisualBlock>
+    <h2>Sales Trends</h2>
     <section class="trend-grid">
       @for (slot of filteredSalesTrend(); track slot.hour) {
         <article class="bar-row">
@@ -133,5 +133,5 @@
         </article>
       }
     </section>
-  </mat-tab>
-</mat-tab-group>
+  </section>
+}

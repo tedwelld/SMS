@@ -49,6 +49,7 @@ table {
   flex-wrap: wrap;
 
   input {
+    min-height: 2.1rem;
     min-width: 260px;
   }
 }
@@ -57,6 +58,7 @@ table {
   display: grid;
   gap: 0.5rem;
   grid-template-columns: minmax(260px, 2fr) minmax(140px, 1fr) auto;
+  align-items: end;
   margin-bottom: 0.75rem;
 
   @media (max-width: 900px) {
@@ -66,12 +68,13 @@ table {
 
 input,
 select {
-  border-radius: 12px;
+  border-radius: var(--sms-input-radius);
   border: 1px solid var(--line-soft);
-  background: var(--sms-card-bg);
+  background: var(--sms-card-bg-strong);
   color: var(--ink-700);
   font: inherit;
-  padding: 0.5rem 0.6rem;
+  min-height: 2.1rem;
+  padding: 0.38rem 0.6rem;
 }
 
 .actions {

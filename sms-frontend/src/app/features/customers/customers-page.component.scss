@@ -26,6 +26,7 @@
   display: grid;
   grid-template-columns: 2fr 1fr 1fr auto;
   gap: 0.6rem;
+  align-items: end;
 
   @media (max-width: 980px) {
     grid-template-columns: 1fr;
@@ -36,6 +37,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 0.6rem;
+  align-items: end;
 }
 
 .summary-strip {

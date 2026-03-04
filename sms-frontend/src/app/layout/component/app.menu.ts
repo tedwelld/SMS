@@ -42,7 +42,6 @@ export class AppMenu {
           { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/dashboard'] },
           { label: 'POS', icon: 'pi pi-fw pi-shopping-cart', routerLink: ['/pos'] },
           { label: 'Inventory', icon: 'pi pi-fw pi-box', routerLink: ['/inventory'] },
-          { label: 'Customers', icon: 'pi pi-fw pi-users', routerLink: ['/customers'] },
           { label: 'Procurement', icon: 'pi pi-fw pi-truck', routerLink: ['/procurement'] },
           { label: 'Reports', icon: 'pi pi-fw pi-chart-bar', routerLink: ['/reports'] }
         ]
@@ -51,7 +50,6 @@ export class AppMenu {
         label: 'Administration',
         roles: ['admin'],
         items: [
-          { label: 'Wallet Admin', icon: 'pi pi-fw pi-wallet', routerLink: ['/admin/wallets'] },
           { label: 'Staff Admin', icon: 'pi pi-fw pi-user-edit', routerLink: ['/admin/staff'] },
           { label: 'Settings', icon: 'pi pi-fw pi-cog', routerLink: ['/settings'] }
         ]

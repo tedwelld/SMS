@@ -1,4 +1,7 @@
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using SMS.Core.Dtos;
 using SMS.Core.Interfaces;
 using SMS.Data.DbContext;
@@ -7,9 +10,11 @@ using SMS.Data.Enums;
 
 namespace SMS.Core.Services;
 
-public class SmsRetailService(SmsDbContext db) : ISmsRetailService
+public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : ISmsRetailService
 {
     private const decimal PointValue = 0.05m;
+    private const string ReceiptVerificationSecretConfigPath = "ReceiptVerification:SecretKey";
+    private const string JwtSecretConfigPath = "Jwt:SecretKey";
 
     public async Task<BootstrapPayloadDto> GetBootstrapAsync(CancellationToken cancellationToken = default)
     {
@@ -100,6 +105,140 @@ public class SmsRetailService(SmsDbContext db) : ISmsRetailService
         }
 
         return await query.OrderBy(x => x.Name).Select(x => MapProduct(x)).ToListAsync(cancellationToken);
+    }
+
+    public async Task<ProductDto> CreateProductAsync(
+        CreateProductRequestDto request,
+        string userRole,
+        CancellationToken cancellationToken = default)
+    {
+        if (!IsAdminRole(userRole))
+        {
+            throw new UnauthorizedAccessException("Only admins can add products.");
+        }
+
+        var name = request.Name.Trim();
+        var sku = request.Sku.Trim().ToUpperInvariant();
+        var department = request.Department.Trim();
+        if (string.IsNullOrWhiteSpace(name)
+            || string.IsNullOrWhiteSpace(sku)
+            || string.IsNullOrWhiteSpace(department))
+        {
+            throw new InvalidOperationException("Name, SKU, and department are required.");
+        }
+
+        if (request.Price < 0 || request.Stock < 0 || request.MinStock < 0 || request.TaxRate < 0)
+        {
+            throw new InvalidOperationException("Price, stock, minimum stock, and tax rate must be non-negative.");
+        }
+
+        var duplicate = await db.Products.AnyAsync(x => x.Sku == sku, cancellationToken);
+        if (duplicate)
+        {
+            throw new InvalidOperationException("A product with this SKU already exists.");
+        }
+
+        var arrivalDate = ParseDateOnlyOrDefault(request.ArrivalDate, DateOnly.FromDateTime(DateTime.UtcNow.Date));
+        var expiryDate = ParseDateOnlyOrNull(request.ExpiryDate);
+
+        var product = new Product
+        {
+            Id = BuildTransactionId("prd"),
+            Name = name,
+            Sku = sku,
+            Department = department,
+            Price = RoundMoney(request.Price),
+            Stock = request.Stock,
+            MinStock = request.MinStock,
+            TaxRate = Math.Clamp(request.TaxRate, 0, 1),
+            Staple = request.Staple,
+            ArrivalDate = arrivalDate,
+            ExpiryDate = expiryDate,
+            PromoType = PromotionType.None,
+            PromoValue = 0,
+            PhysicalCount = request.Stock
+        };
+
+        db.Products.Add(product);
+        await AddRetailAuditAsync($"Added product {product.Sku} ({product.Name}).", userRole, cancellationToken);
+        await db.SaveChangesAsync(cancellationToken);
+
+        return MapProduct(product);
+    }
+
+    public async Task DeleteProductAsync(string productId, string userRole, CancellationToken cancellationToken = default)
+    {
+        if (!IsAdminRole(userRole))
+        {
+            throw new UnauthorizedAccessException("Only admins can delete products.");
+        }
+
+        var product = await db.Products.FirstOrDefaultAsync(x => x.Id == productId, cancellationToken)
+            ?? throw new KeyNotFoundException("Product not found.");
+
+        db.Products.Remove(product);
+        await AddRetailAuditAsync($"Deleted product {product.Sku} ({product.Name}).", userRole, cancellationToken);
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<ProductDto> UpdateProductAsync(
+        string productId,
+        UpdateProductRequestDto request,
+        string userRole,
+        CancellationToken cancellationToken = default)
+    {
+        if (!IsAdminRole(userRole))
+        {
+            throw new UnauthorizedAccessException("Only admins can edit products.");
+        }
+
+        var product = await db.Products.FirstOrDefaultAsync(x => x.Id == productId, cancellationToken)
+            ?? throw new KeyNotFoundException("Product not found.");
+
+        var name = request.Name.Trim();
+        var sku = request.Sku.Trim().ToUpperInvariant();
+        var department = request.Department.Trim();
+        if (string.IsNullOrWhiteSpace(name)
+            || string.IsNullOrWhiteSpace(sku)
+            || string.IsNullOrWhiteSpace(department))
+        {
+            throw new InvalidOperationException("Name, SKU, and department are required.");
+        }
+
+        if (request.Price < 0 || request.Stock < 0 || request.MinStock < 0 || request.TaxRate < 0)
+        {
+            throw new InvalidOperationException("Price, stock, minimum stock, and tax rate must be non-negative.");
+        }
+
+        var duplicate = await db.Products
+            .AnyAsync(x => x.Id != productId && x.Sku == sku, cancellationToken);
+        if (duplicate)
+        {
+            throw new InvalidOperationException("A product with this SKU already exists.");
+        }
+
+        var oldSku = product.Sku;
+        var oldName = product.Name;
+
+        product.Name = name;
+        product.Sku = sku;
+        product.Department = department;
+        product.Price = RoundMoney(request.Price);
+        product.Stock = request.Stock;
+        product.MinStock = request.MinStock;
+        product.TaxRate = Math.Clamp(request.TaxRate, 0, 1);
+        product.Staple = request.Staple;
+        product.ArrivalDate = ParseDateOnlyOrDefault(request.ArrivalDate, product.ArrivalDate ?? DateOnly.FromDateTime(DateTime.UtcNow.Date));
+        product.ExpiryDate = ParseDateOnlyOrNull(request.ExpiryDate);
+        product.PhysicalCount = request.Stock;
+
+        await AddRetailAuditAsync(
+            $"Updated product {oldSku} ({oldName}) -> {product.Sku} ({product.Name}).",
+            userRole,
+            cancellationToken);
+        await db.SaveChangesAsync(cancellationToken);
+
+        return MapProduct(product);
     }
 
     public async Task<(ProductDto Product, IReadOnlyList<DraftPurchaseOrderDto> DraftPurchaseOrders)> UpdatePhysicalCountAsync(
@@ -541,6 +680,7 @@ public class SmsRetailService(SmsDbContext db) : ISmsRetailService
                 PaymentMethod = method.ToString(),
                 CustomerName = customer?.Name ?? "Walk-in Customer",
                 CustomerPhone = customer?.PhoneNumber ?? customerPhone,
+                QrToken = BuildReceiptQrToken(transactionId),
                 Totals = roundedTotals,
                 LineItems = lineCalculations.Select(line => new ReceiptLineItemDto
                 {
@@ -555,6 +695,120 @@ public class SmsRetailService(SmsDbContext db) : ISmsRetailService
                 }).ToList()
             },
             Bootstrap = await GetBootstrapAsync(cancellationToken)
+        };
+    }
+
+    public async Task<ReceiptPayloadDto?> GetReceiptByTransactionIdAsync(
+        string transactionId,
+        CancellationToken cancellationToken = default)
+    {
+        var normalizedTransactionId = (transactionId ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(normalizedTransactionId))
+        {
+            return null;
+        }
+
+        var payment = await db.PosPayments
+            .AsNoTracking()
+            .Include(x => x.Lines)
+            .FirstOrDefaultAsync(x => x.ExternalTransactionId == normalizedTransactionId, cancellationToken);
+
+        if (payment is null)
+        {
+            return null;
+        }
+
+        var totals = new CartTotalsDto
+        {
+            Subtotal = RoundMoney(payment.Subtotal),
+            Tax = RoundMoney(payment.Tax),
+            Discount = RoundMoney(payment.Discount),
+            PointsRedeemed = payment.PointsRedeemed,
+            Total = RoundMoney(payment.Amount),
+            PointsEarned = payment.PointsEarned
+        };
+
+        return new ReceiptPayloadDto
+        {
+            TransactionId = payment.ExternalTransactionId,
+            Timestamp = payment.Timestamp.ToString("O"),
+            PaymentMethod = payment.Method.ToString(),
+            CustomerName = string.IsNullOrWhiteSpace(payment.CustomerName) ? "Walk-in Customer" : payment.CustomerName,
+            CustomerPhone = payment.CustomerPhone ?? string.Empty,
+            QrToken = BuildReceiptQrToken(payment.ExternalTransactionId),
+            Totals = totals,
+            LineItems = payment.Lines
+                .OrderBy(x => x.Id)
+                .Select(MapReceiptLine)
+            .ToList()
+        };
+    }
+
+    public Task<ReceiptQrTokenDto?> GetReceiptQrTokenAsync(
+        string transactionId,
+        CancellationToken cancellationToken = default)
+    {
+        var normalizedTransactionId = (transactionId ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(normalizedTransactionId))
+        {
+            return Task.FromResult<ReceiptQrTokenDto?>(null);
+        }
+
+        return Task.FromResult<ReceiptQrTokenDto?>(new ReceiptQrTokenDto
+        {
+            TransactionId = normalizedTransactionId,
+            Token = BuildReceiptQrToken(normalizedTransactionId)
+        });
+    }
+
+    public async Task<ReceiptVerificationResultDto> VerifyReceiptAsync(
+        string transactionId,
+        string token,
+        CancellationToken cancellationToken = default)
+    {
+        var normalizedTransactionId = (transactionId ?? string.Empty).Trim();
+        var normalizedToken = (token ?? string.Empty).Trim();
+
+        if (string.IsNullOrWhiteSpace(normalizedTransactionId) || string.IsNullOrWhiteSpace(normalizedToken))
+        {
+            return new ReceiptVerificationResultDto
+            {
+                ReceiptFound = false,
+                IsGenuine = false,
+                TransactionId = normalizedTransactionId,
+                Message = "Transaction ID and QR token are required for verification."
+            };
+        }
+
+        var payment = await db.PosPayments
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.ExternalTransactionId == normalizedTransactionId, cancellationToken);
+
+        if (payment is null)
+        {
+            return new ReceiptVerificationResultDto
+            {
+                ReceiptFound = false,
+                IsGenuine = false,
+                TransactionId = normalizedTransactionId,
+                Message = "Receipt was not found in the transaction records."
+            };
+        }
+
+        var expectedToken = BuildReceiptQrToken(normalizedTransactionId);
+        var validToken = ConstantTimeEquals(expectedToken, normalizedToken);
+
+        return new ReceiptVerificationResultDto
+        {
+            ReceiptFound = true,
+            IsGenuine = validToken,
+            TransactionId = normalizedTransactionId,
+            Message = validToken
+                ? "Receipt is genuine."
+                : "Receipt record exists, but the QR token does not match.",
+            PaymentMethod = payment.Method.ToString(),
+            Timestamp = payment.Timestamp.ToString("O"),
+            Total = RoundMoney(payment.Amount)
         };
     }
 
@@ -645,11 +899,79 @@ public class SmsRetailService(SmsDbContext db) : ISmsRetailService
         await Task.CompletedTask;
     }
 
+    private static bool IsAdminRole(string userRole)
+    {
+        var role = (userRole ?? string.Empty).Trim();
+        return role.Equals("admin", StringComparison.OrdinalIgnoreCase)
+            || role.Equals("administrator", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static DateOnly? ParseDateOnlyOrNull(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return null;
+        }
+
+        return DateOnly.TryParse(raw, out var parsed) ? parsed : null;
+    }
+
+    private static DateOnly ParseDateOnlyOrDefault(string? raw, DateOnly fallback)
+    {
+        if (DateOnly.TryParse(raw, out var parsed))
+        {
+            return parsed;
+        }
+
+        return fallback;
+    }
+
     private static string NormalizePhone(string phone) => string.Concat(phone.Where(char.IsDigit));
 
     private static decimal RoundMoney(decimal value) => Math.Round(value, 2, MidpointRounding.AwayFromZero);
 
     private static string BuildTransactionId(string prefix) => $"{prefix}-{Guid.NewGuid():N}"[..22];
+
+    private string BuildReceiptQrToken(string transactionId)
+    {
+        var secret = ResolveReceiptTokenSecret();
+        var payload = Encoding.UTF8.GetBytes(transactionId.Trim());
+        using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(secret));
+        var digest = hmac.ComputeHash(payload);
+        return Base64UrlEncode(digest);
+    }
+
+    private string ResolveReceiptTokenSecret()
+    {
+        var configured =
+            configuration[ReceiptVerificationSecretConfigPath]
+            ?? configuration[JwtSecretConfigPath];
+
+        if (!string.IsNullOrWhiteSpace(configured))
+        {
+            return configured;
+        }
+
+        return "SMS-Receipt-Verification-Default-Secret-2026";
+    }
+
+    private static string Base64UrlEncode(byte[] data) =>
+        Convert.ToBase64String(data)
+            .TrimEnd('=')
+            .Replace('+', '-')
+            .Replace('/', '_');
+
+    private static bool ConstantTimeEquals(string left, string right)
+    {
+        var leftBytes = Encoding.UTF8.GetBytes(left);
+        var rightBytes = Encoding.UTF8.GetBytes(right);
+        if (leftBytes.Length != rightBytes.Length)
+        {
+            return false;
+        }
+
+        return CryptographicOperations.FixedTimeEquals(leftBytes, rightBytes);
+    }
 
     private static PaymentTrackingRecordDto MapPaymentTracking(PosPayment payment) => new()
     {
@@ -694,6 +1016,7 @@ public class SmsRetailService(SmsDbContext db) : ISmsRetailService
         MinStock = product.MinStock,
         TaxRate = product.TaxRate,
         Staple = product.Staple,
+        ArrivalDate = product.ArrivalDate?.ToString("yyyy-MM-dd"),
         ExpiryDate = product.ExpiryDate?.ToString("yyyy-MM-dd"),
         Promo = new PromotionDto
         {

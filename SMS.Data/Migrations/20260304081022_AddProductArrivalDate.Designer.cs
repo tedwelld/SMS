@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SMS.Data.DbContext;
 
@@ -11,9 +12,11 @@ using SMS.Data.DbContext;
 namespace SMS.Data.Migrations
 {
     [DbContext(typeof(SmsDbContext))]
-    partial class SmsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260304081022_AddProductArrivalDate")]
+    partial class AddProductArrivalDate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

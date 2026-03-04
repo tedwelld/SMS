@@ -12,18 +12,17 @@
       <span>Name or SKU lookup</span>
     </header>
 
-    <mat-form-field appearance="outline" subscriptSizing="dynamic">
-      <mat-label>Search product</mat-label>
+    <label class="field-control">
+      <span>Search product</span>
       <input
         #searchBox
-        matInput
         type="text"
         [value]="searchTerm()"
         (input)="updateSearch($event)"
         placeholder="Scan barcode or type SKU"
         aria-label="Search inventory"
       />
-    </mat-form-field>
+    </label>
 
     <div class="product-list">
       @for (item of matchedProducts(); track item.id) {
@@ -93,30 +92,29 @@
     </div>
 
     <div class="checkout-grid">
-      <mat-form-field appearance="outline" subscriptSizing="dynamic">
-        <mat-label>Member Phone</mat-label>
+      <label class="field-control">
+        <span>Member Phone</span>
         <input
-          matInput
           type="text"
           [value]="customerPhone()"
           (input)="updateCustomerPhone($event)"
           placeholder="5550132001"
         />
-      </mat-form-field>
+      </label>
 
-      <mat-form-field appearance="outline" subscriptSizing="dynamic">
-        <mat-label>Redeem Points</mat-label>
-        <input matInput type="number" min="0" [value]="pointsToRedeem()" (input)="updateRedeemPoints($event)" />
-      </mat-form-field>
+      <label class="field-control">
+        <span>Redeem Points</span>
+        <input type="number" min="0" [value]="pointsToRedeem()" (input)="updateRedeemPoints($event)" />
+      </label>
 
-      <mat-form-field appearance="outline" subscriptSizing="dynamic">
-        <mat-label>Payment Method</mat-label>
-        <mat-select [value]="paymentMethod()" (selectionChange)="setPaymentMethod($event.value)">
+      <label class="field-control">
+        <span>Payment Method</span>
+        <select [value]="paymentMethod()" (change)="setPaymentMethod(($any($event.target)).value)">
           @for (method of paymentOptions; track method) {
-            <mat-option [value]="method">{{ method }}</mat-option>
+            <option [value]="method">{{ method }}</option>
           }
-        </mat-select>
-      </mat-form-field>
+        </select>
+      </label>
     </div>
 
     @if (selectedCustomer()) {
@@ -140,6 +138,12 @@
       <button mat-stroked-button class="btn-warning-action" type="button" (click)="holdTransaction()">Hold Transaction</button>
       <button mat-stroked-button class="btn-info-action" type="button" (click)="resumeTransaction()">Resume Held</button>
       <button mat-stroked-button class="btn-primary-action" type="button" (click)="generateQuotation()">Generate Quotation</button>
+      <button mat-stroked-button class="btn-info-action" type="button" [disabled]="!canPreviewReceipt()" (click)="previewReceipt()">
+        Preview Receipt
+      </button>
+      <button mat-stroked-button class="btn-success-action" type="button" [disabled]="!canPrintReceipt()" (click)="printReceipt()">
+        Print Receipt
+      </button>
       <button mat-stroked-button class="btn-danger-action" type="button" (click)="store.clearCart()">Clear Cart</button>
       <button mat-flat-button type="button" class="checkout btn-success-action" (click)="checkout()">Complete Checkout</button>
     </div>
@@ -148,9 +152,45 @@
 
     <section class="payments-log">
       <header>
-        <h2>Payment Tracking</h2>
-        <span>{{ recentPayments().length }} recent payments</span>
+        <h2>{{ canViewAllSales() ? 'Sales Tracking (Admin)' : 'Payment Tracking' }}</h2>
+        <span>{{ salesLedgerTotals().transactions }} transactions | {{ salesLedgerTotals().grossSales | currency }}</span>
       </header>
+
+      <div class="sales-filters">
+        <label class="field-control">
+          <span>Search Sales</span>
+          <input
+            type="text"
+            [value]="salesQuery()"
+            (input)="updateSalesQuery($event)"
+            placeholder="Transaction, customer, or phone"
+          />
+        </label>
+
+        <label class="field-control">
+          <span>Method</span>
+          <select [value]="salesMethodFilter()" (change)="setSalesMethodFilter(($any($event.target)).value)">
+            <option value="all">All</option>
+            <option value="Cash">Cash</option>
+            <option value="Card">Card</option>
+            <option value="Digital">Digital</option>
+          </select>
+        </label>
+
+        <label class="field-control">
+          <span>From</span>
+          <input type="date" [value]="salesFromDate()" (input)="updateSalesFromDate($event)" />
+        </label>
+
+        <label class="field-control">
+          <span>To</span>
+          <input type="date" [value]="salesToDate()" (input)="updateSalesToDate($event)" />
+        </label>
+
+        <button mat-stroked-button class="btn-info-action" type="button" [disabled]="loadingSalesLedger()" (click)="refreshSalesLedger()">
+          {{ loadingSalesLedger() ? 'Refreshing...' : 'Refresh Sales' }}
+        </button>
+      </div>
 
       <div class="table-wrap">
         <table>
@@ -161,10 +201,11 @@
               <th>Method</th>
               <th>Items</th>
               <th>Total</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            @for (payment of recentPayments(); track payment.transactionId) {
+            @for (payment of trackedPayments(); track payment.transactionId) {
               <tr>
                 <td>
                   <strong>{{ payment.transactionId }}</strong>
@@ -174,12 +215,21 @@
                 <td>{{ payment.paymentMethod }}</td>
                 <td>{{ payment.itemCount }}</td>
                 <td>{{ payment.total | currency }}</td>
+                <td>
+                  @if (canViewAllSales()) {
+                    <button mat-stroked-button class="btn-primary-action" type="button" (click)="reprintReceipt(payment.transactionId)">
+                      Reprint
+                    </button>
+                  } @else {
+                    <span class="admin-only">Admin only</span>
+                  }
+                </td>
               </tr>
             }
 
-            @if (recentPayments().length === 0) {
+            @if (trackedPayments().length === 0) {
               <tr>
-                <td colspan="5" class="empty">No tracked payments yet.</td>
+                <td colspan="6" class="empty">No tracked payments yet.</td>
               </tr>
             }
           </tbody>

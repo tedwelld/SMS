@@ -47,9 +47,16 @@ public class AuthController(
     public async Task<ActionResult<AuthResponseDto>> LoginUser([FromBody] UserLoginRequest request, CancellationToken cancellationToken)
     {
         var normalizedPhone = UserOnboardingService.NormalizePhone(request.PhoneNumber);
-        var customer = await db.Customers.FirstOrDefaultAsync(x => x.PhoneNumber == normalizedPhone, cancellationToken);
+        var digitsOnlyPhone = string.Concat(normalizedPhone.Where(char.IsDigit));
+        var plusPrefixedPhone = string.IsNullOrWhiteSpace(digitsOnlyPhone) ? string.Empty : $"+{digitsOnlyPhone}";
+        var customer = await db.Customers.FirstOrDefaultAsync(
+            x => x.PhoneNumber == normalizedPhone
+                || x.PhoneNumber == digitsOnlyPhone
+                || x.PhoneNumber == plusPrefixedPhone,
+            cancellationToken);
         var validHash = customer is not null && !string.IsNullOrWhiteSpace(customer.PasswordHash) && customer.PasswordHash.StartsWith("$2");
-        if (customer is null || !customer.IsActive || !validHash || !BCrypt.Net.BCrypt.Verify(request.Password, customer.PasswordHash))
+        var password = request.Password?.Trim() ?? string.Empty;
+        if (customer is null || !customer.IsActive || !validHash || !BCrypt.Net.BCrypt.Verify(password, customer.PasswordHash))
         {
             return Unauthorized(new { message = "Invalid phone number or password." });
         }

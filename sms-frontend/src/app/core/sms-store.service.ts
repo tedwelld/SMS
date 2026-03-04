@@ -1,4 +1,4 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
@@ -16,11 +16,14 @@ import {
   PaymentMethod,
   Product,
   ReceiptPayload,
+  ReceiptQrTokenResponse,
+  ReceiptVerificationResult,
   PromotionType,
   ShrinkageReportRow,
   UserRole,
   Vendor
 } from './models';
+import { AuthService } from './auth.service';
 
 const POINT_VALUE = 0.05;
 const EXPIRY_WARNING_DAYS = 14;
@@ -28,7 +31,8 @@ const EXPIRY_WARNING_DAYS = 14;
 @Injectable({ providedIn: 'root' })
 export class SmsStoreService {
   private readonly http = inject(HttpClient);
-  private readonly apiBaseUrl = 'http://localhost:5032/api';
+  private readonly auth = inject(AuthService);
+  readonly apiBaseUrl = 'http://localhost:5032/api';
 
   roles: UserRole[] = ['Store Manager', 'Cashier', 'Stock Clerk'];
 
@@ -251,7 +255,7 @@ export class SmsStoreService {
           paymentMethod: method,
           customerPhone,
           pointsToRedeem,
-          userRole: this.activeRole()
+          userRole: this.resolveRetailRole()
         })
       );
 
@@ -275,10 +279,14 @@ export class SmsStoreService {
   updatePromotion(productId: string, type: PromotionType, value: number): void {
     void this.mutateAndRefresh(() =>
       firstValueFrom(
-        this.http.patch(`${this.apiBaseUrl}/products/${productId}/promotion`, {
-          type,
-          value
-        })
+        this.http.patch(
+          `${this.apiBaseUrl}/products/${productId}/promotion`,
+          {
+            type,
+            value
+          },
+          { headers: this.roleHeader() }
+        )
       )
     );
   }
@@ -286,9 +294,13 @@ export class SmsStoreService {
   updatePhysicalCount(productId: string, count: number): void {
     void this.mutateAndRefresh(() =>
       firstValueFrom(
-        this.http.patch(`${this.apiBaseUrl}/products/${productId}/physical-count`, {
-          physicalCount: count
-        })
+        this.http.patch(
+          `${this.apiBaseUrl}/products/${productId}/physical-count`,
+          {
+            physicalCount: count
+          },
+          { headers: this.roleHeader() }
+        )
       )
     );
   }
@@ -305,10 +317,14 @@ export class SmsStoreService {
 
     try {
       await firstValueFrom(
-        this.http.patch(`${this.apiBaseUrl}/products/${productId}/stock`, {
-          quantity: safeQuantity,
-          mode
-        })
+        this.http.patch(
+          `${this.apiBaseUrl}/products/${productId}/stock`,
+          {
+            quantity: safeQuantity,
+            mode
+          },
+          { headers: this.roleHeader() }
+        )
       );
       await this.refreshBootstrap();
 
@@ -387,6 +403,197 @@ export class SmsStoreService {
     void this.mutateAndRefresh(() =>
       firstValueFrom(this.http.post(`${this.apiBaseUrl}/purchase-orders/drafts/regenerate`, {}))
     );
+  }
+
+  async refreshPaymentHistory(
+    limit = 100,
+    filters?: {
+      from?: string;
+      to?: string;
+      method?: PaymentMethod | 'all';
+      query?: string;
+    }
+  ): Promise<void> {
+    const safeLimit = Math.min(500, Math.max(1, Math.floor(limit || 100)));
+    let params = new HttpParams().set('limit', String(safeLimit));
+
+    if (filters?.from?.trim()) {
+      params = params.set('from', filters.from.trim());
+    }
+    if (filters?.to?.trim()) {
+      params = params.set('to', filters.to.trim());
+    }
+    if (filters?.query?.trim()) {
+      params = params.set('query', filters.query.trim());
+    }
+    if (filters?.method && filters.method !== 'all') {
+      params = params.set('method', filters.method);
+    }
+
+    try {
+      const payments = await firstValueFrom(
+        this.http.get<PaymentTrackingRecord[]>(`${this.apiBaseUrl}/payments`, { params })
+      );
+      this.paymentHistory.set(payments ?? []);
+      this.lastError.set(null);
+    } catch (error) {
+      this.lastError.set(this.apiErrorMessage(error));
+    }
+  }
+
+  async getReceiptByTransactionId(transactionId: string): Promise<ReceiptPayload | null> {
+    const normalized = String(transactionId || '').trim();
+    if (!normalized) {
+      return null;
+    }
+
+    try {
+      return await firstValueFrom(
+        this.http.get<ReceiptPayload>(`${this.apiBaseUrl}/receipts/${encodeURIComponent(normalized)}`)
+      );
+    } catch (error) {
+      if (error instanceof HttpErrorResponse && error.status === 404) {
+        return null;
+      }
+
+      this.lastError.set(this.apiErrorMessage(error));
+      return null;
+    }
+  }
+
+  async getReceiptQrToken(transactionId: string): Promise<string | null> {
+    const normalized = String(transactionId || '').trim();
+    if (!normalized) {
+      return null;
+    }
+
+    try {
+      const payload = await firstValueFrom(
+        this.http.get<ReceiptQrTokenResponse>(`${this.apiBaseUrl}/receipts/${encodeURIComponent(normalized)}/qr-token`)
+      );
+      return typeof payload?.token === 'string' && payload.token.trim().length > 0
+        ? payload.token.trim()
+        : null;
+    } catch (error) {
+      this.lastError.set(this.apiErrorMessage(error));
+      return null;
+    }
+  }
+
+  async verifyReceipt(transactionId: string, token: string): Promise<ReceiptVerificationResult | null> {
+    const normalizedTransactionId = String(transactionId || '').trim();
+    const normalizedToken = String(token || '').trim();
+    if (!normalizedTransactionId || !normalizedToken) {
+      return null;
+    }
+
+    try {
+      return await firstValueFrom(
+        this.http.get<ReceiptVerificationResult>(
+          `${this.apiBaseUrl}/receipts/${encodeURIComponent(normalizedTransactionId)}/verify`,
+          {
+            params: new HttpParams().set('token', normalizedToken)
+          }
+        )
+      );
+    } catch (error) {
+      this.lastError.set(this.apiErrorMessage(error));
+      return null;
+    }
+  }
+
+  async addProduct(payload: {
+    name: string;
+    sku: string;
+    department: string;
+    price: number;
+    stock: number;
+    minStock: number;
+    taxRate: number;
+    staple: boolean;
+    arrivalDate?: string;
+    expiryDate?: string;
+  }): Promise<OperationResult> {
+    try {
+      await firstValueFrom(
+        this.http.post(
+          `${this.apiBaseUrl}/products`,
+          {
+            ...payload,
+            price: Number.isFinite(payload.price) ? Math.max(0, payload.price) : 0,
+            stock: Number.isFinite(payload.stock) ? Math.max(0, Math.floor(payload.stock)) : 0,
+            minStock: Number.isFinite(payload.minStock) ? Math.max(0, Math.floor(payload.minStock)) : 0,
+            taxRate: Number.isFinite(payload.taxRate) ? Math.max(0, payload.taxRate) : 0
+          },
+          { headers: this.roleHeader() }
+        )
+      );
+      await this.refreshBootstrap();
+      return { success: true, message: 'Product added.' };
+    } catch (error) {
+      return { success: false, message: this.apiErrorMessage(error) };
+    }
+  }
+
+  async updateProduct(
+    productId: string,
+    payload: {
+      name: string;
+      sku: string;
+      department: string;
+      price: number;
+      stock: number;
+      minStock: number;
+      taxRate: number;
+      staple: boolean;
+      arrivalDate?: string;
+      expiryDate?: string;
+    }
+  ): Promise<OperationResult> {
+    const normalized = String(productId || '').trim();
+    if (!normalized) {
+      return { success: false, message: 'Invalid product id.' };
+    }
+
+    try {
+      await firstValueFrom(
+        this.http.put(
+          `${this.apiBaseUrl}/products/${encodeURIComponent(normalized)}`,
+          {
+            ...payload,
+            price: Number.isFinite(payload.price) ? Math.max(0, payload.price) : 0,
+            stock: Number.isFinite(payload.stock) ? Math.max(0, Math.floor(payload.stock)) : 0,
+            minStock: Number.isFinite(payload.minStock) ? Math.max(0, Math.floor(payload.minStock)) : 0,
+            taxRate: Number.isFinite(payload.taxRate) ? Math.max(0, payload.taxRate) : 0
+          },
+          { headers: this.roleHeader() }
+        )
+      );
+      await this.refreshBootstrap();
+      return { success: true, message: 'Product updated.' };
+    } catch (error) {
+      return { success: false, message: this.apiErrorMessage(error) };
+    }
+  }
+
+  async deleteProduct(productId: string): Promise<OperationResult> {
+    const normalized = String(productId || '').trim();
+    if (!normalized) {
+      return { success: false, message: 'Invalid product id.' };
+    }
+
+    try {
+      await firstValueFrom(
+        this.http.delete(
+          `${this.apiBaseUrl}/products/${encodeURIComponent(normalized)}`,
+          { headers: this.roleHeader() }
+        )
+      );
+      await this.refreshBootstrap();
+      return { success: true, message: 'Product removed.' };
+    } catch (error) {
+      return { success: false, message: this.apiErrorMessage(error) };
+    }
   }
 
   createVendor(payload: {
@@ -634,5 +841,15 @@ export class SmsStoreService {
     }
 
     return 'Request failed. Verify the API server is running at http://localhost:5032.';
+  }
+
+  private resolveRetailRole(): string {
+    return this.auth.role === 'admin' ? 'admin' : this.activeRole();
+  }
+
+  private roleHeader(): HttpHeaders {
+    return new HttpHeaders({
+      'X-User-Role': this.resolveRetailRole()
+    });
   }
 }

@@ -1,33 +1,23 @@
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import { Component, ElementRef, HostListener, computed, inject, signal, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, ViewChild, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatOptionModule } from '@angular/material/core';
-import { MatSelectModule } from '@angular/material/select';
+import { toDataURL } from 'qrcode';
 
-import { CartItem, PaymentMethod, ReceiptPayload } from '../../core/models';
-import { SYSTEM_BRANDING, SYSTEM_BRANDING_FULL_ADDRESS } from '../../core/system-branding';
+import { AuthService } from '../../core/auth.service';
+import { CartItem, PaymentMethod, PaymentTrackingRecord, ReceiptPayload } from '../../core/models';
 import { SmsStoreService } from '../../core/sms-store.service';
+import { SYSTEM_BRANDING, SYSTEM_BRANDING_FULL_ADDRESS } from '../../core/system-branding';
 
 @Component({
   selector: 'app-pos-page',
-  imports: [
-    CommonModule,
-    CurrencyPipe,
-    MatButtonModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatOptionModule,
-    MatSelectModule
-  ],
+  imports: [CommonModule, CurrencyPipe, MatButtonModule, MatCardModule],
   templateUrl: './pos-page.component.html',
   styleUrl: './pos-page.component.scss'
 })
 export class PosPageComponent {
   readonly store = inject(SmsStoreService);
+  readonly auth = inject(AuthService);
   readonly branding = SYSTEM_BRANDING;
   readonly fullAddress = SYSTEM_BRANDING_FULL_ADDRESS;
 
@@ -36,15 +26,67 @@ export class PosPageComponent {
   readonly pointsToRedeem = signal(0);
   readonly paymentMethod = signal<PaymentMethod>('Card');
   readonly message = signal('Ready for checkout.');
+  readonly lastGeneratedReceipt = signal<ReceiptPayload | null>(null);
+
+  readonly salesQuery = signal('');
+  readonly salesMethodFilter = signal<PaymentMethod | 'all'>('all');
+  readonly salesFromDate = signal('');
+  readonly salesToDate = signal('');
+  readonly loadingSalesLedger = signal(false);
 
   @ViewChild('searchBox') searchBox?: ElementRef<HTMLInputElement>;
 
   readonly paymentOptions: PaymentMethod[] = ['Cash', 'Card', 'Digital'];
 
   readonly matchedProducts = computed(() => this.store.searchProducts(this.searchTerm()).slice(0, 16));
-
   readonly selectedCustomer = computed(() => this.store.getCustomerByPhone(this.customerPhone()));
-  readonly recentPayments = computed(() => this.store.paymentHistory().slice(0, 12));
+  readonly canViewAllSales = computed(() => this.auth.role === 'admin');
+
+  readonly trackedPayments = computed(() => {
+    const query = this.salesQuery().trim().toLowerCase();
+    const method = this.salesMethodFilter();
+    const from = this.parseDateFilter(this.salesFromDate());
+    const to = this.parseDateFilter(this.salesToDate());
+
+    const base = this.store.paymentHistory();
+    const scoped = this.canViewAllSales() ? base : base.slice(0, 16);
+
+    return scoped
+      .filter((payment) =>
+        method === 'all' ? true : payment.paymentMethod === method
+      )
+      .filter((payment) => {
+        const timestamp = new Date(payment.timestamp);
+        if (Number.isNaN(timestamp.getTime())) {
+          return false;
+        }
+        if (from && timestamp < from) {
+          return false;
+        }
+        if (to) {
+          const end = new Date(to);
+          end.setHours(23, 59, 59, 999);
+          if (timestamp > end) {
+            return false;
+          }
+        }
+        return true;
+      })
+      .filter((payment) => {
+        if (!query) {
+          return true;
+        }
+
+        return payment.transactionId.toLowerCase().includes(query)
+          || payment.customerName.toLowerCase().includes(query)
+          || payment.customerPhone.toLowerCase().includes(query);
+      });
+  });
+
+  readonly salesLedgerTotals = computed(() => ({
+    transactions: this.trackedPayments().length,
+    grossSales: this.trackedPayments().reduce((sum, payment) => sum + payment.total, 0)
+  }));
 
   readonly totals = computed(() => {
     const customer = this.selectedCustomer();
@@ -53,6 +95,10 @@ export class PosPageComponent {
     const safePoints = Math.min(allowedPoints, requested);
     return this.store.getCartTotals(safePoints);
   });
+
+  constructor() {
+    void this.refreshSalesLedger();
+  }
 
   @HostListener('window:keydown', ['$event'])
   onKeyboardShortcut(event: KeyboardEvent): void {
@@ -85,6 +131,35 @@ export class PosPageComponent {
     this.pointsToRedeem.set(Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0);
   }
 
+  updateSalesQuery(event: Event): void {
+    this.salesQuery.set((event.target as HTMLInputElement).value);
+  }
+
+  setSalesMethodFilter(method: string): void {
+    if (method === 'Cash' || method === 'Card' || method === 'Digital' || method === 'all') {
+      this.salesMethodFilter.set(method);
+    }
+  }
+
+  updateSalesFromDate(event: Event): void {
+    this.salesFromDate.set((event.target as HTMLInputElement).value);
+  }
+
+  updateSalesToDate(event: Event): void {
+    this.salesToDate.set((event.target as HTMLInputElement).value);
+  }
+
+  async refreshSalesLedger(): Promise<void> {
+    this.loadingSalesLedger.set(true);
+    await this.store.refreshPaymentHistory(this.canViewAllSales() ? 500 : 120, {
+      from: this.salesFromDate(),
+      to: this.salesToDate(),
+      method: this.salesMethodFilter(),
+      query: this.salesQuery()
+    });
+    this.loadingSalesLedger.set(false);
+  }
+
   setPaymentMethod(method: string): void {
     if (method === 'Cash' || method === 'Card' || method === 'Digital') {
       this.paymentMethod.set(method);
@@ -101,6 +176,65 @@ export class PosPageComponent {
     this.message.set(resumed ? 'Suspended transaction restored.' : 'No suspended transaction found.');
   }
 
+  canPreviewReceipt(): boolean {
+    return this.store.cart().length > 0 || this.lastGeneratedReceipt() !== null;
+  }
+
+  canPrintReceipt(): boolean {
+    return this.store.cart().length > 0 || this.lastGeneratedReceipt() !== null;
+  }
+
+  async previewReceipt(): Promise<void> {
+    const payload = this.store.cart().length > 0
+      ? this.buildCartReceiptPayload()
+      : this.lastGeneratedReceipt();
+
+    if (!payload) {
+      this.message.set('Add items or load a receipt before previewing.');
+      return;
+    }
+
+    const ok = await this.printDocument(payload, 'Receipt Preview', true, false);
+    if (ok) {
+      this.message.set('Receipt preview opened.');
+    }
+  }
+
+  async printReceipt(): Promise<void> {
+    const payload = this.store.cart().length > 0
+      ? this.buildCartReceiptPayload()
+      : this.lastGeneratedReceipt();
+
+    if (!payload) {
+      this.message.set('Add items or load a receipt before printing.');
+      return;
+    }
+
+    const ok = await this.printDocument(payload, 'Receipt', true, true);
+    if (ok) {
+      this.message.set('Receipt sent to printer.');
+    }
+  }
+
+  async reprintReceipt(transactionId: string): Promise<void> {
+    if (!this.canViewAllSales()) {
+      this.message.set('Only admins can reprint historical receipts.');
+      return;
+    }
+
+    const receipt = await this.store.getReceiptByTransactionId(transactionId);
+    if (!receipt) {
+      this.message.set(`Receipt not found for transaction ${transactionId}.`);
+      return;
+    }
+
+    this.lastGeneratedReceipt.set(receipt);
+    const ok = await this.printDocument(receipt, 'Receipt Reprint', true, true);
+    if (ok) {
+      this.message.set(`Receipt ${transactionId} reprinted.`);
+    }
+  }
+
   async checkout(): Promise<void> {
     const result = await this.store.checkout(
       this.paymentMethod(),
@@ -112,11 +246,13 @@ export class PosPageComponent {
 
     if (result.success && result.receipt) {
       this.pointsToRedeem.set(0);
-      this.printDocument(result.receipt, 'Receipt', true);
+      this.lastGeneratedReceipt.set(result.receipt);
+      await this.printDocument(result.receipt, 'Receipt', true, true);
+      await this.refreshSalesLedger();
     }
   }
 
-  generateQuotation(): void {
+  async generateQuotation(): Promise<void> {
     const cart = this.store.cart();
     if (cart.length === 0) {
       this.message.set('Add at least one product to generate a quotation.');
@@ -152,18 +288,63 @@ export class PosPageComponent {
       lineItems
     };
 
-    this.printDocument(quotation, 'Quotation', false);
-    this.message.set(`Quotation generated: ${transactionId}.`);
+    const ok = await this.printDocument(quotation, 'Quotation', false, false);
+    if (ok) {
+      this.message.set(`Quotation generated: ${transactionId}.`);
+    }
   }
 
-  private printDocument(receipt: ReceiptPayload, documentType: 'Receipt' | 'Quotation', includePaymentMethod: boolean): void {
+  private buildCartReceiptPayload(): ReceiptPayload {
+    const cart = this.store.cart();
+    const customer = this.selectedCustomer();
+    const totals = this.totals();
+
+    return {
+      transactionId: `tmp-${Date.now().toString().slice(-8)}`,
+      timestamp: new Date().toISOString(),
+      paymentMethod: this.paymentMethod(),
+      customerName: customer?.name ?? 'Walk-in Customer',
+      customerPhone: customer?.phone ?? this.customerPhone().trim(),
+      totals,
+      lineItems: cart.map((line) => {
+        const computed = this.computeLineTotals(line);
+        return {
+          productId: line.productId,
+          productName: line.name,
+          sku: line.sku,
+          quantity: line.quantity,
+          unitPrice: this.roundMoney(line.price),
+          discount: computed.discount,
+          tax: computed.tax,
+          lineTotal: computed.total
+        };
+      })
+    };
+  }
+
+  private async printDocument(
+    receipt: ReceiptPayload,
+    documentType: 'Receipt' | 'Quotation' | 'Receipt Preview' | 'Receipt Reprint',
+    includePaymentMethod: boolean,
+    autoPrint: boolean
+  ): Promise<boolean> {
+    let popup: Window | null = null;
     try {
       const normalized = this.normalizeReceiptForPrint(receipt);
-      const popup = window.open('', '_blank', 'width=430,height=720');
+      popup = window.open('', '_blank', 'width=430,height=760');
       if (!popup) {
         this.message.set(`${documentType} popup was blocked. Enable popups to print.`);
-        return;
+        return false;
       }
+
+      const verificationToken = includePaymentMethod
+        ? await this.resolveReceiptQrToken(normalized.transactionId, normalized.qrToken)
+        : '';
+      const verifyUrl = verificationToken
+        ? this.buildVerificationUrl(normalized.transactionId, verificationToken)
+        : '';
+      const qrImage = verifyUrl ? await this.generateQrCodeDataUrl(verifyUrl) : '';
+      const isCompletedCheckout = normalized.transactionId.toLowerCase().startsWith('tx-');
 
       const rowsHtml = normalized.lineItems.length === 0
         ? '<tr><td colspan="4">No line items captured.</td></tr>'
@@ -180,6 +361,20 @@ export class PosPageComponent {
             </tr>`)
           .join('');
 
+      const qrBlock = qrImage
+        ? `
+          <section class="verification">
+            <div>
+              <p><strong>Verify Receipt</strong></p>
+              <small>${isCompletedCheckout
+                ? 'Scan to validate this transaction.'
+                : 'Scan to check if this maps to a completed transaction.'}</small>
+            </div>
+            <img src="${qrImage}" alt="Receipt verification QR code" />
+          </section>
+          <p class="verify-url">${this.escapeHtml(verifyUrl)}</p>`
+        : '';
+
       const html = `
         <!doctype html>
         <html>
@@ -189,7 +384,7 @@ export class PosPageComponent {
           <style>
             :root { color-scheme: light; }
             body { margin: 0; font-family: 'IBM Plex Sans', Arial, sans-serif; color: #102441; }
-            .receipt { width: 320px; margin: 0 auto; padding: 12px; }
+            .receipt { width: 330px; margin: 0 auto; padding: 12px; }
             .head { display: grid; grid-template-columns: 46px 1fr; gap: 8px; align-items: center; }
             .head img { width: 46px; height: 46px; object-fit: contain; border: 1px solid #d7dce8; border-radius: 8px; padding: 3px; }
             .head h1 { margin: 0; font-size: 13px; }
@@ -203,6 +398,9 @@ export class PosPageComponent {
             .totals { margin-top: 10px; font-size: 11px; }
             .totals p { margin: 3px 0; display: flex; justify-content: space-between; }
             .totals p strong { font-size: 12px; }
+            .verification { margin-top: 10px; border: 1px solid #e1e7f2; border-radius: 8px; padding: 7px; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+            .verification img { width: 70px; height: 70px; }
+            .verify-url { margin: 4px 0 0; font-size: 9px; color: #50617f; word-break: break-all; }
             .foot { margin-top: 10px; border-top: 1px dashed #adb9cf; padding-top: 7px; font-size: 10px; color: #445777; text-align: center; }
             @media print {
               body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
@@ -252,6 +450,8 @@ export class PosPageComponent {
               <p><span>Points Earned</span><span>${normalized.totals.pointsEarned}</span></p>
             </section>
 
+            ${qrBlock}
+
             <footer class="foot">
               Thank you for shopping with us.
             </footer>
@@ -263,6 +463,10 @@ export class PosPageComponent {
       popup.document.write(html);
       popup.document.close();
 
+      if (!autoPrint) {
+        return true;
+      }
+
       let printTriggered = false;
       const triggerPrint = () => {
         if (printTriggered) {
@@ -270,14 +474,19 @@ export class PosPageComponent {
         }
 
         printTriggered = true;
-        popup.focus();
-        popup.print();
+        popup?.focus();
+        popup?.print();
       };
 
       popup.onload = triggerPrint;
       window.setTimeout(triggerPrint, 650);
+      return true;
     } catch {
+      if (popup && !popup.closed) {
+        popup.close();
+      }
       this.message.set(`Failed to generate ${documentType.toLowerCase()}. Please retry.`);
+      return false;
     }
   }
 
@@ -287,6 +496,7 @@ export class PosPageComponent {
     paymentMethod: string;
     customerName: string;
     customerPhone: string;
+    qrToken: string;
     totals: {
       subtotal: number;
       tax: number;
@@ -319,6 +529,7 @@ export class PosPageComponent {
       paymentMethod: String(receipt.paymentMethod || 'N/A'),
       customerName: String(receipt.customerName || 'Walk-in Customer'),
       customerPhone: String(receipt.customerPhone || 'N/A'),
+      qrToken: String(receipt.qrToken || ''),
       totals: {
         subtotal: this.safeMoney(safeTotals.subtotal),
         tax: this.safeMoney(safeTotals.tax),
@@ -344,6 +555,45 @@ export class PosPageComponent {
       .replaceAll('>', '&gt;')
       .replaceAll('"', '&quot;')
       .replaceAll("'", '&#39;');
+  }
+
+  private buildVerificationUrl(transactionId: string, token: string): string {
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    if (origin) {
+      return `${origin}/receipt-verify?transactionId=${encodeURIComponent(transactionId)}&token=${encodeURIComponent(token)}`;
+    }
+
+    return `${this.store.apiBaseUrl}/receipts/${encodeURIComponent(transactionId)}/verify?token=${encodeURIComponent(token)}`;
+  }
+
+  private async resolveReceiptQrToken(transactionId: string, currentToken: string): Promise<string> {
+    const normalizedCurrent = String(currentToken || '').trim();
+    if (normalizedCurrent) {
+      return normalizedCurrent;
+    }
+
+    const generated = await this.store.getReceiptQrToken(transactionId);
+    if (generated) {
+      return generated;
+    }
+
+    const fallbackSeed = String(transactionId || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, '')
+      .slice(0, 28);
+    return `offline-${fallbackSeed || Date.now().toString()}`;
+  }
+
+  private async generateQrCodeDataUrl(value: string): Promise<string> {
+    try {
+      return await toDataURL(value, {
+        errorCorrectionLevel: 'M',
+        margin: 1,
+        width: 160
+      });
+    } catch {
+      return '';
+    }
   }
 
   private computeLineTotals(line: CartItem): { discount: number; tax: number; total: number } {
@@ -384,5 +634,15 @@ export class PosPageComponent {
     }
 
     return Math.max(0, Math.floor(amount));
+  }
+
+  private parseDateFilter(value: string): Date | null {
+    const raw = String(value || '').trim();
+    if (!raw) {
+      return null;
+    }
+
+    const parsed = new Date(raw);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
   }
 }

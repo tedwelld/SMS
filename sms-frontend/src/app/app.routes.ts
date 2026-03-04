@@ -24,6 +24,13 @@ export const routes: Routes = [
       )
   },
   {
+    path: 'receipt-verify',
+    loadComponent: () =>
+      import('./features/receipt-verification/receipt-verification-page.component').then(
+        (m) => m.ReceiptVerificationPageComponent
+      )
+  },
+  {
     path: '',
     canActivate: [authGuard],
     component: AppLayout,

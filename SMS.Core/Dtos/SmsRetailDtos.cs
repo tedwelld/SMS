@@ -24,6 +24,7 @@ public sealed class ProductDto
     public int MinStock { get; set; }
     public decimal TaxRate { get; set; }
     public bool Staple { get; set; }
+    public string? ArrivalDate { get; set; }
     public string? ExpiryDate { get; set; }
     public PromotionDto Promo { get; set; } = new();
     public int PhysicalCount { get; set; }
@@ -179,8 +180,26 @@ public sealed class ReceiptPayloadDto
     public string PaymentMethod { get; set; } = string.Empty;
     public string CustomerName { get; set; } = string.Empty;
     public string CustomerPhone { get; set; } = string.Empty;
+    public string QrToken { get; set; } = string.Empty;
     public CartTotalsDto Totals { get; set; } = new();
     public List<ReceiptLineItemDto> LineItems { get; set; } = [];
+}
+
+public sealed class ReceiptQrTokenDto
+{
+    public string TransactionId { get; set; } = string.Empty;
+    public string Token { get; set; } = string.Empty;
+}
+
+public sealed class ReceiptVerificationResultDto
+{
+    public bool ReceiptFound { get; set; }
+    public bool IsGenuine { get; set; }
+    public string TransactionId { get; set; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
+    public string? PaymentMethod { get; set; }
+    public string? Timestamp { get; set; }
+    public decimal? Total { get; set; }
 }
 
 public sealed class PaymentTrackingRecordDto
@@ -221,6 +240,34 @@ public sealed class UpdatePromotionRequestDto
 {
     public string Type { get; set; } = "none";
     public decimal Value { get; set; }
+}
+
+public sealed class CreateProductRequestDto
+{
+    public string Name { get; set; } = string.Empty;
+    public string Sku { get; set; } = string.Empty;
+    public string Department { get; set; } = string.Empty;
+    public decimal Price { get; set; }
+    public int Stock { get; set; }
+    public int MinStock { get; set; }
+    public decimal TaxRate { get; set; }
+    public bool Staple { get; set; }
+    public string? ArrivalDate { get; set; }
+    public string? ExpiryDate { get; set; }
+}
+
+public sealed class UpdateProductRequestDto
+{
+    public string Name { get; set; } = string.Empty;
+    public string Sku { get; set; } = string.Empty;
+    public string Department { get; set; } = string.Empty;
+    public decimal Price { get; set; }
+    public int Stock { get; set; }
+    public int MinStock { get; set; }
+    public decimal TaxRate { get; set; }
+    public bool Staple { get; set; }
+    public string? ArrivalDate { get; set; }
+    public string? ExpiryDate { get; set; }
 }
 
 public sealed class CreateRetailCustomerRequestDto

@@ -57,6 +57,56 @@
   }
 }
 
+.admin-card {
+  margin-bottom: 0.9rem;
+  background: var(--sms-card-bg);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--sms-card-radius);
+  padding: 0.9rem;
+
+  h2 {
+    margin: 0;
+    color: var(--ink-800);
+    font-size: 1.08rem;
+  }
+
+  p {
+    margin: 0.35rem 0 0.7rem;
+    color: var(--ink-600);
+  }
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.55rem;
+  align-items: end;
+
+  .staple-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--ink-700);
+    font-size: 0.88rem;
+    border: 1px solid var(--line-soft);
+    border-radius: 10px;
+    padding: 0.55rem 0.7rem;
+    min-height: 42px;
+  }
+}
+
+.edit-section {
+  margin-top: 0.95rem;
+  border-top: 1px dashed var(--line-soft);
+  padding-top: 0.8rem;
+
+  h3 {
+    margin: 0 0 0.55rem;
+    color: var(--ink-800);
+    font-size: 1rem;
+  }
+}
+
 .stock-message {
   margin: 0 0 0.85rem;
   color: var(--ink-700);
@@ -64,7 +114,7 @@
 }
 
 .table-wrap {
-  overflow: hidden;
+  overflow-x: auto;
   background: var(--sms-card-bg);
   border: 1px solid var(--line-soft);
   border-radius: var(--sms-card-radius);
@@ -81,6 +131,8 @@ table {
     text-align: left;
     color: var(--ink-700);
     font-size: 0.92rem;
+    vertical-align: middle;
+    white-space: nowrap;
   }
 
   th {
@@ -111,8 +163,17 @@ table {
     cursor: pointer;
   }
 
-  mat-form-field {
-    width: 100%;
+  .field-control {
+    min-width: 120px;
+
+    input,
+    select {
+      min-height: 2rem;
+    }
+
+    span {
+      display: none;
+    }
   }
 
   td.alert {
@@ -170,4 +231,46 @@ table {
   }
 }
 
+.report-toolbar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.55rem;
+  margin-bottom: 0.8rem;
+  align-items: end;
 
+  .report-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+
+.report-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.7rem;
+  margin-bottom: 0.65rem;
+
+  mat-card {
+    background: var(--sms-card-bg);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--sms-card-radius);
+    padding: 0.7rem;
+  }
+
+  p {
+    margin: 0;
+    color: var(--ink-500);
+  }
+
+  h3 {
+    margin: 0.25rem 0 0;
+    color: var(--ink-800);
+  }
+}
+
+.report-message {
+  margin: 0 0 0.65rem;
+  color: var(--ink-600);
+}

@@ -61,6 +61,16 @@
   }
 }
 
+.report-block {
+  margin-bottom: 0.85rem;
+
+  h2 {
+    margin: 0 0 0.6rem;
+    color: var(--ink-800);
+    font-size: 1.06rem;
+  }
+}
+
 .table-wrap {
   background: var(--sms-card-bg);
   border: 1px solid var(--line-soft);
@@ -135,8 +145,9 @@ table {
 .report-toolbar {
   display: grid;
   gap: 0.55rem;
-  grid-template-columns: minmax(220px, 2fr) minmax(150px, 1fr) minmax(160px, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   margin-bottom: 0.75rem;
+  align-items: end;
 
   @media (max-width: 900px) {
     grid-template-columns: 1fr;
@@ -148,6 +159,10 @@ table {
     color: var(--ink-600);
     font-size: 0.85rem;
   }
+
+  button {
+    justify-self: start;
+  }
 }
 
 .export-actions {
@@ -158,8 +173,9 @@ input,
 select {
   width: 100%;
   border: 1px solid var(--line-soft);
-  border-radius: 12px;
-  padding: 0.5rem 0.65rem;
+  border-radius: var(--sms-input-radius);
+  min-height: 2.1rem;
+  padding: 0.35rem 0.55rem;
   font: inherit;
   background: var(--sms-card-bg);
   color: var(--ink-700);

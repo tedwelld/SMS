@@ -5,20 +5,20 @@
 
 <section class="toolbar">
   <section class="filters">
-    <mat-form-field appearance="outline" subscriptSizing="dynamic">
-      <mat-label>Search</mat-label>
-      <input matInput type="text" [value]="searchTerm()" (input)="updateSearch($event)" placeholder="Search by name or phone" />
-    </mat-form-field>
+    <label class="field-control">
+      <span>Search</span>
+      <input type="text" [value]="searchTerm()" (input)="updateSearch($event)" placeholder="Search by name or phone" />
+    </label>
 
-    <mat-form-field appearance="outline" subscriptSizing="dynamic">
-      <mat-label>Min points</mat-label>
-      <input matInput type="number" min="0" [ngModel]="minPoints()" (ngModelChange)="minPoints.set(+$event || 0)" />
-    </mat-form-field>
+    <label class="field-control">
+      <span>Min points</span>
+      <input type="number" min="0" [ngModel]="minPoints()" (ngModelChange)="minPoints.set(+$event || 0)" />
+    </label>
 
-    <mat-form-field appearance="outline" subscriptSizing="dynamic">
-      <mat-label>Min purchases</mat-label>
-      <input matInput type="number" min="0" [ngModel]="minPurchases()" (ngModelChange)="minPurchases.set(+$event || 0)" />
-    </mat-form-field>
+    <label class="field-control">
+      <span>Min purchases</span>
+      <input type="number" min="0" [ngModel]="minPurchases()" (ngModelChange)="minPurchases.set(+$event || 0)" />
+    </label>
 
     <button mat-stroked-button class="btn-info-action" type="button" [disabled]="exporting()" (click)="exportCustomerReport()">
       {{ exporting() ? 'Exporting...' : 'Export Filtered Report' }}
@@ -26,15 +26,15 @@
   </section>
 
   <div class="add-form">
-    <mat-form-field appearance="outline" subscriptSizing="dynamic">
-      <mat-label>Member name</mat-label>
-      <input matInput type="text" [value]="newName()" (input)="updateName($event)" />
-    </mat-form-field>
+    <label class="field-control">
+      <span>Member name</span>
+      <input type="text" [value]="newName()" (input)="updateName($event)" />
+    </label>
 
-    <mat-form-field appearance="outline" subscriptSizing="dynamic">
-      <mat-label>Phone number</mat-label>
-      <input matInput type="text" [value]="newPhone()" (input)="updatePhone($event)" />
-    </mat-form-field>
+    <label class="field-control">
+      <span>Phone number</span>
+      <input type="text" [value]="newPhone()" (input)="updatePhone($event)" />
+    </label>
 
     <button mat-flat-button class="btn-success-action" type="button" (click)="createMember()">Create Member</button>
   </div>
@@ -53,15 +53,15 @@
     <mat-card class="customer-card">
       @if (editingCustomerId() === customer.id) {
         <section class="edit-form">
-          <mat-form-field appearance="outline" subscriptSizing="dynamic">
-            <mat-label>Member name</mat-label>
-            <input matInput [ngModel]="editName()" (ngModelChange)="editName.set($event)" />
-          </mat-form-field>
+          <label class="field-control">
+            <span>Member name</span>
+            <input [ngModel]="editName()" (ngModelChange)="editName.set($event)" />
+          </label>
 
-          <mat-form-field appearance="outline" subscriptSizing="dynamic">
-            <mat-label>Phone number</mat-label>
-            <input matInput [ngModel]="editPhone()" (ngModelChange)="editPhone.set($event)" />
-          </mat-form-field>
+          <label class="field-control">
+            <span>Phone number</span>
+            <input [ngModel]="editPhone()" (ngModelChange)="editPhone.set($event)" />
+          </label>
 
           <label class="toggle">
             <input type="checkbox" [ngModel]="editActive()" (ngModelChange)="editActive.set($event)" />
@@ -110,3 +110,4 @@
     </mat-card>
   }
 </section>
+

@@ -15,14 +15,16 @@
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 0.45rem;
+  align-items: end;
   margin-bottom: 0.8rem;
 
   input,
   select,
   button {
     border-radius: var(--sms-input-radius);
-    border: 1px solid rgba(22, 72, 139, 0.2);
-    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--line-soft);
+    min-height: 2.1rem;
+    padding: 0.38rem 0.6rem;
     font: inherit;
   }
 

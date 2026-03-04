@@ -20,6 +20,71 @@ public class SmsRetailController(ISmsRetailService service) : ControllerBase
     public async Task<ActionResult<IReadOnlyList<ProductDto>>> GetProducts([FromQuery] string? search, CancellationToken cancellationToken)
         => Ok(await service.GetProductsAsync(search, cancellationToken));
 
+    [HttpPost("products")]
+    public async Task<ActionResult<ProductDto>> CreateProduct(
+        [FromBody] CreateProductRequestDto request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var product = await service.CreateProductAsync(request, ResolveRole(), cancellationToken);
+            return Created($"/api/products/{product.Id}", product);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (InvalidOperationException ex)
+        {
+            var status = ex.Message.Contains("already", StringComparison.OrdinalIgnoreCase) ? 409 : 400;
+            return StatusCode(status, new { message = ex.Message });
+        }
+    }
+
+    [HttpDelete("products/{productId}")]
+    public async Task<ActionResult<object>> DeleteProduct(string productId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await service.DeleteProductAsync(productId, ResolveRole(), cancellationToken);
+            return Ok(new { message = "Product deleted." });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { message = "Product not found." });
+        }
+    }
+
+    [HttpPut("products/{productId}")]
+    public async Task<ActionResult<ProductDto>> UpdateProduct(
+        string productId,
+        [FromBody] UpdateProductRequestDto request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var product = await service.UpdateProductAsync(productId, request, ResolveRole(), cancellationToken);
+            return Ok(product);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { message = "Product not found." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            var status = ex.Message.Contains("already", StringComparison.OrdinalIgnoreCase) ? 409 : 400;
+            return StatusCode(status, new { message = ex.Message });
+        }
+    }
+
     [HttpPatch("products/{productId}/physical-count")]
     public async Task<ActionResult<object>> UpdatePhysicalCount(
         string productId,
@@ -181,6 +246,40 @@ public class SmsRetailController(ISmsRetailService service) : ControllerBase
         {
             return BadRequest(new { message = ex.Message });
         }
+    }
+
+    [HttpGet("receipts/{transactionId}/verify")]
+    public async Task<ActionResult<ReceiptVerificationResultDto>> VerifyReceipt(
+        string transactionId,
+        [FromQuery] string token,
+        CancellationToken cancellationToken)
+    {
+        var result = await service.VerifyReceiptAsync(transactionId, token, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet("receipts/{transactionId}")]
+    public async Task<ActionResult<ReceiptPayloadDto>> GetReceipt(string transactionId, CancellationToken cancellationToken)
+    {
+        var receipt = await service.GetReceiptByTransactionIdAsync(transactionId, cancellationToken);
+        if (receipt is null)
+        {
+            return NotFound(new { message = "Receipt not found." });
+        }
+
+        return Ok(receipt);
+    }
+
+    [HttpGet("receipts/{transactionId}/qr-token")]
+    public async Task<ActionResult<ReceiptQrTokenDto>> GetReceiptQrToken(string transactionId, CancellationToken cancellationToken)
+    {
+        var payload = await service.GetReceiptQrTokenAsync(transactionId, cancellationToken);
+        if (payload is null)
+        {
+            return BadRequest(new { message = "Transaction ID is required." });
+        }
+
+        return Ok(payload);
     }
 
     private string ResolveRole()

@@ -1,135 +1,318 @@
 <section class="page-head">
   <h1>Store Command Center</h1>
   <p>
-    Live view of checkout flow, stock risk, loyalty traffic, and compliance signals for {{ now | date: 'MMM d, y' }}.
+    Consolidated system view for sales, inventory, procurement, and audit controls on {{ now | date: 'MMM d, y' }}.
   </p>
 </section>
 
-<mat-tab-group class="dash-tabs" animationDuration="200ms">
-  <mat-tab label="Overview">
-    <section class="stats-grid">
-      @for (point of statSeries(); track point.key) {
-        <mat-card class="stat-card clickable-card" [routerLink]="point.route">
-          <span class="card-icon"><i [class]="point.icon"></i></span>
-          <p>{{ point.label }}</p>
-          <h2>{{ formatStat(point) }}</h2>
-          <small>{{ point.description }}</small>
-        </mat-card>
-      }
-    </section>
+@if (showAdminVisuals()) {
+  <section class="visual-lab">
+    <div class="visual-head">
+      <h2>Admin Visual Analytics</h2>
+      <p>High-visibility trend and performance visuals from live system data.</p>
+    </div>
 
-    <section class="projection-grid">
-      <mat-card class="projection-card clickable-card" routerLink="/reports">
-        <h3>Quarter End</h3>
-        <p>{{ quarterEnd() | date: 'MMM d, y' }}</p>
+    <div class="visual-grid">
+      <mat-card class="trend-panel">
+        <div class="panel-title">
+          <h3>Revenue and Payment Trend Lines</h3>
+          <small>Sales, cash, and card movement by hour</small>
+        </div>
+        <svg viewBox="0 0 760 220" preserveAspectRatio="none" role="img" aria-label="Sales trend lines">
+          <g class="grid-lines">
+            <line x1="0" y1="20" x2="760" y2="20"></line>
+            <line x1="0" y1="72" x2="760" y2="72"></line>
+            <line x1="0" y1="124" x2="760" y2="124"></line>
+            <line x1="0" y1="176" x2="760" y2="176"></line>
+          </g>
+          <path class="area sales" [attr.d]="areaPath(lineSalesValues())"></path>
+          <path class="area cash" [attr.d]="areaPath(lineCashValues())"></path>
+          <polyline class="line sales" [attr.points]="polylinePoints(lineSalesValues())"></polyline>
+          <polyline class="line cash" [attr.points]="polylinePoints(lineCashValues())"></polyline>
+          <polyline class="line card" [attr.points]="polylinePoints(lineCardValues())"></polyline>
+        </svg>
+        <div class="axis-labels" [style.grid-template-columns]="'repeat(' + (hourlyVisualRows().length || 1) + ', minmax(0, 1fr))'">
+          @for (row of hourlyVisualRows(); track row.label) {
+            <span>{{ row.label }}</span>
+          }
+        </div>
+        <div class="trend-legend">
+          <span><i class="dot sales"></i>Sales</span>
+          <span><i class="dot cash"></i>Cash</span>
+          <span><i class="dot card"></i>Card</span>
+        </div>
       </mat-card>
-      <mat-card class="projection-card clickable-card" routerLink="/reports">
-        <h3>Projected Revenue</h3>
-        <p>{{ projectedQuarterRevenue() | currency }}</p>
-      </mat-card>
-      <mat-card class="projection-card clickable-card" routerLink="/pos">
-        <h3>Projected Transactions</h3>
-        <p>{{ projectedQuarterTransactions() | number }}</p>
-      </mat-card>
-      <mat-card class="projection-card clickable-card" routerLink="/customers">
-        <h3>Projected Customers</h3>
-        <p>{{ projectedQuarterCustomers() | number }}</p>
-      </mat-card>
-    </section>
 
-    <section class="charts-grid">
-      <mat-card class="chart-card clickable-card" routerLink="/reports">
-        <h3><i class="pi pi-chart-bar"></i> Statistical Bar Graph</h3>
-        <div class="bar-chart">
-          @for (point of statSeries(); track point.key) {
-            <article class="bar-item">
-              <div class="bar-meta">
-                <span>{{ point.label }}</span>
-                <strong>{{ formatStat(point) }}</strong>
-              </div>
-              <div class="bar-track">
-                <div class="bar-fill" [style.width]="barWidth(point.value)" [style.background]="point.color"></div>
+      <mat-card class="rings-panel">
+        <div class="panel-title">
+          <h3>Payment Channel Rings</h3>
+          <small>Contribution share by channel</small>
+        </div>
+        <div class="rings-grid">
+          @for (ring of ringMetrics(); track ring.label) {
+            <article class="ring-item">
+              <svg viewBox="0 0 92 92" role="img" [attr.aria-label]="ring.label">
+                <circle class="ring-track" cx="46" cy="46" r="36"></circle>
+                <circle
+                  class="ring-progress"
+                  cx="46"
+                  cy="46"
+                  r="36"
+                  [style.stroke]="ring.color"
+                  [attr.stroke-dashoffset]="ringDashOffset(ring.percent)"
+                ></circle>
+              </svg>
+              <div>
+                <h4>{{ ring.label }}</h4>
+                <p>{{ ring.percent }}%</p>
+                <small>{{ ring.value | currency }}</small>
               </div>
             </article>
           }
         </div>
       </mat-card>
 
-      <mat-card class="chart-card pie-card clickable-card" routerLink="/reports">
-        <h3><i class="pi pi-chart-pie"></i> Statistical Pie Chart</h3>
-        <div class="pie-layout">
-          <div class="pie-graph" [style.background]="statPieGradient()"></div>
-          <div class="pie-legend">
-            @for (point of statSeries(); track point.key) {
-              <div class="legend-item">
-                <span class="dot" [style.background]="point.color"></span>
-                <div>
-                  <p>{{ point.label }}</p>
-                  <small>{{ formatStat(point) }} ({{ statPercentage(point) }})</small>
-                </div>
+      <mat-card class="meters-panel">
+        <div class="panel-title">
+          <h3>Operational Meters</h3>
+          <small>Target achievement indicators</small>
+        </div>
+        <div class="meters-grid">
+          @for (meter of meterMetrics(); track meter.label) {
+            <article class="meter-item">
+              <div class="meter-rail">
+                <div class="meter-fill" [style.height.%]="meterPercent(meter)" [style.background]="meter.color"></div>
               </div>
-            }
-          </div>
+              <div>
+                <h4>{{ meter.label }}</h4>
+                <p>{{ meter.value | number }} {{ meter.suffix }}</p>
+                <small>{{ meterPercent(meter) }}% of target</small>
+              </div>
+            </article>
+          }
         </div>
       </mat-card>
-    </section>
 
-    <section class="workflow-grid">
-      <mat-card class="feature-card clickable-card" routerLink="/pos" tabindex="0" role="link" aria-label="Open POS Desk">
-        <h3><i class="pi pi-shopping-cart"></i> Point of Sale</h3>
-        <p>Quick SKU search, hold/resume carts, loyalty redemption, and tax-aware totals.</p>
-        <span class="card-action">Open POS Desk <i class="pi pi-arrow-right"></i></span>
+      <mat-card class="bars-panel">
+        <div class="panel-title">
+          <h3>Top Product Sales Bars</h3>
+          <small>Relative value by SKU</small>
+        </div>
+        <div class="bars-grid">
+          @if (groupedBars().length > 0) {
+            @for (bar of groupedBars(); track bar.label) {
+              <article class="bar-item">
+                <div class="bar-rail">
+                  <div class="bar-fill" [style.height.%]="bar.height"></div>
+                </div>
+                <span>{{ bar.label }}</span>
+                <small>{{ bar.value | currency }}</small>
+              </article>
+            }
+          } @else {
+            <article class="bar-item bar-empty">
+              <span>No product sales bars yet</span>
+              <small>Complete transactions to populate this chart.</small>
+            </article>
+          }
+        </div>
       </mat-card>
+    </div>
+  </section>
+}
 
-      <mat-card class="feature-card clickable-card" routerLink="/inventory" tabindex="0" role="link" aria-label="Open Inventory">
-        <h3><i class="pi pi-box"></i> Inventory Risk</h3>
-        <p>Monitor near-expiry batches and stock variance before shrinkage impacts margin.</p>
-        <span class="card-action">Open Inventory <i class="pi pi-arrow-right"></i></span>
-      </mat-card>
+@if (canExport()) {
+  <section class="export-strip">
+    <button mat-stroked-button class="btn-info-action" type="button" [disabled]="isExporting('sales')" (click)="exportDashboardPdf('sales')">
+      {{ isExporting('sales') ? 'Exporting...' : 'Export Sales PDF' }}
+    </button>
+    <button mat-stroked-button class="btn-info-action" type="button" [disabled]="isExporting('ledger')" (click)="exportDashboardPdf('ledger')">
+      {{ isExporting('ledger') ? 'Exporting...' : 'Export Ledger PDF' }}
+    </button>
+    <button mat-stroked-button class="btn-info-action" type="button" [disabled]="isExporting('payment')" (click)="exportDashboardPdf('payment')">
+      {{ isExporting('payment') ? 'Exporting...' : 'Export Payment Channels PDF' }}
+    </button>
+    <button mat-stroked-button class="btn-info-action" type="button" [disabled]="isExporting('procurement')" (click)="exportDashboardPdf('procurement')">
+      {{ isExporting('procurement') ? 'Exporting...' : 'Export Procurement PDF' }}
+    </button>
+    <button mat-stroked-button class="btn-info-action" type="button" [disabled]="isExporting('inventory')" (click)="exportDashboardPdf('inventory')">
+      {{ isExporting('inventory') ? 'Exporting...' : 'Export Inventory PDF' }}
+    </button>
+  </section>
+}
 
-      <mat-card class="feature-card clickable-card" routerLink="/procurement" tabindex="0" role="link" aria-label="Open Procurement">
-        <h3><i class="pi pi-truck"></i> Procurement</h3>
-        <p>Auto-generate draft purchase orders when staple goods hit minimum stock levels.</p>
-        <span class="card-action">Open Procurement <i class="pi pi-arrow-right"></i></span>
-      </mat-card>
-    </section>
-  </mat-tab>
-
-  <mat-tab label="Roles">
-    <section class="roles-grid">
-      @for (card of roleCards; track card.role) {
-        <mat-card class="role-card clickable-card" [routerLink]="card.route">
-          <h3><i [class]="card.icon"></i> {{ card.role }}</h3>
-          <p>{{ card.summary }}</p>
-        </mat-card>
-      }
-    </section>
-  </mat-tab>
-
-  <mat-tab label="Operations">
-    <section class="ops-grid">
-      @for (card of operationsCards; track card.title) {
-        <mat-card class="ops-card clickable-card" [routerLink]="card.route">
-          <h3><i [class]="card.icon"></i> {{ card.title }}</h3>
-          <p>{{ card.summary }}</p>
-        </mat-card>
-      }
-    </section>
-
-    <mat-card class="audit-block clickable-card" routerLink="/reports">
-      <div class="audit-head">
-        <h3>Recent Audit Trail</h3>
-        <span>{{ store.getRecentAuditEntries().length }} entries</span>
-      </div>
-
-      <div class="audit-list">
-        @for (entry of store.getRecentAuditEntries(); track entry.id) {
-          <article class="audit-entry">
-            <p>{{ entry.action }}</p>
-            <small>{{ entry.userRole }} &middot; {{ entry.timestamp | date: 'MMM d, h:mm a' }}</small>
-          </article>
-        }
-      </div>
+<section class="stats-grid">
+  @for (point of statSeries(); track point.key) {
+    <mat-card class="stat-card clickable-card" [routerLink]="point.route">
+      <span class="card-icon"><i [class]="point.icon"></i></span>
+      <p>{{ point.label }}</p>
+      <h2>{{ formatStat(point) }}</h2>
+      <small>{{ point.description }}</small>
     </mat-card>
-  </mat-tab>
-</mat-tab-group>
+  }
+</section>
+
+<section class="data-grid">
+  <mat-card class="data-card">
+    <div class="card-head">
+      <h3><i class="pi pi-credit-card"></i> Sales Ledger</h3>
+      <span>{{ salesLedger().length }} rows</span>
+    </div>
+
+    <div class="summary-strip">
+      <p>Total Sales <strong>{{ totalSalesInLedger() | currency }}</strong></p>
+      <p>Items Sold <strong>{{ totalItemsSold() | number }}</strong></p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Transaction</th>
+            <th>Date</th>
+            <th>Method</th>
+            <th>Items</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (payment of salesLedger(); track payment.transactionId) {
+            <tr>
+              <td>
+                <strong>{{ payment.transactionId }}</strong>
+                <small>{{ payment.customerName || 'Walk-in Customer' }}</small>
+              </td>
+              <td>{{ payment.timestamp | date: 'short' }}</td>
+              <td>{{ payment.paymentMethod }}</td>
+              <td>{{ payment.itemCount }}</td>
+              <td>{{ payment.total | currency }}</td>
+            </tr>
+          }
+          @if (salesLedger().length === 0) {
+            <tr>
+              <td colspan="5" class="empty">No sales records available.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </mat-card>
+
+  <mat-card class="data-card">
+    <div class="card-head">
+      <h3><i class="pi pi-list-check"></i> Top Selling Products</h3>
+      <span>{{ topSellingProducts().length }} products</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>SKU</th>
+            <th>Units Sold</th>
+            <th>Sales Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of topSellingProducts(); track row.productId) {
+            <tr>
+              <td>{{ row.productName }}</td>
+              <td>{{ row.sku }}</td>
+              <td>{{ row.unitsSold | number }}</td>
+              <td>{{ row.salesAmount | currency }}</td>
+            </tr>
+          }
+          @if (topSellingProducts().length === 0) {
+            <tr>
+              <td colspan="4" class="empty">No sales line items available.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </mat-card>
+
+  <mat-card class="data-card">
+    <div class="card-head">
+      <h3><i class="pi pi-money-bill"></i> Payment Channel Summary</h3>
+      <span>{{ store.eodReport().transactions }} transactions</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Channel</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of paymentBreakdown(); track row.method) {
+            <tr>
+              <td>{{ row.method }}</td>
+              <td>{{ row.value | currency }}</td>
+            </tr>
+          }
+          <tr>
+            <td><strong>Total</strong></td>
+            <td><strong>{{ store.eodReport().total | currency }}</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </mat-card>
+
+  <mat-card class="data-card">
+    <div class="card-head">
+      <h3><i class="pi pi-truck"></i> Procurement and Inventory Summary</h3>
+      <span>{{ store.draftPurchaseOrders().length }} draft orders</span>
+    </div>
+
+    <ul class="data-list">
+      <li>Total Products: <strong>{{ store.inventory().length | number }}</strong></li>
+      <li>Low Stock Alerts: <strong>{{ store.lowStockItems().length | number }}</strong></li>
+      <li>Expiry Alerts: <strong>{{ store.expiringSoonItems().length | number }}</strong></li>
+      <li>Vendors: <strong>{{ store.vendors().length | number }}</strong></li>
+      <li>Units Ordered (Drafts): <strong>{{ procurementOrderedUnits() | number }}</strong></li>
+    </ul>
+
+    <div class="mini-lists">
+      <section>
+        <h4>Low Stock Focus</h4>
+        @for (item of store.lowStockItems().slice(0, 6); track item.id) {
+          <p>{{ item.name }} ({{ item.stock }}/{{ item.minStock }})</p>
+        }
+        @if (store.lowStockItems().length === 0) {
+          <p class="empty">No low stock items.</p>
+        }
+      </section>
+
+      <section>
+        <h4>Expiry Focus</h4>
+        @for (item of store.expiringSoonItems().slice(0, 6); track item.id) {
+          <p>{{ item.name }} ({{ item.expiryDate | date: 'MMM d' }})</p>
+        }
+        @if (store.expiringSoonItems().length === 0) {
+          <p class="empty">No near-expiry items.</p>
+        }
+      </section>
+    </div>
+  </mat-card>
+</section>
+
+<mat-card class="audit-block clickable-card" routerLink="/reports">
+  <div class="audit-head">
+    <h3>Recent Audit Trail</h3>
+    <span>{{ store.getRecentAuditEntries().length }} entries</span>
+  </div>
+
+  <div class="audit-list">
+    @for (entry of store.getRecentAuditEntries(); track entry.id) {
+      <article class="audit-entry">
+        <p>{{ entry.action }}</p>
+        <small>{{ entry.userRole }} &middot; {{ entry.timestamp | date: 'MMM d, h:mm a' }}</small>
+      </article>
+    }
+  </div>
+</mat-card>

@@ -13,6 +13,7 @@ public class Product
     public int MinStock { get; set; }
     public decimal TaxRate { get; set; }
     public bool Staple { get; set; }
+    public DateOnly? ArrivalDate { get; set; }
     public DateOnly? ExpiryDate { get; set; }
     public PromotionType PromoType { get; set; }
     public decimal PromoValue { get; set; }

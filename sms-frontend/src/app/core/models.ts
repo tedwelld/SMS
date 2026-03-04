@@ -19,6 +19,7 @@ export interface Product {
   minStock: number;
   taxRate: number;
   staple: boolean;
+  arrivalDate?: string;
   expiryDate?: string;
   promo: Promotion;
   physicalCount: number;
@@ -184,8 +185,24 @@ export interface ReceiptPayload {
   paymentMethod: PaymentMethod;
   customerName: string;
   customerPhone: string;
+  qrToken?: string;
   totals: CartTotals;
   lineItems: ReceiptLineItem[];
+}
+
+export interface ReceiptQrTokenResponse {
+  transactionId: string;
+  token: string;
+}
+
+export interface ReceiptVerificationResult {
+  receiptFound: boolean;
+  isGenuine: boolean;
+  transactionId: string;
+  message: string;
+  paymentMethod?: PaymentMethod | string;
+  timestamp?: string;
+  total?: number;
 }
 
 export interface PaymentTrackingRecord {

@@ -97,6 +97,7 @@ public static class DataSeeder
                     MinStock = 25,
                     TaxRate = 0.03m,
                     Staple = true,
+                    ArrivalDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(-9)),
                     ExpiryDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(7)),
                     PromoType = PromotionType.Bogo,
                     PromoValue = 0,
@@ -113,6 +114,7 @@ public static class DataSeeder
                     MinStock = 22,
                     TaxRate = 0.03m,
                     Staple = true,
+                    ArrivalDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(-6)),
                     ExpiryDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(5)),
                     PromoType = PromotionType.Discount,
                     PromoValue = 10,
@@ -129,6 +131,7 @@ public static class DataSeeder
                     MinStock = 18,
                     TaxRate = 0.03m,
                     Staple = true,
+                    ArrivalDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(-8)),
                     ExpiryDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(12)),
                     PromoType = PromotionType.None,
                     PromoValue = 0,
@@ -145,6 +148,7 @@ public static class DataSeeder
                     MinStock = 10,
                     TaxRate = 0.08m,
                     Staple = false,
+                    ArrivalDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(-14)),
                     PromoType = PromotionType.Discount,
                     PromoValue = 12,
                     PhysicalCount = 8
@@ -160,6 +164,7 @@ public static class DataSeeder
                     MinStock = 20,
                     TaxRate = 0.07m,
                     Staple = true,
+                    ArrivalDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(-10)),
                     PromoType = PromotionType.None,
                     PromoValue = 0,
                     PhysicalCount = 13
@@ -175,6 +180,7 @@ public static class DataSeeder
                     MinStock = 35,
                     TaxRate = 0,
                     Staple = true,
+                    ArrivalDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(-2)),
                     ExpiryDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(3)),
                     PromoType = PromotionType.None,
                     PromoValue = 0,
@@ -191,6 +197,7 @@ public static class DataSeeder
                     MinStock = 16,
                     TaxRate = 0.03m,
                     Staple = true,
+                    ArrivalDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(-11)),
                     PromoType = PromotionType.Discount,
                     PromoValue = 5,
                     PhysicalCount = 14
@@ -206,6 +213,7 @@ public static class DataSeeder
                     MinStock = 8,
                     TaxRate = 0.08m,
                     Staple = false,
+                    ArrivalDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(-13)),
                     PromoType = PromotionType.None,
                     PromoValue = 0,
                     PhysicalCount = 6
@@ -221,6 +229,7 @@ public static class DataSeeder
                     MinStock = 18,
                     TaxRate = 0.07m,
                     Staple = true,
+                    ArrivalDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(-7)),
                     PromoType = PromotionType.Bogo,
                     PromoValue = 0,
                     PhysicalCount = 23

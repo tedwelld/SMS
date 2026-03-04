@@ -7,6 +7,9 @@ public interface ISmsRetailService
     Task<BootstrapPayloadDto> GetBootstrapAsync(CancellationToken cancellationToken = default);
     Task<SmsAppSettingsDto> PatchSettingsAsync(PatchSettingsRequestDto request, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<ProductDto>> GetProductsAsync(string? search, CancellationToken cancellationToken = default);
+    Task<ProductDto> CreateProductAsync(CreateProductRequestDto request, string userRole, CancellationToken cancellationToken = default);
+    Task<ProductDto> UpdateProductAsync(string productId, UpdateProductRequestDto request, string userRole, CancellationToken cancellationToken = default);
+    Task DeleteProductAsync(string productId, string userRole, CancellationToken cancellationToken = default);
     Task<(ProductDto Product, IReadOnlyList<DraftPurchaseOrderDto> DraftPurchaseOrders)> UpdatePhysicalCountAsync(
         string productId,
         int physicalCount,
@@ -37,4 +40,7 @@ public interface ISmsRetailService
     Task<IReadOnlyList<ShrinkageReportRowDto>> GetShrinkageReportAsync(CancellationToken cancellationToken = default);
     Task<IReadOnlyList<SalesTrendPointDto>> GetSalesTrendAsync(CancellationToken cancellationToken = default);
     Task<CheckoutResponseDto> CheckoutAsync(CheckoutRequestDto request, CancellationToken cancellationToken = default);
+    Task<ReceiptPayloadDto?> GetReceiptByTransactionIdAsync(string transactionId, CancellationToken cancellationToken = default);
+    Task<ReceiptQrTokenDto?> GetReceiptQrTokenAsync(string transactionId, CancellationToken cancellationToken = default);
+    Task<ReceiptVerificationResultDto> VerifyReceiptAsync(string transactionId, string token, CancellationToken cancellationToken = default);
 }

@@ -92,6 +92,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 0.5rem;
+  align-items: end;
 
   &.compact {
     grid-template-columns: 1fr;
@@ -152,6 +153,7 @@
   grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
   gap: 0.45rem;
   width: min(760px, 100%);
+  align-items: end;
 }
 
 .po-card {
@@ -166,7 +168,7 @@
   display: flex;
   justify-content: space-between;
   gap: 0.8rem;
-  align-items: baseline;
+  align-items: center;
   margin-bottom: 0.55rem;
 
   h3 {
@@ -203,12 +205,13 @@ table {
 input,
 select {
   width: 100%;
-  border-radius: 12px;
+  border-radius: var(--sms-input-radius);
   border: 1px solid var(--line-soft);
-  background: var(--sms-card-bg);
+  background: var(--sms-card-bg-strong);
   color: var(--ink-700);
   font: inherit;
-  padding: 0.5rem 0.6rem;
+  min-height: 2.1rem;
+  padding: 0.38rem 0.6rem;
   min-width: 0;
 }
 

@@ -1,0 +1,50 @@
+<section class="verify-shell">
+  <article class="verify-card">
+    <header>
+      <h1>Receipt Verification</h1>
+      <p>Validate whether this receipt was issued by a genuine outlet.</p>
+    </header>
+
+    @if (loading()) {
+      <p class="state">Checking receipt...</p>
+    } @else if (error()) {
+      <p class="state state-error">{{ error() }}</p>
+    } @else if (result(); as verification) {
+      <div class="result" [class.result-ok]="verification.isGenuine" [class.result-fail]="!verification.isGenuine">
+        <h2>{{ verification.isGenuine ? 'Genuine Receipt' : 'Receipt Not Genuine' }}</h2>
+        <p>{{ verification.message }}</p>
+      </div>
+
+      <dl class="facts">
+        <div>
+          <dt>Transaction ID</dt>
+          <dd>{{ verification.transactionId || transactionId() }}</dd>
+        </div>
+        <div>
+          <dt>Receipt Found</dt>
+          <dd>{{ verification.receiptFound ? 'Yes' : 'No' }}</dd>
+        </div>
+        <div>
+          <dt>Payment Method</dt>
+          <dd>{{ verification.paymentMethod || 'N/A' }}</dd>
+        </div>
+        <div>
+          <dt>Total</dt>
+          <dd>{{ verification.total ?? 0 | currency }}</dd>
+        </div>
+        <div>
+          <dt>Transaction Time</dt>
+          <dd>{{ verification.timestamp ? (verification.timestamp | date: 'medium') : 'N/A' }}</dd>
+        </div>
+        <div>
+          <dt>Checked At</dt>
+          <dd>{{ checkedAt() ? (checkedAt() | date: 'medium') : 'N/A' }}</dd>
+        </div>
+      </dl>
+    }
+
+    <footer>
+      <a routerLink="/auth/login">Back to system</a>
+    </footer>
+  </article>
+</section>

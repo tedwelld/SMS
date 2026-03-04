@@ -27,6 +27,143 @@
   </mat-card>
 </section>
 
+@if (canManuallyAdjustStock()) {
+  <mat-card class="admin-card">
+    <h2>Admin Product Management</h2>
+    <p>Add new products to the system and remove deprecated SKUs.</p>
+
+    <section class="admin-form-grid">
+      <label class="field-control">
+        <span>Product Name</span>
+        <input [value]="addName()" (input)="addName.set(($any($event.target)).value)" />
+      </label>
+
+      <label class="field-control">
+        <span>SKU</span>
+        <input [value]="addSku()" (input)="addSku.set(($any($event.target)).value)" />
+      </label>
+
+      <label class="field-control">
+        <span>Department</span>
+        <select [value]="addDepartment()" (change)="addDepartment.set(($any($event.target)).value)">
+          @for (dept of departments; track dept) {
+            <option [value]="dept">{{ dept }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="field-control">
+        <span>Price</span>
+        <input type="number" min="0" step="0.01" [value]="addPrice()" (input)="updateNumeric(addPrice.set, $event)" />
+      </label>
+
+      <label class="field-control">
+        <span>Opening Stock</span>
+        <input type="number" min="0" [value]="addStock()" (input)="updateNumeric(addStock.set, $event)" />
+      </label>
+
+      <label class="field-control">
+        <span>Min Stock</span>
+        <input type="number" min="0" [value]="addMinStock()" (input)="updateNumeric(addMinStock.set, $event)" />
+      </label>
+
+      <label class="field-control">
+        <span>Tax Rate (0-1)</span>
+        <input type="number" min="0" step="0.01" [value]="addTaxRate()" (input)="updateNumeric(addTaxRate.set, $event)" />
+      </label>
+
+      <label class="field-control">
+        <span>Arrival Date</span>
+        <input type="date" [value]="addArrivalDate()" (input)="addArrivalDate.set(($any($event.target)).value)" />
+      </label>
+
+      <label class="field-control">
+        <span>Expiry Date</span>
+        <input type="date" [value]="addExpiryDate()" (input)="addExpiryDate.set(($any($event.target)).value)" />
+      </label>
+
+      <label class="staple-toggle">
+        <input type="checkbox" [checked]="addStaple()" (change)="addStaple.set(($any($event.target)).checked)" />
+        Staple Product
+      </label>
+
+      <button mat-flat-button class="btn-success-action" type="button" (click)="addProduct()">Add Product</button>
+    </section>
+
+    <section class="edit-section">
+      <h3>Edit Existing Product</h3>
+      <section class="admin-form-grid">
+        <label class="field-control">
+          <span>Select Product</span>
+          <select [value]="editProductId()" (change)="onEditProductSelectionChange(($any($event.target)).value)">
+            @for (item of store.inventory(); track item.id) {
+              <option [value]="item.id">{{ item.name }} — {{ item.sku }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="field-control">
+          <span>Product Name</span>
+          <input [value]="editName()" (input)="editName.set(($any($event.target)).value)" />
+        </label>
+
+        <label class="field-control">
+          <span>SKU</span>
+          <input [value]="editSku()" (input)="editSku.set(($any($event.target)).value)" />
+        </label>
+
+        <label class="field-control">
+          <span>Department</span>
+          <select [value]="editDepartment()" (change)="editDepartment.set(($any($event.target)).value)">
+            @for (dept of departments; track dept) {
+              <option [value]="dept">{{ dept }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="field-control">
+          <span>Price</span>
+          <input type="number" min="0" step="0.01" [value]="editPrice()" (input)="updateNumeric(editPrice.set, $event)" />
+        </label>
+
+        <label class="field-control">
+          <span>Stock</span>
+          <input type="number" min="0" [value]="editStock()" (input)="updateNumeric(editStock.set, $event)" />
+        </label>
+
+        <label class="field-control">
+          <span>Min Stock</span>
+          <input type="number" min="0" [value]="editMinStock()" (input)="updateNumeric(editMinStock.set, $event)" />
+        </label>
+
+        <label class="field-control">
+          <span>Tax Rate (0-1)</span>
+          <input type="number" min="0" step="0.01" [value]="editTaxRate()" (input)="updateNumeric(editTaxRate.set, $event)" />
+        </label>
+
+        <label class="field-control">
+          <span>Arrival Date</span>
+          <input type="date" [value]="editArrivalDate()" (input)="editArrivalDate.set(($any($event.target)).value)" />
+        </label>
+
+        <label class="field-control">
+          <span>Expiry Date</span>
+          <input type="date" [value]="editExpiryDate()" (input)="editExpiryDate.set(($any($event.target)).value)" />
+        </label>
+
+        <label class="staple-toggle">
+          <input type="checkbox" [checked]="editStaple()" (change)="editStaple.set(($any($event.target)).checked)" />
+          Staple Product
+        </label>
+
+        <button mat-flat-button class="btn-primary-action" type="button" (click)="saveProductEdits()">
+          Save Product Changes
+        </button>
+      </section>
+    </section>
+  </mat-card>
+}
+
 @if (stockEntryMessage()) {
   <p class="stock-message">{{ stockEntryMessage() }}</p>
 }
@@ -41,9 +178,12 @@
             <th>Department</th>
             <th>System Stock</th>
             <th>Min Level</th>
+            <th>Arrival</th>
+            <th>Expiry</th>
             <th>Physical Count</th>
             <th>Variance</th>
             <th>Manual Entry</th>
+            <th>Remove</th>
           </tr>
         </thead>
         <tbody>
@@ -56,16 +196,17 @@
               <td>{{ item.department }}</td>
               <td>{{ item.stock }}</td>
               <td>{{ item.minStock }}</td>
+              <td>{{ item.arrivalDate | date: 'MMM d, y' }}</td>
+              <td>{{ item.expiryDate | date: 'MMM d, y' }}</td>
               <td>
-                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <label class="field-control">
                   <input
-                    matInput
                     type="number"
                     min="0"
                     [value]="item.physicalCount"
                     (change)="onPhysicalCountChange(item.id, $event)"
                   />
-                </mat-form-field>
+                </label>
               </td>
               <td [class.alert]="variance(item) < 0">
                 {{ variance(item) > 0 ? '+' : '' }}{{ variance(item) }}
@@ -73,19 +214,27 @@
               <td>
                 @if (canManuallyAdjustStock()) {
                   <div class="manual-entry">
-                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                      <input #stockQty matInput type="number" min="0" placeholder="Qty" />
-                    </mat-form-field>
-
-                  <div class="stock-actions">
-                    <button mat-stroked-button class="btn-primary-action" type="button" (click)="onManualStockEntry(item, stockQty, 'set')">
-                      Set Stock
-                    </button>
-                    <button mat-stroked-button class="btn-success-action" type="button" (click)="onManualStockEntry(item, stockQty, 'add')">
-                      Add Units
-                    </button>
+                    <label class="field-control">
+                      <input #stockQty type="number" min="0" placeholder="Qty" />
+                    </label>
+                    <div class="stock-actions">
+                      <button mat-stroked-button class="btn-primary-action" type="button" (click)="onManualStockEntry(item, stockQty, 'set')">
+                        Set Stock
+                      </button>
+                      <button mat-stroked-button class="btn-success-action" type="button" (click)="onManualStockEntry(item, stockQty, 'add')">
+                        Add Units
+                      </button>
+                    </div>
                   </div>
-                  </div>
+                } @else {
+                  <span class="admin-only">Admin only</span>
+                }
+              </td>
+              <td>
+                @if (canManuallyAdjustStock()) {
+                  <button mat-stroked-button class="btn-danger-action" type="button" (click)="removeProduct(item)">
+                    Remove
+                  </button>
                 } @else {
                   <span class="admin-only">Admin only</span>
                 }
@@ -118,26 +267,25 @@
               </td>
               <td>{{ item.price | currency }}</td>
               <td>
-                <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                  <mat-select #promoType [value]="item.promo.type">
-                    <mat-option value="none">No Promotion</mat-option>
-                    <mat-option value="discount">Discount %</mat-option>
-                    <mat-option value="bogo">Buy One Get One</mat-option>
-                  </mat-select>
-                </mat-form-field>
+                <label class="field-control">
+                  <select #promoType [value]="item.promo.type">
+                    <option value="none">No Promotion</option>
+                    <option value="discount">Discount %</option>
+                    <option value="bogo">Buy One Get One</option>
+                  </select>
+                </label>
               </td>
               <td>
-                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <label class="field-control">
                   <input
                     #promoValue
-                    matInput
                     type="number"
                     min="0"
                     max="90"
                     [disabled]="promoType.value !== 'discount'"
                     [value]="item.promo.value"
                   />
-                </mat-form-field>
+                </label>
               </td>
               <td>
                 <button mat-stroked-button class="btn-primary-action" type="button" (click)="applyPromotion(item.id, promoType.value, promoValue.value)">
@@ -169,6 +317,107 @@
           <p>All tracked batches are outside the 14-day warning window.</p>
         </mat-card>
       }
+    </section>
+  </mat-tab>
+
+  <mat-tab label="Inventory Reports">
+    <section class="report-toolbar">
+      <label class="field-control">
+        <span>Min Sales Amount</span>
+        <input type="number" min="0" [value]="minSalesFilter()" (input)="updateNumeric(minSalesFilter.set, $event)" />
+      </label>
+
+      <label class="field-control">
+        <span>Min Quantity On Hand</span>
+        <input type="number" min="0" [value]="minQuantityFilter()" (input)="updateNumeric(minQuantityFilter.set, $event)" />
+      </label>
+
+      <label class="field-control">
+        <span>Expiry From</span>
+        <input type="date" [value]="expiryFromFilter()" (input)="expiryFromFilter.set(($any($event.target)).value)" />
+      </label>
+
+      <label class="field-control">
+        <span>Expiry To</span>
+        <input type="date" [value]="expiryToFilter()" (input)="expiryToFilter.set(($any($event.target)).value)" />
+      </label>
+
+      <label class="field-control">
+        <span>Arrival From</span>
+        <input type="date" [value]="arrivalFromFilter()" (input)="arrivalFromFilter.set(($any($event.target)).value)" />
+      </label>
+
+      <label class="field-control">
+        <span>Arrival To</span>
+        <input type="date" [value]="arrivalToFilter()" (input)="arrivalToFilter.set(($any($event.target)).value)" />
+      </label>
+
+      <div class="report-actions">
+        <button mat-stroked-button class="btn-info-action" type="button" (click)="refreshSalesData()">Refresh Sales Data</button>
+        <button mat-stroked-button class="btn-neutral-action" type="button" (click)="resetReportFilters()">Reset Filters</button>
+        <button mat-flat-button class="btn-success-action" type="button" [disabled]="exportingReport()" (click)="exportInventoryReport()">
+          {{ exportingReport() ? 'Exporting...' : 'Generate Report PDF' }}
+        </button>
+      </div>
+    </section>
+
+    <section class="report-summary">
+      <mat-card>
+        <p>Products</p>
+        <h3>{{ reportTotals().products }}</h3>
+      </mat-card>
+      <mat-card>
+        <p>Quantity On Hand</p>
+        <h3>{{ reportTotals().quantityOnHand }}</h3>
+      </mat-card>
+      <mat-card>
+        <p>Units Sold</p>
+        <h3>{{ reportTotals().unitsSold }}</h3>
+      </mat-card>
+      <mat-card>
+        <p>Sales Value</p>
+        <h3>{{ reportTotals().salesAmount | currency }}</h3>
+      </mat-card>
+    </section>
+
+    <p class="report-message">{{ reportMessage() }}</p>
+
+    <section class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>SKU</th>
+            <th>Department</th>
+            <th>Qty On Hand</th>
+            <th>Min Qty</th>
+            <th>Units Sold</th>
+            <th>Sales Value</th>
+            <th>Arrival Date</th>
+            <th>Expiry Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of filteredReportRows(); track row.id) {
+            <tr>
+              <td>{{ row.name }}</td>
+              <td>{{ row.sku }}</td>
+              <td>{{ row.department }}</td>
+              <td>{{ row.currentStock }}</td>
+              <td>{{ row.minStock }}</td>
+              <td>{{ row.unitsSold }}</td>
+              <td>{{ row.salesAmount | currency }}</td>
+              <td>{{ row.arrivalDate | date: 'MMM d, y' }}</td>
+              <td>{{ row.expiryDate | date: 'MMM d, y' }}</td>
+            </tr>
+          }
+          @if (filteredReportRows().length === 0) {
+            <tr>
+              <td colspan="9" class="admin-only">No products match the current report filters.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
     </section>
   </mat-tab>
 </mat-tab-group>

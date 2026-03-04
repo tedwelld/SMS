@@ -1,14 +1,14 @@
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatTabsModule } from '@angular/material/tabs';
 
 import { SmsStoreService } from '../../core/sms-store.service';
 import { SYSTEM_BRANDING, SYSTEM_BRANDING_FULL_ADDRESS } from '../../core/system-branding';
 
 type ReportSection = 'eod' | 'shrinkage' | 'sales';
+type SelectedReportSection = ReportSection | 'all';
 
 type HorizontalAlign = 'left' | 'right' | 'center';
 
@@ -24,19 +24,29 @@ interface ReportRenderContext {
   logoDataUrl: string | null;
 }
 
+interface CapturedVisualSnapshot {
+  dataUrl: string;
+  widthPx: number;
+  heightPx: number;
+}
+
 @Component({
   selector: 'app-reports-page',
-  imports: [CommonModule, CurrencyPipe, FormsModule, MatButtonModule, MatCardModule, MatTabsModule],
+  imports: [CommonModule, CurrencyPipe, FormsModule, MatButtonModule, MatCardModule],
   templateUrl: './reports-page.component.html',
   styleUrl: './reports-page.component.scss'
 })
 export class ReportsPageComponent {
   readonly store = inject(SmsStoreService);
   readonly branding = SYSTEM_BRANDING;
+  readonly selectedReport = signal<SelectedReportSection>('all');
   readonly filterQuery = signal('');
   readonly varianceFilter = signal<'all' | 'loss' | 'gain' | 'balanced'>('all');
   readonly minSales = signal(0);
   readonly exporting = signal(false);
+
+  @ViewChild('eodVisualBlock') eodVisualBlock?: ElementRef<HTMLElement>;
+  @ViewChild('salesVisualBlock') salesVisualBlock?: ElementRef<HTMLElement>;
 
   private readonly reportLayout = {
     left: 14,
@@ -99,14 +109,16 @@ export class ReportsPageComponent {
     return `${(sales / this.maxTrendValue()) * 100}%`;
   }
 
-  async exportPdf(section: ReportSection): Promise<void> {
+  async exportPdf(section?: ReportSection): Promise<void> {
     this.exporting.set(true);
 
     try {
+      const effectiveSelection: SelectedReportSection = section ?? this.selectedReport();
+      const visuals = await this.captureVisualSnapshots(effectiveSelection);
       const { jsPDF } = await import('jspdf');
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const context: ReportRenderContext = {
-        title: this.getReportTitle(section),
+        title: this.getReportTitle(effectiveSelection),
         generatedAt: new Date().toLocaleString(),
         logoDataUrl: await this.getLogoDataUrlForPdf()
       };
@@ -114,20 +126,104 @@ export class ReportsPageComponent {
       this.drawPageFrame(doc, context);
 
       let y = this.reportLayout.contentTop;
-      if (section === 'eod') {
+      if (effectiveSelection === 'eod') {
         y = this.renderEodReport(doc, y, context);
-      } else if (section === 'shrinkage') {
+        y = this.writeVisualSnapshot(doc, y, 'EOD Visuals', visuals.eod, context);
+      } else if (effectiveSelection === 'shrinkage') {
         y = this.renderShrinkageReport(doc, y, context);
-      } else {
+      } else if (effectiveSelection === 'sales') {
         y = this.renderSalesReport(doc, y, context);
+        y = this.writeVisualSnapshot(doc, y, 'Sales Trend Visual', visuals.sales, context);
+      } else {
+        y = this.renderEodReport(doc, y, context);
+        y = this.writeVisualSnapshot(doc, y, 'EOD Visuals', visuals.eod, context);
+        y = this.ensureSpace(doc, y + 4, 40, context);
+        y = this.renderShrinkageReport(doc, y, context);
+        y = this.ensureSpace(doc, y + 4, 40, context);
+        y = this.renderSalesReport(doc, y, context);
+        y = this.writeVisualSnapshot(doc, y, 'Sales Trend Visual', visuals.sales, context);
       }
 
-      this.writeNote(doc, y, this.getReportExplanation(section), context);
+      this.writeNote(doc, y, this.getReportExplanation(effectiveSelection), context);
 
-      doc.save(`sms-${section}-report.pdf`);
+      doc.save(`sms-${effectiveSelection}-report.pdf`);
     } finally {
       this.exporting.set(false);
     }
+  }
+
+  private async captureVisualSnapshots(
+    section: SelectedReportSection
+  ): Promise<{ eod?: CapturedVisualSnapshot; sales?: CapturedVisualSnapshot }> {
+    const snapshots: { eod?: CapturedVisualSnapshot; sales?: CapturedVisualSnapshot } = {};
+
+    if (section === 'eod' || section === 'all') {
+      const eodSnapshot = await this.captureElementSnapshot(this.eodVisualBlock?.nativeElement);
+      if (eodSnapshot) {
+        snapshots.eod = eodSnapshot;
+      }
+    }
+
+    if (section === 'sales' || section === 'all') {
+      const salesSnapshot = await this.captureElementSnapshot(this.salesVisualBlock?.nativeElement);
+      if (salesSnapshot) {
+        snapshots.sales = salesSnapshot;
+      }
+    }
+
+    return snapshots;
+  }
+
+  private async captureElementSnapshot(element?: HTMLElement): Promise<CapturedVisualSnapshot | undefined> {
+    if (!element) {
+      return undefined;
+    }
+
+    try {
+      const html2canvasModule = await import('html2canvas');
+      const html2canvas = html2canvasModule.default;
+      const canvas = await html2canvas(element, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        useCORS: true,
+        logging: false
+      });
+
+      return {
+        dataUrl: canvas.toDataURL('image/png'),
+        widthPx: canvas.width,
+        heightPx: canvas.height
+      };
+    } catch {
+      return undefined;
+    }
+  }
+
+  private writeVisualSnapshot(
+    doc: import('jspdf').jsPDF,
+    startY: number,
+    heading: string,
+    snapshot: CapturedVisualSnapshot | undefined,
+    context: ReportRenderContext
+  ): number {
+    if (!snapshot) {
+      return startY;
+    }
+
+    let y = this.ensureSpace(doc, startY + 2, 20, context);
+    y = this.writeSectionHeading(doc, y, heading);
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const availableWidth = pageWidth - this.reportLayout.left - this.reportLayout.right;
+    const ratio = snapshot.widthPx > 0 ? snapshot.heightPx / snapshot.widthPx : 0.58;
+    const imageHeight = Math.max(34, Math.min(105, availableWidth * ratio));
+    y = this.ensureSpace(doc, y, imageHeight + 3, context);
+
+    doc.setDrawColor(210, 217, 230);
+    doc.rect(this.reportLayout.left, y, availableWidth, imageHeight);
+    doc.addImage(snapshot.dataUrl, 'PNG', this.reportLayout.left, y, availableWidth, imageHeight);
+    y += imageHeight + 4;
+    return y;
   }
 
   private renderEodReport(doc: import('jspdf').jsPDF, startY: number, context: ReportRenderContext): number {
@@ -422,7 +518,11 @@ export class ReportsPageComponent {
     return value > 0 ? `+${value}` : String(value);
   }
 
-  private getReportTitle(section: ReportSection): string {
+  private getReportTitle(section: SelectedReportSection): string {
+    if (section === 'all') {
+      return 'Comprehensive System Report';
+    }
+
     if (section === 'eod') {
       return 'EOD Financial Report';
     }
@@ -434,7 +534,11 @@ export class ReportsPageComponent {
     return 'Sales Trends Report';
   }
 
-  private getReportExplanation(section: ReportSection): string {
+  private getReportExplanation(section: SelectedReportSection): string {
+    if (section === 'all') {
+      return 'Explanation: This document compiles EOD, shrinkage, and sales trend sections using the active report filters.';
+    }
+
     if (section === 'eod') {
       return 'Explanation: This summary consolidates all payment channels for the selected reporting window.';
     }
