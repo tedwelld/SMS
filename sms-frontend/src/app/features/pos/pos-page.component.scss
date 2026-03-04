@@ -212,6 +212,40 @@ table {
   gap: 0.45rem;
 }
 
+.ecocash-qr {
+  margin-top: 0.75rem;
+  border: 1px dashed var(--line-soft);
+  border-radius: 10px;
+  padding: 0.65rem;
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  background: color-mix(in srgb, var(--primary-color, #1b76ff) 6%, white);
+
+  h3 {
+    margin: 0;
+    color: var(--ink-800);
+    font-size: 0.95rem;
+  }
+
+  p,
+  small {
+    margin: 0.25rem 0 0;
+    color: var(--ink-600);
+  }
+
+  img {
+    width: 126px;
+    height: 126px;
+    border-radius: 8px;
+    border: 1px solid var(--line-soft);
+    background: #fff;
+    padding: 0.3rem;
+    object-fit: contain;
+  }
+}
+
 .status {
   margin: 0.75rem 0 0;
   color: var(--ink-600);
@@ -246,6 +280,11 @@ table {
 @media (max-width: 1060px) {
   .pos-grid {
     grid-template-columns: 1fr;
+  }
+
+  .ecocash-qr {
+    grid-template-columns: 1fr;
+    justify-items: start;
   }
 }
 

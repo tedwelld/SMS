@@ -41,8 +41,9 @@ export class AppMenu {
         items: [
           { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/dashboard'] },
           { label: 'POS', icon: 'pi pi-fw pi-shopping-cart', routerLink: ['/pos'] },
+          { label: 'Cash Ups', icon: 'pi pi-fw pi-wallet', routerLink: ['/cash-ups'] },
           { label: 'Inventory', icon: 'pi pi-fw pi-box', routerLink: ['/inventory'] },
-          { label: 'Procurement', icon: 'pi pi-fw pi-truck', routerLink: ['/procurement'] },
+          { label: 'Procurement', icon: 'pi pi-fw pi-truck', routerLink: ['/procurement'], roles: ['admin'] },
           { label: 'Reports', icon: 'pi pi-fw pi-chart-bar', routerLink: ['/reports'] }
         ]
       },

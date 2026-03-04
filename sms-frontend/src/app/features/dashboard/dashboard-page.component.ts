@@ -59,87 +59,96 @@ export class DashboardPageComponent implements OnInit {
 
   readonly salesLedger = computed(() => this.store.paymentHistory().slice(0, this.auth.role === 'admin' ? 80 : 16));
 
-  readonly statSeries = computed<DashboardStatPoint[]>(() => [
-    {
-      key: 'revenue',
-      label: 'End-of-day Revenue',
-      value: Math.max(this.store.eodReport().total, 0),
-      format: 'currency',
-      icon: 'pi pi-wallet',
-      route: '/reports',
-      description: 'Live total from all payment channels.'
-    },
-    {
-      key: 'transactions',
-      label: 'Transactions',
-      value: Math.max(this.store.eodReport().transactions, 0),
-      format: 'number',
-      icon: 'pi pi-shopping-bag',
-      route: '/pos',
-      description: 'Completed checkouts in the current reporting cycle.'
-    },
-    {
-      key: 'sales-tracked',
-      label: 'Tracked Sales Records',
-      value: Math.max(this.store.paymentHistory().length, 0),
-      format: 'number',
-      icon: 'pi pi-database',
-      route: '/pos',
-      description: 'Sales records available for tracking and receipt reprint.'
-    },
-    {
-      key: 'inventory',
-      label: 'Inventory SKUs',
-      value: Math.max(this.store.inventory().length, 0),
-      format: 'number',
-      icon: 'pi pi-box',
-      route: '/inventory',
-      description: 'Products currently tracked in inventory.'
-    },
-    {
-      key: 'low-stock',
-      label: 'Low Stock SKUs',
-      value: Math.max(this.store.lowStockItems().length, 0),
-      format: 'number',
-      icon: 'pi pi-exclamation-triangle',
-      route: '/inventory',
-      description: 'Items at or below minimum stock threshold.'
-    },
-    {
-      key: 'expiry',
-      label: 'Expiry Alerts',
-      value: Math.max(this.store.expiringSoonItems().length, 0),
-      format: 'number',
-      icon: 'pi pi-clock',
-      route: '/inventory',
-      description: 'Products approaching expiry date soon.'
-    },
-    {
-      key: 'vendors',
-      label: 'Vendors',
-      value: Math.max(this.store.vendors().length, 0),
-      format: 'number',
-      icon: 'pi pi-building',
-      route: '/procurement',
-      description: 'Supplier accounts supporting procurement.'
-    },
-    {
-      key: 'draft-orders',
-      label: 'Draft Purchase Orders',
-      value: Math.max(this.store.draftPurchaseOrders().length, 0),
-      format: 'number',
-      icon: 'pi pi-file-edit',
-      route: '/procurement',
-      description: 'Auto-generated procurement drafts pending review.'
+  readonly statSeries = computed<DashboardStatPoint[]>(() => {
+    const points: DashboardStatPoint[] = [
+      {
+        key: 'revenue',
+        label: 'End-of-day Revenue',
+        value: Math.max(this.store.eodReport().total, 0),
+        format: 'currency',
+        icon: 'pi pi-wallet',
+        route: '/reports',
+        description: 'Live total from all payment channels.'
+      },
+      {
+        key: 'transactions',
+        label: 'Transactions',
+        value: Math.max(this.store.eodReport().transactions, 0),
+        format: 'number',
+        icon: 'pi pi-shopping-bag',
+        route: '/pos',
+        description: 'Completed checkouts in the current reporting cycle.'
+      },
+      {
+        key: 'sales-tracked',
+        label: 'Tracked Sales Records',
+        value: Math.max(this.store.paymentHistory().length, 0),
+        format: 'number',
+        icon: 'pi pi-database',
+        route: '/cash-ups',
+        description: 'Sales records available for tracking and receipt reprint.'
+      },
+      {
+        key: 'inventory',
+        label: 'Inventory SKUs',
+        value: Math.max(this.store.inventory().length, 0),
+        format: 'number',
+        icon: 'pi pi-box',
+        route: '/inventory',
+        description: 'Products currently tracked in inventory.'
+      },
+      {
+        key: 'low-stock',
+        label: 'Low Stock SKUs',
+        value: Math.max(this.store.lowStockItems().length, 0),
+        format: 'number',
+        icon: 'pi pi-exclamation-triangle',
+        route: '/inventory',
+        description: 'Items at or below minimum stock threshold.'
+      },
+      {
+        key: 'expiry',
+        label: 'Expiry Alerts',
+        value: Math.max(this.store.expiringSoonItems().length, 0),
+        format: 'number',
+        icon: 'pi pi-clock',
+        route: '/inventory',
+        description: 'Products approaching expiry date soon.'
+      }
+    ];
+
+    if (this.auth.role === 'admin') {
+      points.push(
+        {
+          key: 'vendors',
+          label: 'Vendors',
+          value: Math.max(this.store.vendors().length, 0),
+          format: 'number',
+          icon: 'pi pi-building',
+          route: '/procurement',
+          description: 'Supplier accounts supporting procurement.'
+        },
+        {
+          key: 'draft-orders',
+          label: 'Draft Purchase Orders',
+          value: Math.max(this.store.draftPurchaseOrders().length, 0),
+          format: 'number',
+          icon: 'pi pi-file-edit',
+          route: '/procurement',
+          description: 'Auto-generated procurement drafts pending review.'
+        }
+      );
     }
-  ]);
+
+    return points;
+  });
 
   readonly paymentBreakdown = computed(() => {
     const eod = this.store.eodReport();
     return [
       { method: 'Cash', value: eod.cash },
       { method: 'Card', value: eod.card },
-      { method: 'Digital', value: eod.digital }
+      { method: 'EcoCash', value: eod.digital }
     ];
   });
 

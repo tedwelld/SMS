@@ -134,6 +134,17 @@
       <p>Points Earned <strong>{{ totals().pointsEarned }}</strong></p>
     </div>
 
+    @if (paymentMethod() === 'EcoCash' && ecoCashPromptQr()) {
+      <section class="ecocash-qr">
+        <div>
+          <h3>EcoCash Customer Scan</h3>
+          <p>Customer can scan this QR code to get the exact payment prompt.</p>
+          <small>Dial code: {{ ecoCashDialCode() }}</small>
+        </div>
+        <img [src]="ecoCashPromptQr()" alt="EcoCash payment prompt QR" />
+      </section>
+    }
+
     <div class="actions">
       <button mat-stroked-button class="btn-warning-action" type="button" (click)="holdTransaction()">Hold Transaction</button>
       <button mat-stroked-button class="btn-info-action" type="button" (click)="resumeTransaction()">Resume Held</button>
@@ -145,96 +156,9 @@
         Print Receipt
       </button>
       <button mat-stroked-button class="btn-danger-action" type="button" (click)="store.clearCart()">Clear Cart</button>
-      <button mat-flat-button type="button" class="checkout btn-success-action" (click)="checkout()">Complete Checkout</button>
+      <button mat-flat-button type="button" class="checkout btn-success-action" (click)="processPayment()">Process Payment</button>
     </div>
 
     <p class="status">{{ message() }}</p>
-
-    <section class="payments-log">
-      <header>
-        <h2>{{ canViewAllSales() ? 'Sales Tracking (Admin)' : 'Payment Tracking' }}</h2>
-        <span>{{ salesLedgerTotals().transactions }} transactions | {{ salesLedgerTotals().grossSales | currency }}</span>
-      </header>
-
-      <div class="sales-filters">
-        <label class="field-control">
-          <span>Search Sales</span>
-          <input
-            type="text"
-            [value]="salesQuery()"
-            (input)="updateSalesQuery($event)"
-            placeholder="Transaction, customer, or phone"
-          />
-        </label>
-
-        <label class="field-control">
-          <span>Method</span>
-          <select [value]="salesMethodFilter()" (change)="setSalesMethodFilter(($any($event.target)).value)">
-            <option value="all">All</option>
-            <option value="Cash">Cash</option>
-            <option value="Card">Card</option>
-            <option value="Digital">Digital</option>
-          </select>
-        </label>
-
-        <label class="field-control">
-          <span>From</span>
-          <input type="date" [value]="salesFromDate()" (input)="updateSalesFromDate($event)" />
-        </label>
-
-        <label class="field-control">
-          <span>To</span>
-          <input type="date" [value]="salesToDate()" (input)="updateSalesToDate($event)" />
-        </label>
-
-        <button mat-stroked-button class="btn-info-action" type="button" [disabled]="loadingSalesLedger()" (click)="refreshSalesLedger()">
-          {{ loadingSalesLedger() ? 'Refreshing...' : 'Refresh Sales' }}
-        </button>
-      </div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Transaction</th>
-              <th>When</th>
-              <th>Method</th>
-              <th>Items</th>
-              <th>Total</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (payment of trackedPayments(); track payment.transactionId) {
-              <tr>
-                <td>
-                  <strong>{{ payment.transactionId }}</strong>
-                  <small>{{ payment.customerName || 'Walk-in Customer' }}</small>
-                </td>
-                <td>{{ payment.timestamp | date: 'short' }}</td>
-                <td>{{ payment.paymentMethod }}</td>
-                <td>{{ payment.itemCount }}</td>
-                <td>{{ payment.total | currency }}</td>
-                <td>
-                  @if (canViewAllSales()) {
-                    <button mat-stroked-button class="btn-primary-action" type="button" (click)="reprintReceipt(payment.transactionId)">
-                      Reprint
-                    </button>
-                  } @else {
-                    <span class="admin-only">Admin only</span>
-                  }
-                </td>
-              </tr>
-            }
-
-            @if (trackedPayments().length === 0) {
-              <tr>
-                <td colspan="6" class="empty">No tracked payments yet.</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    </section>
   </mat-card>
 </section>

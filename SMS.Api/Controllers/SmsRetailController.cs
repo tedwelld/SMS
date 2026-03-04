@@ -105,6 +105,10 @@ public class SmsRetailController(ISmsRetailService service) : ControllerBase
                 draftPurchaseOrders = result.DraftPurchaseOrders
             });
         }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
         catch (KeyNotFoundException)
         {
             return NotFound(new { message = "Product not found." });
@@ -137,6 +141,10 @@ public class SmsRetailController(ISmsRetailService service) : ControllerBase
                 draftPurchaseOrders = result.DraftPurchaseOrders
             });
         }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
         catch (KeyNotFoundException)
         {
             return NotFound(new { message = "Product not found." });
@@ -163,6 +171,10 @@ public class SmsRetailController(ISmsRetailService service) : ControllerBase
         {
             var product = await service.UpdatePromotionAsync(productId, request, ResolveRole(), cancellationToken);
             return Ok(new { product });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
         }
         catch (KeyNotFoundException)
         {
@@ -206,7 +218,16 @@ public class SmsRetailController(ISmsRetailService service) : ControllerBase
 
     [HttpPost("purchase-orders/drafts/regenerate")]
     public async Task<ActionResult<IReadOnlyList<DraftPurchaseOrderDto>>> RegenerateDraftPurchaseOrders(CancellationToken cancellationToken)
-        => Ok(await service.RegenerateDraftPurchaseOrdersAsync(ResolveRole(), cancellationToken));
+    {
+        try
+        {
+            return Ok(await service.RegenerateDraftPurchaseOrdersAsync(ResolveRole(), cancellationToken));
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+    }
 
     [HttpGet("audit")]
     public async Task<ActionResult<IReadOnlyList<RetailAuditLogDto>>> GetAudit([FromQuery] int? limit, CancellationToken cancellationToken)
@@ -225,6 +246,34 @@ public class SmsRetailController(ISmsRetailService service) : ControllerBase
         [FromQuery] int? limit,
         CancellationToken cancellationToken)
         => Ok(await service.GetPaymentsAsync(from, to, method, query, limit ?? 100, cancellationToken));
+
+    [HttpPost("cash-ups/submit")]
+    [HttpPost("cashups/submit")]
+    public async Task<ActionResult<StaffCashUpDto>> SubmitCashUp([FromBody] SubmitCashUpRequestDto request, CancellationToken cancellationToken)
+    {
+        if (request.StaffUserId <= 0)
+        {
+            return BadRequest(new { message = "A valid staff user id is required." });
+        }
+
+        try
+        {
+            return Ok(await service.SubmitDailyCashUpAsync(request, cancellationToken));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpGet("cash-ups")]
+    [HttpGet("cashups")]
+    public async Task<ActionResult<IReadOnlyList<StaffCashUpDto>>> GetCashUps(
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
+        [FromQuery] int? staffUserId,
+        CancellationToken cancellationToken)
+        => Ok(await service.GetCashUpsAsync(from, to, staffUserId, cancellationToken));
 
     [HttpGet("reports/shrinkage")]
     public async Task<ActionResult<IReadOnlyList<ShrinkageReportRowDto>>> GetShrinkage(CancellationToken cancellationToken)

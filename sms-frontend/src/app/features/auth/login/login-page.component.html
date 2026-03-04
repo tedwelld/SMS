@@ -1,39 +1,48 @@
-<div class="auth-shell">
-  <div class="auth-brand">
-    <h1>Supermarket Management System</h1>
-    <p>Admin and staff access portal.</p>
-  </div>
+<div class="auth-shell login-shell">
+  <section class="login-stage">
+    <figure class="login-illustration" aria-hidden="true">
+      <img src="/branding/login-hero.svg" alt="" />
+    </figure>
 
-  <form class="auth-card" [formGroup]="form" (ngSubmit)="submit()">
-    <h2>Login</h2>
+    <form class="auth-card login-card" [formGroup]="form" (ngSubmit)="submit()">
+      <h2>Welcome To Family</h2>
+      <p class="login-sub">A community of members sharing great ideas and progress.</p>
 
-    <label>
-      Username or email
-      <input type="text" formControlName="usernameOrEmail" placeholder="admin" />
-    </label>
+      <label>
+        Username or email
+        <input type="text" formControlName="usernameOrEmail" placeholder="admin or staff email" />
+      </label>
 
-    <label>
-      Password
-      <input type="password" formControlName="password" placeholder="********" />
-    </label>
+      <label>
+        Password
+        <input type="password" formControlName="password" placeholder="********" />
+      </label>
 
-    <label>
-      Access type
-      <select formControlName="role">
-        <option value="admin">Admin</option>
-        <option value="staff">Staff</option>
-      </select>
-    </label>
+      <label>
+        Access type
+        <select formControlName="role">
+          <option value="admin">Admin</option>
+          <option value="staff">Staff</option>
+        </select>
+      </label>
 
-    @if (error()) {
-      <p class="error">{{ error() }}</p>
-    }
+      @if (error()) {
+        <p class="error">{{ error() }}</p>
+      }
 
-    <button class="btn-primary-action" type="submit" [disabled]="submitting()">{{ submitting() ? 'Signing in...' : 'Sign in' }}</button>
+      <div class="login-links">
+        <label class="remember">
+          <input type="checkbox" />
+          <span>Remember me</span>
+        </label>
+        <a routerLink="/auth/forgot-password">Forgot password</a>
+      </div>
 
-    <div class="links">
-      <a routerLink="/auth/create-account">Create account</a>
-      <a routerLink="/auth/forgot-password">Forgot password</a>
-    </div>
-  </form>
+      <button class="btn-primary-action" type="submit" [disabled]="submitting()">{{ submitting() ? 'Signing in...' : 'Login' }}</button>
+
+      <div class="links">
+        <a routerLink="/auth/create-account">Create account</a>
+      </div>
+    </form>
+  </section>
 </div>

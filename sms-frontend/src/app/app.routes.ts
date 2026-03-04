@@ -50,6 +50,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/pos/pos-page.component').then((m) => m.PosPageComponent)
       },
       {
+        path: 'cash-ups',
+        loadComponent: () =>
+          import('./features/cash-ups/cash-ups-page.component').then((m) => m.CashUpsPageComponent)
+      },
+      {
         path: 'inventory',
         loadComponent: () =>
           import('./features/inventory/inventory-page.component').then((m) => m.InventoryPageComponent)
@@ -61,6 +66,8 @@ export const routes: Routes = [
       },
       {
         path: 'procurement',
+        canActivate: [authGuard],
+        data: { role: 'admin' },
         loadComponent: () =>
           import('./features/procurement/procurement-page.component').then(
             (m) => m.ProcurementPageComponent

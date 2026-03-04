@@ -233,7 +233,7 @@ export class ReportsPageComponent {
     const rows: string[][] = [
       ['Cash Collections', this.formatCurrency(eod.cash)],
       ['Card Collections', this.formatCurrency(eod.card)],
-      ['Digital Collections', this.formatCurrency(eod.digital)],
+      ['EcoCash Collections', this.formatCurrency(eod.digital)],
       ['Total Revenue', this.formatCurrency(eod.total)],
       ['Transaction Count', String(eod.transactions)]
     ];

@@ -61,7 +61,7 @@ export interface Vendor {
   email: string;
 }
 
-export type PaymentMethod = 'Cash' | 'Card' | 'Digital';
+export type PaymentMethod = 'Cash' | 'Card' | 'EcoCash';
 
 export interface PaymentRecord {
   id: string;
@@ -157,6 +157,8 @@ export interface CheckoutRequest {
   customerPhone: string;
   pointsToRedeem: number;
   userRole: UserRole;
+  staffUserId?: number;
+  staffDisplayName?: string;
 }
 
 export interface CheckoutResponse {
@@ -219,6 +221,25 @@ export interface PaymentTrackingRecord {
   total: number;
   itemCount: number;
   lineItems: ReceiptLineItem[];
+}
+
+export interface StaffCashUp {
+  id: number;
+  staffUserId: number;
+  staffName: string;
+  businessDate: string;
+  cashTotal: number;
+  cardTotal: number;
+  ecoCashTotal: number;
+  total: number;
+  transactionCount: number;
+  submittedAt: string;
+}
+
+export interface SubmitCashUpRequest {
+  staffUserId: number;
+  staffName: string;
+  businessDate?: string;
 }
 
 export interface OperationResult {

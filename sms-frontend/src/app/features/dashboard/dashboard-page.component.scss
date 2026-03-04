@@ -73,6 +73,8 @@
 
 .trend-panel {
   grid-area: trend;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
 }
 
 .rings-panel {
@@ -104,7 +106,8 @@
 
 .trend-panel svg {
   width: 100%;
-  height: clamp(180px, 26vw, 220px);
+  height: 100%;
+  min-height: 260px;
   border-radius: 12px;
   border: 1px solid var(--line-soft);
   background: color-mix(in srgb, var(--sms-card-bg-strong) 92%, var(--primary-color, #1b76ff) 8%);

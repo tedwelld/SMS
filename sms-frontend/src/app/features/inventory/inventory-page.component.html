@@ -1,4 +1,4 @@
-<section class="page-head">
+﻿<section class="page-head">
   <h1>Inventory and Stock Control</h1>
   <p>Manage departments, expiry exposure, promotions, and physical stock variance.</p>
 </section>
@@ -28,93 +28,28 @@
 </section>
 
 @if (canManuallyAdjustStock()) {
-  <mat-card class="admin-card">
-    <h2>Admin Product Management</h2>
-    <p>Add new products to the system and remove deprecated SKUs.</p>
+  <section class="admin-stage">
+    <div class="admin-glow admin-glow-a"></div>
+    <div class="admin-glow admin-glow-b"></div>
 
-    <section class="admin-form-grid">
-      <label class="field-control">
-        <span>Product Name</span>
-        <input [value]="addName()" (input)="addName.set(($any($event.target)).value)" />
-      </label>
+    <mat-card class="admin-card">
+      <h2>Admin Product Management</h2>
+      <p>Add new products to the system and remove deprecated SKUs.</p>
 
-      <label class="field-control">
-        <span>SKU</span>
-        <input [value]="addSku()" (input)="addSku.set(($any($event.target)).value)" />
-      </label>
-
-      <label class="field-control">
-        <span>Department</span>
-        <select [value]="addDepartment()" (change)="addDepartment.set(($any($event.target)).value)">
-          @for (dept of departments; track dept) {
-            <option [value]="dept">{{ dept }}</option>
-          }
-        </select>
-      </label>
-
-      <label class="field-control">
-        <span>Price</span>
-        <input type="number" min="0" step="0.01" [value]="addPrice()" (input)="updateNumeric(addPrice.set, $event)" />
-      </label>
-
-      <label class="field-control">
-        <span>Opening Stock</span>
-        <input type="number" min="0" [value]="addStock()" (input)="updateNumeric(addStock.set, $event)" />
-      </label>
-
-      <label class="field-control">
-        <span>Min Stock</span>
-        <input type="number" min="0" [value]="addMinStock()" (input)="updateNumeric(addMinStock.set, $event)" />
-      </label>
-
-      <label class="field-control">
-        <span>Tax Rate (0-1)</span>
-        <input type="number" min="0" step="0.01" [value]="addTaxRate()" (input)="updateNumeric(addTaxRate.set, $event)" />
-      </label>
-
-      <label class="field-control">
-        <span>Arrival Date</span>
-        <input type="date" [value]="addArrivalDate()" (input)="addArrivalDate.set(($any($event.target)).value)" />
-      </label>
-
-      <label class="field-control">
-        <span>Expiry Date</span>
-        <input type="date" [value]="addExpiryDate()" (input)="addExpiryDate.set(($any($event.target)).value)" />
-      </label>
-
-      <label class="staple-toggle">
-        <input type="checkbox" [checked]="addStaple()" (change)="addStaple.set(($any($event.target)).checked)" />
-        Staple Product
-      </label>
-
-      <button mat-flat-button class="btn-success-action" type="button" (click)="addProduct()">Add Product</button>
-    </section>
-
-    <section class="edit-section">
-      <h3>Edit Existing Product</h3>
       <section class="admin-form-grid">
         <label class="field-control">
-          <span>Select Product</span>
-          <select [value]="editProductId()" (change)="onEditProductSelectionChange(($any($event.target)).value)">
-            @for (item of store.inventory(); track item.id) {
-              <option [value]="item.id">{{ item.name }} — {{ item.sku }}</option>
-            }
-          </select>
-        </label>
-
-        <label class="field-control">
           <span>Product Name</span>
-          <input [value]="editName()" (input)="editName.set(($any($event.target)).value)" />
+          <input [value]="addName()" (input)="addName.set(($any($event.target)).value)" />
         </label>
 
         <label class="field-control">
           <span>SKU</span>
-          <input [value]="editSku()" (input)="editSku.set(($any($event.target)).value)" />
+          <input [value]="addSku()" (input)="addSku.set(($any($event.target)).value)" />
         </label>
 
         <label class="field-control">
           <span>Department</span>
-          <select [value]="editDepartment()" (change)="editDepartment.set(($any($event.target)).value)">
+          <select [value]="addDepartment()" (change)="addDepartment.set(($any($event.target)).value)">
             @for (dept of departments; track dept) {
               <option [value]="dept">{{ dept }}</option>
             }
@@ -123,47 +58,130 @@
 
         <label class="field-control">
           <span>Price</span>
-          <input type="number" min="0" step="0.01" [value]="editPrice()" (input)="updateNumeric(editPrice.set, $event)" />
+          <input type="number" min="0" step="0.01" [value]="addPrice()" (input)="updateNumeric(addPrice.set, $event)" />
         </label>
 
         <label class="field-control">
-          <span>Stock</span>
-          <input type="number" min="0" [value]="editStock()" (input)="updateNumeric(editStock.set, $event)" />
+          <span>Opening Stock</span>
+          <input type="number" min="0" [value]="addStock()" (input)="updateNumeric(addStock.set, $event)" />
         </label>
 
         <label class="field-control">
           <span>Min Stock</span>
-          <input type="number" min="0" [value]="editMinStock()" (input)="updateNumeric(editMinStock.set, $event)" />
+          <input type="number" min="0" [value]="addMinStock()" (input)="updateNumeric(addMinStock.set, $event)" />
         </label>
 
         <label class="field-control">
           <span>Tax Rate (0-1)</span>
-          <input type="number" min="0" step="0.01" [value]="editTaxRate()" (input)="updateNumeric(editTaxRate.set, $event)" />
+          <input type="number" min="0" step="0.01" [value]="addTaxRate()" (input)="updateNumeric(addTaxRate.set, $event)" />
         </label>
 
         <label class="field-control">
           <span>Arrival Date</span>
-          <input type="date" [value]="editArrivalDate()" (input)="editArrivalDate.set(($any($event.target)).value)" />
+          <input type="date" [value]="addArrivalDate()" (input)="addArrivalDate.set(($any($event.target)).value)" />
         </label>
 
         <label class="field-control">
           <span>Expiry Date</span>
-          <input type="date" [value]="editExpiryDate()" (input)="editExpiryDate.set(($any($event.target)).value)" />
+          <input type="date" [value]="addExpiryDate()" (input)="addExpiryDate.set(($any($event.target)).value)" />
         </label>
 
         <label class="staple-toggle">
-          <input type="checkbox" [checked]="editStaple()" (change)="editStaple.set(($any($event.target)).checked)" />
+          <input type="checkbox" [checked]="addStaple()" (change)="addStaple.set(($any($event.target)).checked)" />
           Staple Product
         </label>
 
-        <button mat-flat-button class="btn-primary-action" type="button" (click)="saveProductEdits()">
-          Save Product Changes
-        </button>
+        <button mat-flat-button class="btn-success-action" type="button" (click)="addProduct()">Add Product</button>
       </section>
-    </section>
-  </mat-card>
-}
 
+      <section class="edit-section">
+        <h3>Edit Existing Product</h3>
+        <section class="admin-form-grid">
+          <label class="field-control">
+            <span>Search Product</span>
+            <input
+              type="text"
+              [value]="editSearchTerm()"
+              (input)="updateEditSearch($event)"
+              placeholder="Type product name or SKU"
+            />
+          </label>
+
+          <label class="field-control">
+            <span>Select Product</span>
+            <select [value]="editProductId()" (change)="onEditProductSelectionChange(($any($event.target)).value)">
+              @for (item of filteredEditableProducts(); track item.id) {
+                <option [value]="item.id">{{ item.name }} - {{ item.sku }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="field-control">
+            <span>Product Name</span>
+            <input [value]="editName()" (input)="editName.set(($any($event.target)).value)" />
+          </label>
+
+          <label class="field-control">
+            <span>SKU</span>
+            <input [value]="editSku()" (input)="editSku.set(($any($event.target)).value)" />
+          </label>
+
+          <label class="field-control">
+            <span>Department</span>
+            <select [value]="editDepartment()" (change)="editDepartment.set(($any($event.target)).value)">
+              @for (dept of departments; track dept) {
+                <option [value]="dept">{{ dept }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="field-control">
+            <span>Price</span>
+            <input type="number" min="0" step="0.01" [value]="editPrice()" (input)="updateNumeric(editPrice.set, $event)" />
+          </label>
+
+          <label class="field-control">
+            <span>Stock</span>
+            <input type="number" min="0" [value]="editStock()" (input)="updateNumeric(editStock.set, $event)" />
+          </label>
+
+          <label class="field-control">
+            <span>Min Stock</span>
+            <input type="number" min="0" [value]="editMinStock()" (input)="updateNumeric(editMinStock.set, $event)" />
+          </label>
+
+          <label class="field-control">
+            <span>Tax Rate (0-1)</span>
+            <input type="number" min="0" step="0.01" [value]="editTaxRate()" (input)="updateNumeric(editTaxRate.set, $event)" />
+          </label>
+
+          <label class="field-control">
+            <span>Arrival Date</span>
+            <input type="date" [value]="editArrivalDate()" (input)="editArrivalDate.set(($any($event.target)).value)" />
+          </label>
+
+          <label class="field-control">
+            <span>Expiry Date</span>
+            <input type="date" [value]="editExpiryDate()" (input)="editExpiryDate.set(($any($event.target)).value)" />
+          </label>
+
+          <label class="staple-toggle">
+            <input type="checkbox" [checked]="editStaple()" (change)="editStaple.set(($any($event.target)).checked)" />
+            Staple Product
+          </label>
+
+          <button mat-flat-button class="btn-primary-action" type="button" (click)="saveProductEdits()">
+            Save Product Changes
+          </button>
+        </section>
+
+        @if (filteredEditableProducts().length === 0) {
+          <p class="empty-search">No products match your search term.</p>
+        }
+      </section>
+    </mat-card>
+  </section>
+}
 @if (stockEntryMessage()) {
   <p class="stock-message">{{ stockEntryMessage() }}</p>
 }
@@ -204,6 +222,7 @@
                     type="number"
                     min="0"
                     [value]="item.physicalCount"
+                    [disabled]="!canManuallyAdjustStock()"
                     (change)="onPhysicalCountChange(item.id, $event)"
                   />
                 </label>
@@ -268,7 +287,7 @@
               <td>{{ item.price | currency }}</td>
               <td>
                 <label class="field-control">
-                  <select #promoType [value]="item.promo.type">
+                  <select #promoType [value]="item.promo.type" [disabled]="!canManuallyAdjustStock()">
                     <option value="none">No Promotion</option>
                     <option value="discount">Discount %</option>
                     <option value="bogo">Buy One Get One</option>
@@ -282,15 +301,19 @@
                     type="number"
                     min="0"
                     max="90"
-                    [disabled]="promoType.value !== 'discount'"
+                    [disabled]="!canManuallyAdjustStock() || promoType.value !== 'discount'"
                     [value]="item.promo.value"
                   />
                 </label>
               </td>
               <td>
-                <button mat-stroked-button class="btn-primary-action" type="button" (click)="applyPromotion(item.id, promoType.value, promoValue.value)">
-                  Save
-                </button>
+                @if (canManuallyAdjustStock()) {
+                  <button mat-stroked-button class="btn-primary-action" type="button" (click)="applyPromotion(item.id, promoType.value, promoValue.value)">
+                    Save
+                  </button>
+                } @else {
+                  <span class="admin-only">Admin only</span>
+                }
               </td>
             </tr>
           }

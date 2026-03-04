@@ -63,6 +63,9 @@
   border: 1px solid var(--line-soft);
   border-radius: var(--sms-card-radius);
   padding: 0.9rem;
+  position: relative;
+  z-index: 2;
+  width: min(1180px, 100%);
 
   h2 {
     margin: 0;
@@ -74,6 +77,40 @@
     margin: 0.35rem 0 0.7rem;
     color: var(--ink-600);
   }
+}
+
+.admin-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin-bottom: 0.9rem;
+  min-height: 120px;
+}
+
+.admin-glow {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(24px);
+  opacity: 0.3;
+  pointer-events: none;
+  animation: drift 7s ease-in-out infinite alternate;
+}
+
+.admin-glow-a {
+  width: 280px;
+  height: 110px;
+  background: linear-gradient(120deg, #17a673, #3f8cff);
+  top: 0;
+  left: 6%;
+}
+
+.admin-glow-b {
+  width: 300px;
+  height: 120px;
+  background: linear-gradient(120deg, #ff9955, #5c9dff);
+  right: 4%;
+  bottom: 8px;
+  animation-duration: 8.5s;
 }
 
 .admin-form-grid {
@@ -93,6 +130,12 @@
     padding: 0.55rem 0.7rem;
     min-height: 42px;
   }
+}
+
+.empty-search {
+  margin: 0.65rem 0 0;
+  color: var(--ink-500);
+  font-size: 0.9rem;
 }
 
 .edit-section {
@@ -273,4 +316,14 @@ table {
 .report-message {
   margin: 0 0 0.65rem;
   color: var(--ink-600);
+}
+
+@keyframes drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  100% {
+    transform: translate3d(14px, -8px, 0) scale(1.08);
+  }
 }

@@ -15,6 +15,8 @@
   --sms-card-bg-strong: rgba(255, 255, 255, 0.99);
   --sms-card-radius: 22px;
   --sms-input-radius: 8px;
+  --sms-page-max-width: 1320px;
+  --sms-page-gutter: clamp(0.15rem, 0.8vw, 0.45rem);
 }
 
 :root.app-dark {
@@ -56,6 +58,12 @@ app-root,
   overflow-x: hidden;
 }
 
+.layout-main > :not(router-outlet),
+.layout-main > :not(router-outlet) > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .layout-main .mat-mdc-card,
 .layout-main .card,
 .layout-main .panel,
@@ -73,9 +81,11 @@ app-root,
 
 .layout-main input,
 .layout-main select,
-.layout-main textarea {
+.layout-main textarea,
+.layout-main button {
   color: var(--ink-700);
   min-width: 0;
+  max-width: 100%;
 }
 
 .layout-main :where(input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea),
@@ -155,19 +165,26 @@ app-root,
 
 .layout-main table {
   width: 100%;
-  table-layout: fixed;
+  table-layout: auto;
+}
+
+.layout-main .table-wrap > table {
+  width: max-content;
+  min-width: 100%;
 }
 
 .layout-main table th,
 .layout-main table td {
   padding: 0.58rem 0.62rem;
   vertical-align: middle;
-  word-break: break-word;
+  word-break: normal;
+  overflow-wrap: anywhere;
 }
 
 .layout-main .table-wrap {
   overflow-x: auto !important;
   overflow-y: hidden;
+  max-width: 100%;
 }
 
 .layout-main :where(.report-toolbar, .filters, .sales-filters, .form-grid, .admin-form-grid, .create-form, .add-form, .edit-form, .checkout-grid, .summary-strip, .report-summary) {
@@ -186,6 +203,30 @@ app-root,
 .layout-main .field-control {
   display: grid;
   gap: 0.25rem;
+  min-width: 0;
+}
+
+.layout-main .header-actions input,
+.layout-main .header-actions .mat-mdc-form-field {
+  min-width: min(100%, 260px);
+}
+
+@media (max-width: 1380px) {
+  .layout-main .pos-grid,
+  .layout-main .visual-grid,
+  .layout-main .filters {
+    grid-template-columns: 1fr !important;
+  }
+
+  .layout-main .create-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 1040px) {
+  .layout-main .create-form {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 .cdk-overlay-container,

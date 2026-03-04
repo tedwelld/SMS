@@ -78,6 +78,7 @@ export class InventoryPageComponent implements OnInit {
   readonly editStaple = signal(true);
   readonly editArrivalDate = signal('');
   readonly editExpiryDate = signal('');
+  readonly editSearchTerm = signal('');
 
   readonly reportMessage = signal('Use the filters to generate inventory reports by sales, quantity, expiry, and arrival date.');
   readonly minSalesFilter = signal(0);
@@ -124,6 +125,17 @@ export class InventoryPageComponent implements OnInit {
     });
   });
 
+  readonly filteredEditableProducts = computed(() => {
+    const query = this.editSearchTerm().trim().toLowerCase();
+    if (!query) {
+      return this.store.inventory();
+    }
+
+    return this.store.inventory().filter((item) =>
+      item.name.toLowerCase().includes(query) || item.sku.toLowerCase().includes(query)
+    );
+  });
+
   readonly filteredReportRows = computed(() => {
     const minSales = Math.max(0, this.minSalesFilter());
     const minQty = Math.max(0, this.minQuantityFilter());
@@ -156,6 +168,11 @@ export class InventoryPageComponent implements OnInit {
   }
 
   onPhysicalCountChange(productId: string, event: Event): void {
+    if (!this.canManuallyAdjustStock()) {
+      this.stockEntryMessage.set('Only admins can update physical counts.');
+      return;
+    }
+
     const value = Number((event.target as HTMLInputElement).value);
     if (Number.isFinite(value) && value >= 0) {
       this.store.updatePhysicalCount(productId, Math.floor(value));
@@ -187,6 +204,11 @@ export class InventoryPageComponent implements OnInit {
   }
 
   applyPromotion(productId: string, rawType: string, rawValue: string): void {
+    if (!this.canManuallyAdjustStock()) {
+      this.stockEntryMessage.set('Only admins can update product pricing and promotions.');
+      return;
+    }
+
     const type = this.toPromotionType(rawType);
     const value = Number(rawValue);
     this.store.updatePromotion(productId, type, Number.isFinite(value) ? value : 0);
@@ -247,6 +269,21 @@ export class InventoryPageComponent implements OnInit {
   onEditProductSelectionChange(productId: string): void {
     this.editProductId.set(productId);
     this.loadEditorFromSelectedProduct();
+  }
+
+  updateEditSearch(event: Event): void {
+    this.editSearchTerm.set((event.target as HTMLInputElement).value);
+
+    const filtered = this.filteredEditableProducts();
+    if (filtered.length === 0) {
+      return;
+    }
+
+    const current = this.editProductId();
+    if (!filtered.some((item) => item.id === current)) {
+      this.editProductId.set(filtered[0].id);
+      this.loadEditorFromSelectedProduct();
+    }
   }
 
   async saveProductEdits(): Promise<void> {

@@ -1,0 +1,173 @@
+<section class="page-head">
+  <h1>Cash Ups</h1>
+  <p>
+    Staff submit end-of-day payment totals. Admin can review all submitted daily cash ups and sales tracking.
+  </p>
+</section>
+
+<section class="cashup-layout">
+  <mat-card class="panel">
+    <header>
+      <h2>Day-End Cash Up</h2>
+      <span>{{ cashUpTotals().count }} submissions | {{ cashUpTotals().total | currency }}</span>
+    </header>
+
+    @if (!isAdmin()) {
+      <div class="staff-actions">
+        <button mat-flat-button type="button" class="btn-success-action" [disabled]="submittingCashUp()" (click)="submitCashUp()">
+          {{ submittingCashUp() ? 'Submitting...' : 'Cash Up' }}
+        </button>
+        <p>{{ statusMessage() }}</p>
+      </div>
+    } @else {
+      <p class="admin-note">Admin view: review submitted staff cash ups below.</p>
+    }
+
+    @if (latestMyCashUp() && !isAdmin()) {
+      <div class="latest">
+        <p>Latest Submission Date <strong>{{ latestMyCashUp()!.businessDate | date: 'MMM d, y' }}</strong></p>
+        <p>Total <strong>{{ latestMyCashUp()!.total | currency }}</strong></p>
+        <p>Transactions <strong>{{ latestMyCashUp()!.transactionCount }}</strong></p>
+      </div>
+    }
+
+    <div class="filters">
+      <label class="field-control">
+        <span>Search Staff</span>
+        <input
+          type="text"
+          [value]="cashUpStaffSearch()"
+          (input)="updateCashUpStaffSearch($event)"
+          placeholder="Search by staff name"
+        />
+      </label>
+
+      <label class="field-control">
+        <span>From Date</span>
+        <input type="date" [value]="cashUpFromDate()" (input)="updateCashUpFromDate($event)" />
+      </label>
+
+      <label class="field-control">
+        <span>To Date</span>
+        <input type="date" [value]="cashUpToDate()" (input)="updateCashUpToDate($event)" />
+      </label>
+
+      <button mat-stroked-button class="btn-info-action" type="button" [disabled]="loadingCashUps()" (click)="refreshCashUps()">
+        {{ loadingCashUps() ? 'Refreshing...' : 'Refresh Cash Ups' }}
+      </button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Staff</th>
+            <th>Cash</th>
+            <th>Card</th>
+            <th>EcoCash</th>
+            <th>Total</th>
+            <th>Transactions</th>
+            <th>Submitted</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (entry of filteredCashUps(); track entry.id) {
+            <tr>
+              <td>{{ entry.businessDate | date: 'MMM d, y' }}</td>
+              <td>{{ entry.staffName }}</td>
+              <td>{{ entry.cashTotal | currency }}</td>
+              <td>{{ entry.cardTotal | currency }}</td>
+              <td>{{ entry.ecoCashTotal | currency }}</td>
+              <td><strong>{{ entry.total | currency }}</strong></td>
+              <td>{{ entry.transactionCount }}</td>
+              <td>{{ entry.submittedAt | date: 'short' }}</td>
+            </tr>
+          }
+          @if (filteredCashUps().length === 0) {
+            <tr>
+              <td colspan="8" class="empty">No cash-up submissions found for this filter.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </mat-card>
+
+  @if (isAdmin()) {
+    <mat-card class="panel">
+      <header>
+        <h2>Sales Tracking (Admin)</h2>
+        <span>{{ salesLedgerTotals().transactions }} transactions | {{ salesLedgerTotals().grossSales | currency }}</span>
+      </header>
+
+      <div class="filters">
+        <label class="field-control">
+          <span>Search Sales</span>
+          <input
+            type="text"
+            [value]="salesQuery()"
+            (input)="updateSalesQuery($event)"
+            placeholder="Transaction, customer, or phone"
+          />
+        </label>
+
+        <label class="field-control">
+          <span>Method</span>
+          <select [value]="salesMethodFilter()" (change)="setSalesMethodFilter(($any($event.target)).value)">
+            <option value="all">All</option>
+            <option value="Cash">Cash</option>
+            <option value="Card">Card</option>
+            <option value="EcoCash">EcoCash</option>
+          </select>
+        </label>
+
+        <label class="field-control">
+          <span>From</span>
+          <input type="date" [value]="salesFromDate()" (input)="updateSalesFromDate($event)" />
+        </label>
+
+        <label class="field-control">
+          <span>To</span>
+          <input type="date" [value]="salesToDate()" (input)="updateSalesToDate($event)" />
+        </label>
+
+        <button mat-stroked-button class="btn-info-action" type="button" [disabled]="loadingSalesLedger()" (click)="refreshSalesLedger()">
+          {{ loadingSalesLedger() ? 'Refreshing...' : 'Refresh Sales' }}
+        </button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Transaction</th>
+              <th>When</th>
+              <th>Method</th>
+              <th>Customer</th>
+              <th>Items</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (payment of trackedPayments(); track payment.transactionId) {
+              <tr>
+                <td>{{ payment.transactionId }}</td>
+                <td>{{ payment.timestamp | date: 'short' }}</td>
+                <td>{{ payment.paymentMethod }}</td>
+                <td>{{ payment.customerName || 'Walk-in Customer' }}</td>
+                <td>{{ payment.itemCount }}</td>
+                <td>{{ payment.total | currency }}</td>
+              </tr>
+            }
+            @if (trackedPayments().length === 0) {
+              <tr>
+                <td colspan="6" class="empty">No tracked payments yet.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </mat-card>
+  }
+</section>

@@ -247,6 +247,11 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
         string userRole,
         CancellationToken cancellationToken = default)
     {
+        if (!IsAdminRole(userRole))
+        {
+            throw new UnauthorizedAccessException("Only admins can update physical counts.");
+        }
+
         var product = await db.Products.FirstOrDefaultAsync(x => x.Id == productId, cancellationToken)
             ?? throw new KeyNotFoundException("Product not found.");
 
@@ -267,6 +272,11 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
         string userRole,
         CancellationToken cancellationToken = default)
     {
+        if (!IsAdminRole(userRole))
+        {
+            throw new UnauthorizedAccessException("Only admins can update stock.");
+        }
+
         var product = await db.Products.FirstOrDefaultAsync(x => x.Id == productId, cancellationToken)
             ?? throw new KeyNotFoundException("Product not found.");
 
@@ -313,6 +323,11 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
 
     public async Task<ProductDto> UpdatePromotionAsync(string productId, UpdatePromotionRequestDto request, string userRole, CancellationToken cancellationToken = default)
     {
+        if (!IsAdminRole(userRole))
+        {
+            throw new UnauthorizedAccessException("Only admins can update pricing and promotions.");
+        }
+
         var product = await db.Products.FirstOrDefaultAsync(x => x.Id == productId, cancellationToken)
             ?? throw new KeyNotFoundException("Product not found.");
 
@@ -410,6 +425,11 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
 
     public async Task<IReadOnlyList<DraftPurchaseOrderDto>> RegenerateDraftPurchaseOrdersAsync(string userRole, CancellationToken cancellationToken = default)
     {
+        if (!IsAdminRole(userRole))
+        {
+            throw new UnauthorizedAccessException("Only admins can regenerate draft purchase orders.");
+        }
+
         await AddRetailAuditAsync("Regenerated draft purchase orders.", userRole, cancellationToken);
         await db.SaveChangesAsync(cancellationToken);
         return await GetDraftPurchaseOrdersAsync(cancellationToken);
@@ -435,14 +455,14 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
         var payments = await db.PosPayments.AsNoTracking().ToListAsync(cancellationToken);
         var cash = payments.Where(x => x.Method == PosPaymentMethod.Cash).Sum(x => x.Amount);
         var card = payments.Where(x => x.Method == PosPaymentMethod.Card).Sum(x => x.Amount);
-        var digital = payments.Where(x => x.Method == PosPaymentMethod.Digital).Sum(x => x.Amount);
+        var ecoCash = payments.Where(x => x.Method == PosPaymentMethod.EcoCash).Sum(x => x.Amount);
 
         return new EodReportDto
         {
             Cash = RoundMoney(cash),
             Card = RoundMoney(card),
-            Digital = RoundMoney(digital),
-            Total = RoundMoney(cash + card + digital),
+            Digital = RoundMoney(ecoCash),
+            Total = RoundMoney(cash + card + ecoCash),
             Transactions = payments.Count
         };
     }
@@ -493,6 +513,123 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
             .ToListAsync(cancellationToken);
 
         return payments.Select(MapPaymentTracking).ToList();
+    }
+
+    public async Task<StaffCashUpDto> SubmitDailyCashUpAsync(SubmitCashUpRequestDto request, CancellationToken cancellationToken = default)
+    {
+        if (request.StaffUserId <= 0)
+        {
+            throw new InvalidOperationException("A valid staff user id is required.");
+        }
+
+        var businessDate = ParseBusinessDateOrUtcToday(request.BusinessDate);
+        var periodStartUtc = DateTime.SpecifyKind(businessDate.Date, DateTimeKind.Utc);
+        var periodEndUtc = periodStartUtc.AddDays(1);
+        var now = DateTime.UtcNow;
+
+        var staff = await db.StaffUsers
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == request.StaffUserId, cancellationToken);
+        if (staff is null)
+        {
+            throw new InvalidOperationException("Staff user was not found.");
+        }
+
+        var staffName = string.IsNullOrWhiteSpace(request.StaffName)
+            ? staff.Name
+            : request.StaffName.Trim();
+
+        if (string.IsNullOrWhiteSpace(staffName))
+        {
+            staffName = $"Staff #{request.StaffUserId}";
+        }
+
+        var payments = await db.PosPayments
+            .AsNoTracking()
+            .Where(x =>
+                x.StaffUserId == request.StaffUserId
+                && x.Timestamp >= periodStartUtc
+                && x.Timestamp < periodEndUtc)
+            .ToListAsync(cancellationToken);
+
+        var cash = payments.Where(x => x.Method == PosPaymentMethod.Cash).Sum(x => x.Amount);
+        var card = payments.Where(x => x.Method == PosPaymentMethod.Card).Sum(x => x.Amount);
+        var ecoCash = payments.Where(x => x.Method == PosPaymentMethod.EcoCash).Sum(x => x.Amount);
+        var total = cash + card + ecoCash;
+        var transactionCount = payments.Count;
+
+        var existing = await db.StaffCashUps.FirstOrDefaultAsync(
+            x => x.StaffUserId == request.StaffUserId && x.BusinessDate == periodStartUtc.Date,
+            cancellationToken);
+
+        if (existing is null)
+        {
+            existing = new StaffCashUp
+            {
+                StaffUserId = request.StaffUserId,
+                StaffName = staffName,
+                BusinessDate = periodStartUtc.Date,
+                CashTotal = RoundMoney(cash),
+                CardTotal = RoundMoney(card),
+                EcoCashTotal = RoundMoney(ecoCash),
+                Total = RoundMoney(total),
+                TransactionCount = transactionCount,
+                SubmittedAt = now
+            };
+            db.StaffCashUps.Add(existing);
+        }
+        else
+        {
+            existing.StaffName = staffName;
+            existing.CashTotal = RoundMoney(cash);
+            existing.CardTotal = RoundMoney(card);
+            existing.EcoCashTotal = RoundMoney(ecoCash);
+            existing.Total = RoundMoney(total);
+            existing.TransactionCount = transactionCount;
+            existing.SubmittedAt = now;
+        }
+
+        await AddRetailAuditAsync(
+            $"Cash up submitted by {staffName} for {periodStartUtc:yyyy-MM-dd} totalling ${RoundMoney(total):0.00}.",
+            staffName,
+            cancellationToken);
+
+        await db.SaveChangesAsync(cancellationToken);
+        return MapStaffCashUp(existing);
+    }
+
+    public async Task<IReadOnlyList<StaffCashUpDto>> GetCashUpsAsync(
+        DateTime? from,
+        DateTime? to,
+        int? staffUserId,
+        CancellationToken cancellationToken = default)
+    {
+        var query = db.StaffCashUps.AsNoTracking().AsQueryable();
+
+        if (from.HasValue)
+        {
+            var fromDate = from.Value.Date;
+            query = query.Where(x => x.BusinessDate >= fromDate);
+        }
+
+        if (to.HasValue)
+        {
+            var toDate = to.Value.Date;
+            query = query.Where(x => x.BusinessDate <= toDate);
+        }
+
+        if (staffUserId.HasValue && staffUserId.Value > 0)
+        {
+            query = query.Where(x => x.StaffUserId == staffUserId.Value);
+        }
+
+        var entries = await query
+            .OrderByDescending(x => x.BusinessDate)
+            .ThenByDescending(x => x.SubmittedAt)
+            .Take(800)
+            .ToListAsync(cancellationToken);
+
+        return entries.Select(MapStaffCashUp).ToList();
     }
 
     public async Task<IReadOnlyList<ShrinkageReportRowDto>> GetShrinkageReportAsync(CancellationToken cancellationToken = default)
@@ -593,11 +730,19 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
         var transactionId = BuildTransactionId("tx");
         var now = DateTime.UtcNow;
         var roundedTotal = RoundMoney(total);
+        int? checkoutStaffId = request.StaffUserId.HasValue && request.StaffUserId.Value > 0
+            ? request.StaffUserId.Value
+            : null;
+        var checkoutStaffName = string.IsNullOrWhiteSpace(request.StaffDisplayName)
+            ? null
+            : request.StaffDisplayName.Trim();
 
         var payment = new PosPayment
         {
             ExternalTransactionId = transactionId,
             Method = method,
+            StaffUserId = checkoutStaffId,
+            ProcessedByName = checkoutStaffName,
             CustomerPhone = customer?.PhoneNumber ?? customerPhone,
             CustomerName = customer?.Name,
             Subtotal = RoundMoney(subtotal),
@@ -878,8 +1023,11 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
             case "card":
                 method = PosPaymentMethod.Card;
                 return true;
+            case "ecocash":
+            case "eco cash":
+            case "eco-cash":
             case "digital":
-                method = PosPaymentMethod.Digital;
+                method = PosPaymentMethod.EcoCash;
                 return true;
             default:
                 method = PosPaymentMethod.Card;
@@ -924,6 +1072,26 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
         }
 
         return fallback;
+    }
+
+    private static DateTime ParseBusinessDateOrUtcToday(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return DateTime.UtcNow.Date;
+        }
+
+        if (DateOnly.TryParse(raw, out var dateOnly))
+        {
+            return DateTime.SpecifyKind(dateOnly.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
+        }
+
+        if (DateTime.TryParse(raw, out var parsed))
+        {
+            return DateTime.SpecifyKind(parsed.Date, DateTimeKind.Utc);
+        }
+
+        return DateTime.UtcNow.Date;
     }
 
     private static string NormalizePhone(string phone) => string.Concat(phone.Where(char.IsDigit));
@@ -991,6 +1159,20 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
             .OrderBy(x => x.Id)
             .Select(MapReceiptLine)
             .ToList()
+    };
+
+    private static StaffCashUpDto MapStaffCashUp(StaffCashUp cashUp) => new()
+    {
+        Id = cashUp.Id,
+        StaffUserId = cashUp.StaffUserId,
+        StaffName = cashUp.StaffName,
+        BusinessDate = cashUp.BusinessDate.ToString("yyyy-MM-dd"),
+        CashTotal = RoundMoney(cashUp.CashTotal),
+        CardTotal = RoundMoney(cashUp.CardTotal),
+        EcoCashTotal = RoundMoney(cashUp.EcoCashTotal),
+        Total = RoundMoney(cashUp.Total),
+        TransactionCount = cashUp.TransactionCount,
+        SubmittedAt = cashUp.SubmittedAt.ToString("O")
     };
 
     private static ReceiptLineItemDto MapReceiptLine(PosPaymentLine line) => new()

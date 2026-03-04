@@ -8,23 +8,26 @@
     max-width: 100%;
     box-sizing: border-box;
     overflow: hidden;
-    padding: 4.75rem 1.1rem 0.55rem 1.1rem;
+    padding: 4.75rem clamp(0.7rem, 1.8vw, 1.25rem) 0.75rem;
     transition: margin-left var(--layout-section-transition-duration);
 }
 
 .layout-main {
     flex: 1 1 auto;
     min-height: 0;
-    padding-bottom: 0.35rem;
+    padding-bottom: 0.55rem;
     min-width: 0;
     overflow-x: hidden;
     overflow-y: auto;
+    scrollbar-gutter: stable both-edges;
     -webkit-overflow-scrolling: touch;
 }
 
 .layout-main > :not(router-outlet) {
     display: block;
-    width: 100%;
+    width: min(100%, var(--sms-page-max-width, 1400px));
+    margin-inline: auto;
+    padding-inline: var(--sms-page-gutter, 0.25rem);
     min-width: 0;
-    overflow-x: hidden;
+    overflow-x: visible;
 }

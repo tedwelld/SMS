@@ -36,6 +36,7 @@ public class SmsDbContext : Microsoft.EntityFrameworkCore.DbContext
     public DbSet<SalesTrendPoint> SalesTrendPoints => Set<SalesTrendPoint>();
     public DbSet<PosPayment> PosPayments => Set<PosPayment>();
     public DbSet<PosPaymentLine> PosPaymentLines => Set<PosPaymentLine>();
+    public DbSet<StaffCashUp> StaffCashUps => Set<StaffCashUp>();
     public DbSet<RetailAuditLog> RetailAuditLogs => Set<RetailAuditLog>();
     public DbSet<CustomerPurchaseRecord> CustomerPurchaseRecords => Set<CustomerPurchaseRecord>();
 
@@ -423,6 +424,7 @@ public class SmsDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.HasKey(x => x.Id);
             entity.Property(x => x.ExternalTransactionId).HasMaxLength(80).IsRequired();
             entity.Property(x => x.Method).HasConversion<string>().HasMaxLength(20);
+            entity.Property(x => x.ProcessedByName).HasMaxLength(200);
             entity.Property(x => x.CustomerPhone).HasMaxLength(30);
             entity.Property(x => x.CustomerName).HasMaxLength(200);
             entity.Property(x => x.Subtotal).HasColumnType("decimal(18,2)");
@@ -432,6 +434,11 @@ public class SmsDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.Property(x => x.Timestamp).HasDefaultValueSql("GETUTCDATE()");
             entity.HasIndex(x => x.ExternalTransactionId);
             entity.HasIndex(x => x.Timestamp);
+            entity.HasIndex(x => new { x.StaffUserId, x.Timestamp });
+            entity.HasOne(x => x.StaffUser)
+                .WithMany()
+                .HasForeignKey(x => x.StaffUserId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<PosPaymentLine>(entity =>
@@ -457,6 +464,24 @@ public class SmsDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.Property(x => x.Timestamp).HasDefaultValueSql("GETUTCDATE()");
             entity.Property(x => x.UserRole).HasMaxLength(60).IsRequired();
             entity.Property(x => x.Action).HasMaxLength(500).IsRequired();
+        });
+
+        modelBuilder.Entity<StaffCashUp>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.StaffName).HasMaxLength(200).IsRequired();
+            entity.Property(x => x.BusinessDate).HasColumnType("date");
+            entity.Property(x => x.CashTotal).HasColumnType("decimal(18,2)");
+            entity.Property(x => x.CardTotal).HasColumnType("decimal(18,2)");
+            entity.Property(x => x.EcoCashTotal).HasColumnType("decimal(18,2)");
+            entity.Property(x => x.Total).HasColumnType("decimal(18,2)");
+            entity.Property(x => x.SubmittedAt).HasDefaultValueSql("GETUTCDATE()");
+            entity.HasIndex(x => new { x.StaffUserId, x.BusinessDate }).IsUnique();
+            entity.HasIndex(x => x.BusinessDate);
+            entity.HasOne(x => x.StaffUser)
+                .WithMany()
+                .HasForeignKey(x => x.StaffUserId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<CustomerPurchaseRecord>(entity =>

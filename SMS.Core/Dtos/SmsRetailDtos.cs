@@ -139,6 +139,8 @@ public sealed class CheckoutRequestDto
     public string CustomerPhone { get; set; } = string.Empty;
     public int PointsToRedeem { get; set; }
     public string UserRole { get; set; } = string.Empty;
+    public int? StaffUserId { get; set; }
+    public string? StaffDisplayName { get; set; }
 }
 
 public sealed class CartTotalsDto
@@ -217,6 +219,27 @@ public sealed class PaymentTrackingRecordDto
     public decimal Total { get; set; }
     public int ItemCount { get; set; }
     public List<ReceiptLineItemDto> LineItems { get; set; } = [];
+}
+
+public sealed class StaffCashUpDto
+{
+    public int Id { get; set; }
+    public int StaffUserId { get; set; }
+    public string StaffName { get; set; } = string.Empty;
+    public string BusinessDate { get; set; } = string.Empty;
+    public decimal CashTotal { get; set; }
+    public decimal CardTotal { get; set; }
+    public decimal EcoCashTotal { get; set; }
+    public decimal Total { get; set; }
+    public int TransactionCount { get; set; }
+    public string SubmittedAt { get; set; } = string.Empty;
+}
+
+public sealed class SubmitCashUpRequestDto
+{
+    public int StaffUserId { get; set; }
+    public string StaffName { get; set; } = string.Empty;
+    public string? BusinessDate { get; set; }
 }
 
 public sealed class PatchSettingsRequestDto

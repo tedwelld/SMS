@@ -37,6 +37,12 @@ public interface ISmsRetailService
         string? query,
         int limit,
         CancellationToken cancellationToken = default);
+    Task<StaffCashUpDto> SubmitDailyCashUpAsync(SubmitCashUpRequestDto request, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<StaffCashUpDto>> GetCashUpsAsync(
+        DateTime? from,
+        DateTime? to,
+        int? staffUserId,
+        CancellationToken cancellationToken = default);
     Task<IReadOnlyList<ShrinkageReportRowDto>> GetShrinkageReportAsync(CancellationToken cancellationToken = default);
     Task<IReadOnlyList<SalesTrendPointDto>> GetSalesTrendAsync(CancellationToken cancellationToken = default);
     Task<CheckoutResponseDto> CheckoutAsync(CheckoutRequestDto request, CancellationToken cancellationToken = default);

@@ -20,6 +20,8 @@ import {
   ReceiptVerificationResult,
   PromotionType,
   ShrinkageReportRow,
+  StaffCashUp,
+  SubmitCashUpRequest,
   UserRole,
   Vendor
 } from './models';
@@ -27,12 +29,14 @@ import { AuthService } from './auth.service';
 
 const POINT_VALUE = 0.05;
 const EXPIRY_WARNING_DAYS = 14;
+const BOOTSTRAP_REFRESH_MS = 15000;
 
 @Injectable({ providedIn: 'root' })
 export class SmsStoreService {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
   readonly apiBaseUrl = 'http://localhost:5032/api';
+  private bootstrapAutoRefreshId: number | null = null;
 
   roles: UserRole[] = ['Store Manager', 'Cashier', 'Stock Clerk'];
 
@@ -46,6 +50,7 @@ export class SmsStoreService {
   readonly salesTrend = signal<Array<{ hour: string; sales: number }>>([]);
   readonly draftPurchaseOrders = signal<DraftPurchaseOrder[]>([]);
   readonly paymentHistory = signal<PaymentTrackingRecord[]>([]);
+  readonly cashUps = signal<StaffCashUp[]>([]);
 
   private readonly eod = signal<EodReport>({
     cash: 0,
@@ -83,6 +88,7 @@ export class SmsStoreService {
 
   constructor() {
     void this.refreshBootstrap();
+    this.startBootstrapAutoRefresh();
   }
 
   async refreshBootstrap(): Promise<void> {
@@ -255,7 +261,9 @@ export class SmsStoreService {
           paymentMethod: method,
           customerPhone,
           pointsToRedeem,
-          userRole: this.resolveRetailRole()
+          userRole: this.resolveRetailRole(),
+          staffUserId: this.auth.session()?.staffUserId,
+          staffDisplayName: this.auth.session()?.displayName
         })
       );
 
@@ -458,6 +466,82 @@ export class SmsStoreService {
 
       this.lastError.set(this.apiErrorMessage(error));
       return null;
+    }
+  }
+
+  async submitDailyCashUp(request: SubmitCashUpRequest): Promise<OperationResult & { cashUp?: StaffCashUp }> {
+    if (!Number.isFinite(request.staffUserId) || request.staffUserId <= 0) {
+      return { success: false, message: 'Valid staff user id is required.' };
+    }
+
+    try {
+      const response = await firstValueFrom(
+        this.http.post<StaffCashUp>(`${this.apiBaseUrl}/cash-ups/submit`, request)
+      );
+      await this.refreshCashUps({ staffUserId: request.staffUserId });
+      return {
+        success: true,
+        message: 'Cash up submitted successfully.',
+        cashUp: response
+      };
+    } catch (error) {
+      if (error instanceof HttpErrorResponse && error.status === 404) {
+        try {
+          const fallback = await firstValueFrom(
+            this.http.post<StaffCashUp>(`${this.apiBaseUrl}/cashups/submit`, request)
+          );
+          await this.refreshCashUps({ staffUserId: request.staffUserId });
+          return {
+            success: true,
+            message: 'Cash up submitted successfully.',
+            cashUp: fallback
+          };
+        } catch (fallbackError) {
+          return { success: false, message: this.apiErrorMessage(fallbackError) };
+        }
+      }
+
+      return { success: false, message: this.apiErrorMessage(error) };
+    }
+  }
+
+  async refreshCashUps(filters?: { from?: string; to?: string; staffUserId?: number }): Promise<void> {
+    let params = new HttpParams();
+
+    if (filters?.from?.trim()) {
+      params = params.set('from', filters.from.trim());
+    }
+
+    if (filters?.to?.trim()) {
+      params = params.set('to', filters.to.trim());
+    }
+
+    if (Number.isFinite(filters?.staffUserId) && (filters?.staffUserId ?? 0) > 0) {
+      params = params.set('staffUserId', String(filters!.staffUserId));
+    }
+
+    try {
+      const cashUps = await firstValueFrom(
+        this.http.get<StaffCashUp[]>(`${this.apiBaseUrl}/cash-ups`, { params })
+      );
+      this.cashUps.set(cashUps ?? []);
+      this.lastError.set(null);
+    } catch (error) {
+      if (error instanceof HttpErrorResponse && error.status === 404) {
+        try {
+          const fallback = await firstValueFrom(
+            this.http.get<StaffCashUp[]>(`${this.apiBaseUrl}/cashups`, { params })
+          );
+          this.cashUps.set(fallback ?? []);
+          this.lastError.set(null);
+          return;
+        } catch (fallbackError) {
+          this.lastError.set(this.apiErrorMessage(fallbackError));
+          return;
+        }
+      }
+
+      this.lastError.set(this.apiErrorMessage(error));
     }
   }
 
@@ -851,5 +935,19 @@ export class SmsStoreService {
     return new HttpHeaders({
       'X-User-Role': this.resolveRetailRole()
     });
+  }
+
+  private startBootstrapAutoRefresh(): void {
+    if (typeof window === 'undefined' || this.bootstrapAutoRefreshId !== null) {
+      return;
+    }
+
+    this.bootstrapAutoRefreshId = window.setInterval(() => {
+      if (this.loading()) {
+        return;
+      }
+
+      void this.refreshBootstrap();
+    }, BOOTSTRAP_REFRESH_MS);
   }
 }

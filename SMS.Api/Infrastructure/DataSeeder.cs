@@ -13,12 +13,25 @@ public static class DataSeeder
         var db = scope.ServiceProvider.GetRequiredService<SmsDbContext>();
 
         await db.Database.MigrateAsync(cancellationToken);
+        await NormalizeLegacyRetailDataAsync(db, cancellationToken);
 
         await SeedStaffUsersAsync(db, cancellationToken);
         await SeedRetailDataAsync(db, cancellationToken);
         await SeedWalletDemoAsync(db, cancellationToken);
 
         await db.SaveChangesAsync(cancellationToken);
+    }
+
+    private static async Task NormalizeLegacyRetailDataAsync(SmsDbContext db, CancellationToken cancellationToken)
+    {
+        // Preserve compatibility with older payment method labels that predate EcoCash.
+        await db.Database.ExecuteSqlRawAsync(
+            """
+            UPDATE [PosPayments]
+            SET [Method] = 'EcoCash'
+            WHERE UPPER(LTRIM(RTRIM([Method]))) IN ('DIGITAL', 'ECO CASH', 'ECO-CASH');
+            """,
+            cancellationToken);
     }
 
     private static async Task SeedStaffUsersAsync(SmsDbContext db, CancellationToken cancellationToken)
@@ -317,7 +330,7 @@ public static class DataSeeder
                 new PosPayment
                 {
                     ExternalTransactionId = "tx-seed-0003",
-                    Method = PosPaymentMethod.Digital,
+                    Method = PosPaymentMethod.EcoCash,
                     Subtotal = 226.65m,
                     Tax = 6.80m,
                     Discount = 0m,

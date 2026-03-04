@@ -1,11 +1,10 @@
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import { Component, ElementRef, HostListener, ViewChild, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, ViewChild, computed, effect, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { toDataURL } from 'qrcode';
 
-import { AuthService } from '../../core/auth.service';
-import { CartItem, PaymentMethod, PaymentTrackingRecord, ReceiptPayload } from '../../core/models';
+import { CartItem, PaymentMethod, ReceiptPayload } from '../../core/models';
 import { SmsStoreService } from '../../core/sms-store.service';
 import { SYSTEM_BRANDING, SYSTEM_BRANDING_FULL_ADDRESS } from '../../core/system-branding';
 
@@ -16,8 +15,9 @@ import { SYSTEM_BRANDING, SYSTEM_BRANDING_FULL_ADDRESS } from '../../core/system
   styleUrl: './pos-page.component.scss'
 })
 export class PosPageComponent {
+  private static readonly ECOCASH_NUMBER = '0774700574';
+
   readonly store = inject(SmsStoreService);
-  readonly auth = inject(AuthService);
   readonly branding = SYSTEM_BRANDING;
   readonly fullAddress = SYSTEM_BRANDING_FULL_ADDRESS;
 
@@ -27,66 +27,14 @@ export class PosPageComponent {
   readonly paymentMethod = signal<PaymentMethod>('Card');
   readonly message = signal('Ready for checkout.');
   readonly lastGeneratedReceipt = signal<ReceiptPayload | null>(null);
-
-  readonly salesQuery = signal('');
-  readonly salesMethodFilter = signal<PaymentMethod | 'all'>('all');
-  readonly salesFromDate = signal('');
-  readonly salesToDate = signal('');
-  readonly loadingSalesLedger = signal(false);
+  readonly ecoCashPromptQr = signal<string | null>(null);
 
   @ViewChild('searchBox') searchBox?: ElementRef<HTMLInputElement>;
 
-  readonly paymentOptions: PaymentMethod[] = ['Cash', 'Card', 'Digital'];
+  readonly paymentOptions: PaymentMethod[] = ['Cash', 'Card', 'EcoCash'];
 
   readonly matchedProducts = computed(() => this.store.searchProducts(this.searchTerm()).slice(0, 16));
   readonly selectedCustomer = computed(() => this.store.getCustomerByPhone(this.customerPhone()));
-  readonly canViewAllSales = computed(() => this.auth.role === 'admin');
-
-  readonly trackedPayments = computed(() => {
-    const query = this.salesQuery().trim().toLowerCase();
-    const method = this.salesMethodFilter();
-    const from = this.parseDateFilter(this.salesFromDate());
-    const to = this.parseDateFilter(this.salesToDate());
-
-    const base = this.store.paymentHistory();
-    const scoped = this.canViewAllSales() ? base : base.slice(0, 16);
-
-    return scoped
-      .filter((payment) =>
-        method === 'all' ? true : payment.paymentMethod === method
-      )
-      .filter((payment) => {
-        const timestamp = new Date(payment.timestamp);
-        if (Number.isNaN(timestamp.getTime())) {
-          return false;
-        }
-        if (from && timestamp < from) {
-          return false;
-        }
-        if (to) {
-          const end = new Date(to);
-          end.setHours(23, 59, 59, 999);
-          if (timestamp > end) {
-            return false;
-          }
-        }
-        return true;
-      })
-      .filter((payment) => {
-        if (!query) {
-          return true;
-        }
-
-        return payment.transactionId.toLowerCase().includes(query)
-          || payment.customerName.toLowerCase().includes(query)
-          || payment.customerPhone.toLowerCase().includes(query);
-      });
-  });
-
-  readonly salesLedgerTotals = computed(() => ({
-    transactions: this.trackedPayments().length,
-    grossSales: this.trackedPayments().reduce((sum, payment) => sum + payment.total, 0)
-  }));
 
   readonly totals = computed(() => {
     const customer = this.selectedCustomer();
@@ -95,9 +43,19 @@ export class PosPageComponent {
     const safePoints = Math.min(allowedPoints, requested);
     return this.store.getCartTotals(safePoints);
   });
+  readonly ecoCashDialCode = computed(() => this.buildEcoCashDialCode(this.totals().total));
 
   constructor() {
-    void this.refreshSalesLedger();
+    effect(() => {
+      const method = this.paymentMethod();
+      const amount = this.totals().total;
+      if (method !== 'EcoCash' || this.store.cart().length === 0 || amount <= 0) {
+        this.ecoCashPromptQr.set(null);
+        return;
+      }
+
+      void this.refreshEcoCashPromptQr(amount);
+    });
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -131,37 +89,8 @@ export class PosPageComponent {
     this.pointsToRedeem.set(Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0);
   }
 
-  updateSalesQuery(event: Event): void {
-    this.salesQuery.set((event.target as HTMLInputElement).value);
-  }
-
-  setSalesMethodFilter(method: string): void {
-    if (method === 'Cash' || method === 'Card' || method === 'Digital' || method === 'all') {
-      this.salesMethodFilter.set(method);
-    }
-  }
-
-  updateSalesFromDate(event: Event): void {
-    this.salesFromDate.set((event.target as HTMLInputElement).value);
-  }
-
-  updateSalesToDate(event: Event): void {
-    this.salesToDate.set((event.target as HTMLInputElement).value);
-  }
-
-  async refreshSalesLedger(): Promise<void> {
-    this.loadingSalesLedger.set(true);
-    await this.store.refreshPaymentHistory(this.canViewAllSales() ? 500 : 120, {
-      from: this.salesFromDate(),
-      to: this.salesToDate(),
-      method: this.salesMethodFilter(),
-      query: this.salesQuery()
-    });
-    this.loadingSalesLedger.set(false);
-  }
-
   setPaymentMethod(method: string): void {
-    if (method === 'Cash' || method === 'Card' || method === 'Digital') {
+    if (method === 'Cash' || method === 'Card' || method === 'EcoCash') {
       this.paymentMethod.set(method);
     }
   }
@@ -181,7 +110,7 @@ export class PosPageComponent {
   }
 
   canPrintReceipt(): boolean {
-    return this.store.cart().length > 0 || this.lastGeneratedReceipt() !== null;
+    return this.lastGeneratedReceipt() !== null && this.store.cart().length === 0;
   }
 
   async previewReceipt(): Promise<void> {
@@ -201,12 +130,10 @@ export class PosPageComponent {
   }
 
   async printReceipt(): Promise<void> {
-    const payload = this.store.cart().length > 0
-      ? this.buildCartReceiptPayload()
-      : this.lastGeneratedReceipt();
+    const payload = this.lastGeneratedReceipt();
 
     if (!payload) {
-      this.message.set('Add items or load a receipt before printing.');
+      this.message.set('Process payment first, then print the receipt.');
       return;
     }
 
@@ -216,26 +143,22 @@ export class PosPageComponent {
     }
   }
 
-  async reprintReceipt(transactionId: string): Promise<void> {
-    if (!this.canViewAllSales()) {
-      this.message.set('Only admins can reprint historical receipts.');
-      return;
+  async processPayment(): Promise<void> {
+    if (this.paymentMethod() === 'EcoCash') {
+      const amount = this.roundMoney(this.totals().total);
+      const ussd = this.buildEcoCashDialCode(amount);
+      const promptText = this.buildEcoCashPromptText(amount);
+      this.tryLaunchDialer(ussd);
+
+      const confirmed = window.confirm(
+        `${promptText}\n\nPress OK after EcoCash payment is completed.`
+      );
+      if (!confirmed) {
+        this.message.set('EcoCash payment was not confirmed. Transaction not processed.');
+        return;
+      }
     }
 
-    const receipt = await this.store.getReceiptByTransactionId(transactionId);
-    if (!receipt) {
-      this.message.set(`Receipt not found for transaction ${transactionId}.`);
-      return;
-    }
-
-    this.lastGeneratedReceipt.set(receipt);
-    const ok = await this.printDocument(receipt, 'Receipt Reprint', true, true);
-    if (ok) {
-      this.message.set(`Receipt ${transactionId} reprinted.`);
-    }
-  }
-
-  async checkout(): Promise<void> {
     const result = await this.store.checkout(
       this.paymentMethod(),
       this.customerPhone(),
@@ -247,8 +170,7 @@ export class PosPageComponent {
     if (result.success && result.receipt) {
       this.pointsToRedeem.set(0);
       this.lastGeneratedReceipt.set(result.receipt);
-      await this.printDocument(result.receipt, 'Receipt', true, true);
-      await this.refreshSalesLedger();
+      this.message.set('Payment processed. You can now print the receipt.');
     }
   }
 
@@ -320,6 +242,36 @@ export class PosPageComponent {
         };
       })
     };
+  }
+
+  private buildEcoCashDialCode(amount: number): string {
+    const safeAmount = this.roundMoney(Math.max(0, amount));
+    return `*151*1*1*${PosPageComponent.ECOCASH_NUMBER}*${safeAmount.toFixed(2)}#`;
+  }
+
+  private buildEcoCashPromptText(amount: number): string {
+    const ussd = this.buildEcoCashDialCode(amount);
+    return `Prompt customer to dial:\n${ussd}\n\nSend to ${PosPageComponent.ECOCASH_NUMBER} for $${amount.toFixed(2)}.`;
+  }
+
+  private async refreshEcoCashPromptQr(amount: number): Promise<void> {
+    const promptText = this.buildEcoCashPromptText(this.roundMoney(Math.max(0, amount)));
+    const qr = await this.generateQrCodeDataUrl(promptText);
+    this.ecoCashPromptQr.set(qr || null);
+  }
+
+  private tryLaunchDialer(ussdCode: string): void {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const encoded = ussdCode.replace('#', '%23');
+    const link = document.createElement('a');
+    link.href = `tel:${encoded}`;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   private async printDocument(
@@ -636,13 +588,4 @@ export class PosPageComponent {
     return Math.max(0, Math.floor(amount));
   }
 
-  private parseDateFilter(value: string): Date | null {
-    const raw = String(value || '').trim();
-    if (!raw) {
-      return null;
-    }
-
-    const parsed = new Date(raw);
-    return Number.isNaN(parsed.getTime()) ? null : parsed;
-  }
 }
