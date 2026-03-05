@@ -26,6 +26,9 @@ public interface ISmsRetailService
     Task<CustomerProfileDto?> GetCustomerByPhoneAsync(string phone, CancellationToken cancellationToken = default);
     Task<CustomerProfileDto> AddCustomerAsync(CreateRetailCustomerRequestDto request, string userRole, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<VendorDto>> GetVendorsAsync(CancellationToken cancellationToken = default);
+    Task<VendorDto> CreateVendorAsync(CreateVendorRequestDto request, string userRole, CancellationToken cancellationToken = default);
+    Task<VendorDto> UpdateVendorAsync(int vendorId, UpdateVendorRequestDto request, string userRole, CancellationToken cancellationToken = default);
+    Task DeleteVendorAsync(int vendorId, string userRole, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<DraftPurchaseOrderDto>> GetDraftPurchaseOrdersAsync(CancellationToken cancellationToken = default);
     Task<IReadOnlyList<DraftPurchaseOrderDto>> RegenerateDraftPurchaseOrdersAsync(string userRole, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<RetailAuditLogDto>> GetAuditAsync(int limit, CancellationToken cancellationToken = default);

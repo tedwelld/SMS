@@ -691,32 +691,52 @@ export class SmsStoreService {
     }
   }
 
-  createVendor(payload: {
+  async createVendor(payload: {
     name: string;
     contact: string;
     email: string;
     leadTimeDays: number;
     departments: string[];
-  }): OperationResult {
+  }): Promise<OperationResult> {
     const normalizedName = payload.name.trim();
     if (!normalizedName) {
       return { success: false, message: 'Vendor name is required.' };
     }
 
-    const vendor: Vendor = {
-      id: `V-${Date.now()}`,
-      name: normalizedName,
-      contact: payload.contact.trim() || 'N/A',
-      email: payload.email.trim() || `${normalizedName.toLowerCase().replace(/\s+/g, '.')}@vendor.local`,
-      leadTimeDays: Math.max(1, Math.floor(payload.leadTimeDays || 1)),
-      departments: payload.departments as Vendor['departments']
-    };
+    const departments = payload.departments
+      .map((department) => String(department || '').trim())
+      .filter((department) => !!department);
+    if (departments.length === 0) {
+      return { success: false, message: 'At least one vendor department is required.' };
+    }
 
-    this.vendors.update((items) => [vendor, ...items]);
-    return { success: true, message: 'Vendor added.' };
+    try {
+      await firstValueFrom(
+        this.http.post(
+          `${this.apiBaseUrl}/vendors`,
+          {
+            name: normalizedName,
+            contact: payload.contact.trim() || 'N/A',
+            email: payload.email.trim() || `${normalizedName.toLowerCase().replace(/\s+/g, '.')}@vendor.local`,
+            leadTimeDays: Math.max(1, Math.floor(payload.leadTimeDays || 1)),
+            departments
+          },
+          { headers: this.roleHeader() }
+        )
+      );
+      await this.refreshBootstrap();
+      return { success: true, message: 'Vendor added.' };
+    } catch (error) {
+      return { success: false, message: this.apiErrorMessage(error) };
+    }
   }
 
-  updateVendor(vendorId: string, patch: Partial<Vendor>): OperationResult {
+  async updateVendor(vendorId: string, patch: Partial<Vendor>): Promise<OperationResult> {
+    const parsedVendorId = Number(vendorId);
+    if (!Number.isFinite(parsedVendorId) || parsedVendorId <= 0) {
+      return { success: false, message: 'Invalid vendor id.' };
+    }
+
     const existing = this.vendors().find((item) => item.id === vendorId);
     if (!existing) {
       return { success: false, message: 'Vendor not found.' };
@@ -731,19 +751,57 @@ export class SmsStoreService {
       leadTimeDays: Math.max(1, Math.floor(patch.leadTimeDays ?? existing.leadTimeDays))
     };
 
-    this.vendors.update((items) => items.map((item) => (item.id === vendorId ? merged : item)));
-    return { success: true, message: 'Vendor updated.' };
+    const departments = (merged.departments ?? [])
+      .map((department) => String(department || '').trim())
+      .filter((department) => !!department);
+    if (departments.length === 0) {
+      return { success: false, message: 'At least one vendor department is required.' };
+    }
+
+    try {
+      await firstValueFrom(
+        this.http.put(
+          `${this.apiBaseUrl}/vendors/${encodeURIComponent(String(parsedVendorId))}`,
+          {
+            name: merged.name,
+            contact: merged.contact || 'N/A',
+            email: merged.email || `${merged.name.toLowerCase().replace(/\s+/g, '.')}@vendor.local`,
+            leadTimeDays: Math.max(1, Math.floor(merged.leadTimeDays || 1)),
+            departments
+          },
+          { headers: this.roleHeader() }
+        )
+      );
+      await this.refreshBootstrap();
+      return { success: true, message: 'Vendor updated.' };
+    } catch (error) {
+      return { success: false, message: this.apiErrorMessage(error) };
+    }
   }
 
-  deleteVendor(vendorId: string): OperationResult {
+  async deleteVendor(vendorId: string): Promise<OperationResult> {
+    const parsedVendorId = Number(vendorId);
+    if (!Number.isFinite(parsedVendorId) || parsedVendorId <= 0) {
+      return { success: false, message: 'Invalid vendor id.' };
+    }
+
     const exists = this.vendors().some((item) => item.id === vendorId);
     if (!exists) {
       return { success: false, message: 'Vendor not found.' };
     }
 
-    this.vendors.update((items) => items.filter((item) => item.id !== vendorId));
-    this.draftPurchaseOrders.update((orders) => orders.filter((order) => order.vendorId !== vendorId));
-    return { success: true, message: 'Vendor deleted.' };
+    try {
+      await firstValueFrom(
+        this.http.delete(
+          `${this.apiBaseUrl}/vendors/${encodeURIComponent(String(parsedVendorId))}`,
+          { headers: this.roleHeader() }
+        )
+      );
+      await this.refreshBootstrap();
+      return { success: true, message: 'Vendor deleted.' };
+    } catch (error) {
+      return { success: false, message: this.apiErrorMessage(error) };
+    }
   }
 
   createDraftPurchaseOrder(payload: {

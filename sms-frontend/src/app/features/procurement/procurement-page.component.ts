@@ -90,8 +90,8 @@ export class ProcurementPageComponent {
     this.feedback.set('Draft purchase orders regenerated.');
   }
 
-  createVendor(): void {
-    const result = this.store.createVendor({
+  async createVendor(): Promise<void> {
+    const result = await this.store.createVendor({
       name: this.createVendorName(),
       contact: this.createVendorContact(),
       email: this.createVendorEmail(),
@@ -124,8 +124,8 @@ export class ProcurementPageComponent {
     this.editingVendorId.set(null);
   }
 
-  saveVendor(vendor: Vendor): void {
-    const result = this.store.updateVendor(vendor.id, {
+  async saveVendor(vendor: Vendor): Promise<void> {
+    const result = await this.store.updateVendor(vendor.id, {
       name: this.editVendorName(),
       contact: this.editVendorContact(),
       email: this.editVendorEmail(),
@@ -139,13 +139,13 @@ export class ProcurementPageComponent {
     }
   }
 
-  deleteVendor(vendor: Vendor): void {
+  async deleteVendor(vendor: Vendor): Promise<void> {
     const approved = window.confirm(`Delete vendor '${vendor.name}' and its draft orders?`);
     if (!approved) {
       return;
     }
 
-    const result = this.store.deleteVendor(vendor.id);
+    const result = await this.store.deleteVendor(vendor.id);
     this.feedback.set(result.message);
   }
 

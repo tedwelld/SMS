@@ -212,6 +212,68 @@ public class SmsRetailController(ISmsRetailService service) : ControllerBase
     public async Task<ActionResult<IReadOnlyList<VendorDto>>> GetVendors(CancellationToken cancellationToken)
         => Ok(await service.GetVendorsAsync(cancellationToken));
 
+    [HttpPost("vendors")]
+    public async Task<ActionResult<VendorDto>> CreateVendor([FromBody] CreateVendorRequestDto request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var vendor = await service.CreateVendorAsync(request, ResolveRole(), cancellationToken);
+            return Created($"/api/vendors/{vendor.Id}", vendor);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (InvalidOperationException ex)
+        {
+            var status = ex.Message.Contains("already", StringComparison.OrdinalIgnoreCase) ? 409 : 400;
+            return StatusCode(status, new { message = ex.Message });
+        }
+    }
+
+    [HttpPut("vendors/{vendorId:int}")]
+    public async Task<ActionResult<VendorDto>> UpdateVendor(
+        int vendorId,
+        [FromBody] UpdateVendorRequestDto request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await service.UpdateVendorAsync(vendorId, request, ResolveRole(), cancellationToken));
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { message = "Vendor not found." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            var status = ex.Message.Contains("already", StringComparison.OrdinalIgnoreCase) ? 409 : 400;
+            return StatusCode(status, new { message = ex.Message });
+        }
+    }
+
+    [HttpDelete("vendors/{vendorId:int}")]
+    public async Task<ActionResult<object>> DeleteVendor(int vendorId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await service.DeleteVendorAsync(vendorId, ResolveRole(), cancellationToken);
+            return Ok(new { message = "Vendor deleted." });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { message = "Vendor not found." });
+        }
+    }
+
     [HttpGet("purchase-orders/drafts")]
     public async Task<ActionResult<IReadOnlyList<DraftPurchaseOrderDto>>> GetDraftPurchaseOrders(CancellationToken cancellationToken)
         => Ok(await service.GetDraftPurchaseOrdersAsync(cancellationToken));

@@ -57,6 +57,24 @@ public sealed class VendorDto
     public string Email { get; set; } = string.Empty;
 }
 
+public sealed class CreateVendorRequestDto
+{
+    public string Name { get; set; } = string.Empty;
+    public string Contact { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public int LeadTimeDays { get; set; }
+    public List<string> Departments { get; set; } = [];
+}
+
+public sealed class UpdateVendorRequestDto
+{
+    public string Name { get; set; } = string.Empty;
+    public string Contact { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public int LeadTimeDays { get; set; }
+    public List<string> Departments { get; set; } = [];
+}
+
 public sealed class PurchaseOrderLineDto
 {
     public string ProductId { get; set; } = string.Empty;

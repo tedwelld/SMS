@@ -423,6 +423,154 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
         return vendors.Select(MapVendor).ToList();
     }
 
+    public async Task<VendorDto> CreateVendorAsync(
+        CreateVendorRequestDto request,
+        string userRole,
+        CancellationToken cancellationToken = default)
+    {
+        if (!IsAdminRole(userRole))
+        {
+            throw new UnauthorizedAccessException("Only admins can create vendors.");
+        }
+
+        var name = request.Name.Trim();
+        var contact = request.Contact.Trim();
+        var email = request.Email.Trim();
+        var leadTimeDays = Math.Max(1, request.LeadTimeDays);
+        var departments = NormalizeVendorDepartments(request.Departments);
+
+        if (string.IsNullOrWhiteSpace(name)
+            || string.IsNullOrWhiteSpace(contact)
+            || string.IsNullOrWhiteSpace(email))
+        {
+            throw new InvalidOperationException("Vendor name, contact, and email are required.");
+        }
+
+        if (departments.Count == 0)
+        {
+            throw new InvalidOperationException("At least one vendor department is required.");
+        }
+
+        var duplicate = await db.Vendors
+            .AnyAsync(x => x.Name.ToLower() == name.ToLower() || x.Email.ToLower() == email.ToLower(), cancellationToken);
+        if (duplicate)
+        {
+            throw new InvalidOperationException("A vendor with this name or email already exists.");
+        }
+
+        var vendor = new Vendor
+        {
+            Name = name,
+            Contact = contact,
+            Email = email,
+            LeadTimeDays = leadTimeDays,
+            Departments = departments.Select(department => new VendorDepartment
+            {
+                Department = department
+            }).ToList()
+        };
+
+        db.Vendors.Add(vendor);
+        await AddRetailAuditAsync($"Added vendor {vendor.Name}.", userRole, cancellationToken);
+        await db.SaveChangesAsync(cancellationToken);
+
+        return MapVendor(vendor);
+    }
+
+    public async Task<VendorDto> UpdateVendorAsync(
+        int vendorId,
+        UpdateVendorRequestDto request,
+        string userRole,
+        CancellationToken cancellationToken = default)
+    {
+        if (!IsAdminRole(userRole))
+        {
+            throw new UnauthorizedAccessException("Only admins can update vendors.");
+        }
+
+        var vendor = await db.Vendors
+            .Include(x => x.Departments)
+            .FirstOrDefaultAsync(x => x.Id == vendorId, cancellationToken)
+            ?? throw new KeyNotFoundException("Vendor not found.");
+
+        var name = request.Name.Trim();
+        var contact = request.Contact.Trim();
+        var email = request.Email.Trim();
+        var leadTimeDays = Math.Max(1, request.LeadTimeDays);
+        var departments = NormalizeVendorDepartments(request.Departments);
+
+        if (string.IsNullOrWhiteSpace(name)
+            || string.IsNullOrWhiteSpace(contact)
+            || string.IsNullOrWhiteSpace(email))
+        {
+            throw new InvalidOperationException("Vendor name, contact, and email are required.");
+        }
+
+        if (departments.Count == 0)
+        {
+            throw new InvalidOperationException("At least one vendor department is required.");
+        }
+
+        var duplicate = await db.Vendors
+            .AnyAsync(
+                x => x.Id != vendorId
+                    && (x.Name.ToLower() == name.ToLower() || x.Email.ToLower() == email.ToLower()),
+                cancellationToken);
+        if (duplicate)
+        {
+            throw new InvalidOperationException("A vendor with this name or email already exists.");
+        }
+
+        vendor.Name = name;
+        vendor.Contact = contact;
+        vendor.Email = email;
+        vendor.LeadTimeDays = leadTimeDays;
+
+        var requestedDepartments = departments.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var departmentsToRemove = vendor.Departments
+            .Where(existing => !requestedDepartments.Contains(existing.Department))
+            .ToList();
+        if (departmentsToRemove.Count > 0)
+        {
+            db.VendorDepartments.RemoveRange(departmentsToRemove);
+        }
+
+        var existingDepartments = vendor.Departments
+            .Select(x => x.Department)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var department in departments)
+        {
+            if (!existingDepartments.Contains(department))
+            {
+                vendor.Departments.Add(new VendorDepartment
+                {
+                    Department = department
+                });
+            }
+        }
+
+        await AddRetailAuditAsync($"Updated vendor {vendor.Name}.", userRole, cancellationToken);
+        await db.SaveChangesAsync(cancellationToken);
+
+        return MapVendor(vendor);
+    }
+
+    public async Task DeleteVendorAsync(int vendorId, string userRole, CancellationToken cancellationToken = default)
+    {
+        if (!IsAdminRole(userRole))
+        {
+            throw new UnauthorizedAccessException("Only admins can delete vendors.");
+        }
+
+        var vendor = await db.Vendors
+            .FirstOrDefaultAsync(x => x.Id == vendorId, cancellationToken)
+            ?? throw new KeyNotFoundException("Vendor not found.");
+
+        db.Vendors.Remove(vendor);
+        await AddRetailAuditAsync($"Deleted vendor {vendor.Name}.", userRole, cancellationToken);
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyList<DraftPurchaseOrderDto>> GetDraftPurchaseOrdersAsync(CancellationToken cancellationToken = default)
     {
         var products = await db.Products.AsNoTracking().ToListAsync(cancellationToken);
@@ -1094,6 +1242,20 @@ public class SmsRetailService(SmsDbContext db, IConfiguration configuration) : I
         var role = (userRole ?? string.Empty).Trim();
         return role.Equals("admin", StringComparison.OrdinalIgnoreCase)
             || role.Equals("administrator", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static List<string> NormalizeVendorDepartments(IEnumerable<string>? rawDepartments)
+    {
+        if (rawDepartments is null)
+        {
+            return [];
+        }
+
+        return rawDepartments
+            .Select(x => x.Trim())
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
     }
 
     private static DateOnly? ParseDateOnlyOrNull(string? raw)
